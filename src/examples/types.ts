@@ -1,5 +1,7 @@
 import type * as React from "react"
 
+export type ComponentLayer = "override" | "component" | "pattern"
+
 export interface Meta<TComponent extends React.ElementType> {
   title: string
   slug?: string
@@ -7,6 +9,7 @@ export interface Meta<TComponent extends React.ElementType> {
   component: TComponent
   description: string
   category: "hubzz" | "shadcn"
+  layer?: ComponentLayer
   notes?: string[]
   composeOnly?: boolean
 }

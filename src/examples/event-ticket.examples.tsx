@@ -1,20 +1,23 @@
-import { EventTicket, type EventTicketProps } from "@/components/ui/event-ticket"
-import type { Meta, Example } from "./types"
+import {
+  EventTicket,
+  type EventTicketProps,
+} from "@/components/hubzz/event-ticket"
+import type { Example, Meta } from "./types"
 
 export const meta: Meta<typeof EventTicket> = {
   title: "EventTicket",
-  slug: "tickets",  // preserves existing #tickets anchor in Landing.tsx nav
-  navLabel: "Tickets",
+  slug: "tickets",
+  navLabel: "Event Ticket",
   component: EventTicket,
   description:
-    "Fixed-size ticket card (344×184px) representing a user's relationship to an event. " +
-    "Four interactive states plus a loading skeleton.",
+    "Fixed-size Hubzz event artifact with ready, upcoming, joined, past, and loading states.",
   category: "hubzz",
+  layer: "component",
   notes: [
-    "Always 344×184px — never resize or constrain with a parent container",
-    "Use loading=true while fetching event data; never render an empty ticket",
-    "host and space become <a> links when hostHref/spaceHref are provided",
-    "ticketNumber truncates with ellipsis — no need to shorten it client-side",
+    "The 344×184 geometry is part of the public component contract.",
+    "Use loading=true while event data is unresolved.",
+    "Host and space become links when href props are provided.",
+    "The component delegates actions to Button and loading treatment to Skeleton.",
   ],
 }
 
@@ -27,7 +30,7 @@ const BASE: Partial<EventTicketProps> = {
   space: "Space",
   spaceHref: "#",
   ticketNumber: "#00001/03123",
-  imageSrc: "/cn/ticket-bg.jpg",
+  imageSrc: "/favicon.svg",
 }
 
 export const Ready: Example<EventTicketProps> = {
@@ -37,7 +40,12 @@ export const Ready: Example<EventTicketProps> = {
 
 export const Upcoming: Example<EventTicketProps> = {
   name: "Upcoming",
-  args: { ...BASE, state: "upcoming", countdown: { days: 1, hours: 10, minutes: 12 }, testId: "ticket-upcoming" } as EventTicketProps,
+  args: {
+    ...BASE,
+    state: "upcoming",
+    countdown: { days: 1, hours: 10, minutes: 12 },
+    testId: "ticket-upcoming",
+  } as EventTicketProps,
 }
 
 export const Joined: Example<EventTicketProps> = {
@@ -54,13 +62,14 @@ export const LongTitle: Example<EventTicketProps> = {
   name: "Long title",
   args: {
     state: "joined",
-    title: "An Extremely Long Event Title That Wraps Across Multiple Lines To Test Card Height Growth",
+    title:
+      "An Extremely Long Event Title That Wraps Across Multiple Lines To Test Card Height Growth",
     date: "FEB 3",
     time: "11:00 PM",
     host: "Valentina Restrepo-Gutiérrez",
     space: "The Grand Metropolitan Ballroom & Conference Centre",
     ticketNumber: "#RESERVATION/2024/00001/XTRA",
-    imageSrc: "/cn/ticket-bg.jpg",
+    imageSrc: "/favicon.svg",
     onLeave: () => {},
     testId: "ticket-longTitle",
   } as EventTicketProps,

@@ -1,14 +1,11 @@
-/**
- * Catalog smoke tests — every registered example section mounts on the landing page.
- *
- * Run: npm run test:ui
- */
+import { expect, test } from "@playwright/test"
 
-import { test, expect } from "@playwright/test"
 import { allExamples } from "../src/examples"
 
-const CATALOG_SLUGS = allExamples.map((mod) => {
-  const meta = (mod as { meta: { slug?: string; title: string } }).meta
+const CATALOG_SLUGS = allExamples.map((module) => {
+  const meta = (
+    module as { meta: { slug?: string; title: string } }
+  ).meta
   return meta.slug ?? meta.title.toLowerCase()
 })
 
@@ -18,8 +15,15 @@ test.describe("Component catalog", () => {
     await page.waitForLoadState("networkidle")
   })
 
-  test("landing page loads with Hubzz branding", async ({ page }) => {
+  test("landing page exposes the design-system hierarchy", async ({
+    page,
+  }) => {
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
+    await expect(page.locator("#foundations")).toBeVisible()
+    await expect(page.locator("#upstream")).toBeVisible()
+    await expect(page.locator("#overrides")).toBeVisible()
+    await expect(page.locator("#components")).toBeVisible()
+    await expect(page.locator("#patterns")).toBeVisible()
   })
 
   for (const slug of CATALOG_SLUGS) {
@@ -27,7 +31,9 @@ test.describe("Component catalog", () => {
       const section = page.locator(`#${slug}`)
       await section.scrollIntoViewIfNeeded()
       await expect(section).toBeVisible()
-      await expect(section.getByRole("heading", { level: 2 })).toBeVisible()
+      await expect(
+        section.getByRole("heading", { level: 3 })
+      ).toBeVisible()
     })
   }
 })

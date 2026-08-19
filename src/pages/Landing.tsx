@@ -1,10 +1,11 @@
-import { Button } from "@/components/ui/button"
+import { ArrowRight, Check, Copy, Moon, Sun } from "lucide-react"
+
+import { useTheme } from "@/catalog/theme-provider"
+import { HubzzLogo } from "@/components/hubzz/hubzz-logo"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Catalog } from "@/pages/Catalog"
-import { allExamples } from "@/examples"
-import { useTheme } from "@/components/theme-provider"
-import { HubzzLogo } from "@/components/hubzz-logo"
-import { Sun, Moon, ArrowRight } from "lucide-react"
+import { Foundations } from "@/pages/Foundations"
 
 function GitHubIcon({ className }: { className?: string }) {
   return (
@@ -19,55 +20,63 @@ function GitHubIcon({ className }: { className?: string }) {
   )
 }
 
-const NAV_LINKS = allExamples.map((mod: { meta: { slug?: string; title: string; navLabel?: string } }) => ({
-  href: `#${mod.meta.slug ?? mod.meta.title.toLowerCase()}`,
-  label: mod.meta.navLabel ?? mod.meta.title,
-}))
+const NAV = [
+  { href: "#foundations", label: "Foundations" },
+  { href: "#upstream", label: "Primitives" },
+  { href: "#overrides", label: "Overrides" },
+  { href: "#components", label: "Components" },
+  { href: "#patterns", label: "Patterns" },
+]
+
+const BASE_COMMAND = "npx shadcn@latest add russfranky/hubzzcn/hubzz"
+const COMPONENT_COMMAND =
+  "npx shadcn@latest add russfranky/hubzzcn/event-ticket"
 
 export function Landing() {
   const { theme, setTheme } = useTheme()
 
   return (
     <div className="min-h-svh bg-background">
-      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-lg">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+      <header className="sticky top-0 z-50 border-b border-border/50 bg-background/85 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-8">
-            <a href="#" className="flex items-center gap-2 text-primary">
-              <HubzzLogo variant="icon" size={28} />
-              <span className="text-lg font-bold">Hubzz UI</span>
+            <a href="#top" className="flex items-center gap-2 text-primary">
+              <HubzzLogo size={27} />
+              <span className="font-semibold text-foreground">Hubzz UI</span>
             </a>
-            <nav className="hidden items-center gap-6 md:flex">
-              {NAV_LINKS.map((link) => (
+            <nav className="hidden items-center gap-5 lg:flex" aria-label="Catalog">
+              {NAV.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
-                  className="text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {link.label}
                 </a>
               ))}
-              <a
-                href="/cn/app"
-                className="text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
-              >
-                App
-              </a>
             </nav>
           </div>
+
           <div className="flex items-center gap-1">
             <Button
+              type="button"
               variant="ghost"
               size="icon"
+              aria-label="Toggle color theme"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="text-muted-foreground hover:text-foreground"
             >
-              {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+              {theme === "dark" ? (
+                <Sun aria-hidden="true" />
+              ) : (
+                <Moon aria-hidden="true" />
+              )}
             </Button>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" asChild>
+            <Button variant="ghost" size="icon" asChild>
               <a
                 href="https://github.com/russfranky/hubzzcn"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Open Hubzz UI source on GitHub"
               >
                 <GitHubIcon className="size-4" />
               </a>
@@ -76,58 +85,84 @@ export function Landing() {
         </div>
       </header>
 
-      <section className="relative overflow-hidden">
-        <div className="hero-glow" />
-        <div className="relative z-10 mx-auto max-w-4xl px-6 py-24 text-center sm:py-32">
-          <Badge variant="outline" className="mb-6">
-            Design System
-          </Badge>
-          <h1 className="font-display text-5xl font-bold tracking-tight text-card-foreground sm:text-6xl lg:text-7xl">
-            Build with{" "}
-            <span className="bg-gradient-to-r from-primary to-primary/50 bg-clip-text text-transparent">
-              Hubzz UI
-            </span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-            Hubzz-branded components on shadcn/ui. Browse live examples below — see{" "}
-            <code className="text-sm">docs/COMPONENTS.md</code> for the package API.
-          </p>
-          <div className="mt-10 flex items-center justify-center gap-4">
-            <Button size="lg" className="group" asChild>
-              <a href={NAV_LINKS[0]?.href ?? "#catalog"}>
-                Browse components
-                <ArrowRight className="ml-2 size-4 transition-transform group-hover:translate-x-0.5" />
-              </a>
-            </Button>
-            <Button variant="outline" size="lg" asChild>
-              <a
-                href="https://github.com/russfranky/hubzzcn"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <GitHubIcon className="mr-2 size-4" />
-                Source
-              </a>
-            </Button>
-          </div>
-        </div>
-      </section>
+      <main id="top">
+        <section className="relative overflow-hidden border-b border-border/40">
+          <div className="hero-glow" />
+          <div className="relative z-10 mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28">
+            <div className="max-w-4xl">
+              <Badge variant="outline">Public shadcn registry</Badge>
+              <h1 className="mt-6 max-w-4xl text-5xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+                Use the upstream.
+                <span className="block text-primary">Own the Hubzz layer.</span>
+              </h1>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+                Hubzz UI keeps standard shadcn/Radix behavior for commodity UI,
+                applies the brand through semantic tokens, and publishes custom
+                source only where the product actually owns the interaction.
+              </p>
 
-      <main id="catalog" className="mx-auto max-w-6xl px-6 pb-20">
-        <Catalog />
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Button size="lg" asChild>
+                  <a href="#foundations">
+                    Explore the system
+                    <ArrowRight aria-hidden="true" />
+                  </a>
+                </Button>
+                <Button variant="outline" size="lg" asChild>
+                  <a
+                    href="https://github.com/russfranky/hubzzcn"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <GitHubIcon className="size-4" />
+                    Source
+                  </a>
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-14 grid gap-4 lg:grid-cols-2">
+              <InstallCard
+                label="Start with the Hubzz base"
+                command={BASE_COMMAND}
+              />
+              <InstallCard
+                label="Add one Hubzz component"
+                command={COMPONENT_COMMAND}
+              />
+            </div>
+          </div>
+        </section>
+
+        <div className="mx-auto max-w-7xl space-y-24 px-4 py-20 sm:px-6">
+          <Foundations />
+          <Catalog />
+        </div>
       </main>
 
-      <footer className="border-t border-border/40">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-10">
-          <div>
-            <p className="text-sm font-semibold text-card-foreground">Hubzz UI</p>
-            <p className="mt-1 text-xs text-muted-foreground">Built with shadcn/ui and Tailwind CSS</p>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Press <kbd className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px]">D</kbd> to toggle theme
-          </p>
+      <footer className="border-t border-border/50">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-10 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <p>Hubzz UI · public shadcn source registry · MIT licensed</p>
+          <p>Radix base · React · Tailwind CSS</p>
         </div>
       </footer>
+    </div>
+  )
+}
+
+function InstallCard({ label, command }: { label: string; command: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-card/50 p-4">
+      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+        <Check className="size-4 text-primary" aria-hidden="true" />
+        {label}
+      </div>
+      <div className="mt-3 flex items-center gap-3 rounded-lg border border-border bg-background px-3 py-3">
+        <code className="min-w-0 flex-1 overflow-x-auto font-mono text-xs text-muted-foreground">
+          {command}
+        </code>
+        <Copy className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+      </div>
     </div>
   )
 }

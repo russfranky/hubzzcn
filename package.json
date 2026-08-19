@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Public Hubzz design system and shadcn/ui registry.",
+  "license": "MIT",
   "keywords": [
     "hubzz",
     "shadcn",

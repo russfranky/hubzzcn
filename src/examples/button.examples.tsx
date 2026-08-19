@@ -2,7 +2,7 @@ import * as React from "react"
 import { Share2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import type { Meta, Example } from "./types"
+import type { Example, Meta } from "./types"
 
 type ButtonProps = React.ComponentProps<typeof Button>
 
@@ -11,13 +11,13 @@ export const meta: Meta<typeof Button> = {
   slug: "button",
   component: Button,
   description:
-    "Upstream-first shadcn button with Hubzz sizing, color, focus, and pressed-state treatment.",
+    "Upstream shadcn Button contract with Hubzz geometry, color, focus, and pressed-state treatment.",
   category: "shadcn",
+  layer: "override",
   notes: [
-    "Keep the shadcn API: semantic variant, size, disabled, and asChild props.",
-    "Use the native disabled attribute instead of a disabled visual variant.",
-    "Default size is the medium Hubzz control; sm and lg map to the compact and large control sizes.",
-    "Primary, secondary, and destructive states are themed here; avoid creating one-off button components.",
+    "Keeps the shadcn variant, size, disabled, and asChild API.",
+    "Use the native disabled attribute instead of a visual disabled variant.",
+    "Prefer this override instead of creating one-off action components.",
   ],
 }
 

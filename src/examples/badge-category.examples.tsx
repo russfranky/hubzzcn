@@ -1,19 +1,22 @@
-import { BadgeCategory, type BadgeCategoryProps } from "@/components/ui/badge-category"
-import type { Meta, Example } from "./types"
+import {
+  BadgeCategory,
+  type BadgeCategoryProps,
+} from "@/components/hubzz/badge-category"
+import type { Example, Meta } from "./types"
 
 export const meta: Meta<typeof BadgeCategory> = {
   title: "BadgeCategory",
-  slug: "badge-category",  // preserves existing #badge-category anchor
-  navLabel: "Badge",
+  slug: "badge-category",
+  navLabel: "Badge Category",
   component: BadgeCategory,
   description:
-    "Emoji filter tag with default, hover, and active states. Supports optional remove (X) button.",
+    "Hubzz category tag composed from the Button override for optional removal.",
   category: "hubzz",
+  layer: "component",
   notes: [
-    "Three programmatic states: default (bg=#181B1F), hover (bg=#24262B), active (bg=#392F7D)",
-    "CSS :hover fires the default→hover transition automatically — use state='hover' only for programmatic control (keyboard nav, focus-visible)",
-    "onRemove renders an X button — omit the prop entirely to hide it",
-    "emoji prop renders before the label text",
+    "Use for category and filter labels, not general action buttons.",
+    "onRemove adds an accessible remove action; omit it for a static tag.",
+    "The explicit state prop exists for controlled preview/state surfaces; ordinary hover remains CSS-driven.",
   ],
 }
 
@@ -24,7 +27,12 @@ export const Default: Example<BadgeCategoryProps> = {
 
 export const Active: Example<BadgeCategoryProps> = {
   name: "Active",
-  args: { children: "Gaming", emoji: "🎮", state: "active", onRemove: () => {} },
+  args: {
+    children: "Gaming",
+    emoji: "🎮",
+    state: "active",
+    onRemove: () => {},
+  },
 }
 
 export const DefaultSecond: Example<BadgeCategoryProps> = {
@@ -33,12 +41,17 @@ export const DefaultSecond: Example<BadgeCategoryProps> = {
 }
 
 export const Hover: Example<BadgeCategoryProps> = {
-  name: "Hover (programmatic)",
-  args: { children: "Fitness", emoji: "🏋️", state: "hover", onRemove: () => {} },
+  name: "Hover (controlled)",
+  args: {
+    children: "Fitness",
+    emoji: "🏋️",
+    state: "hover",
+    onRemove: () => {},
+  },
 }
 
 export const NoRemove: Example<BadgeCategoryProps> = {
-  name: "No remove button",
+  name: "Static",
   args: { children: "Technology", emoji: "💻" },
 }
 

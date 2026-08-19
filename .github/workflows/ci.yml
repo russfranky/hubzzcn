@@ -37,11 +37,27 @@ jobs:
       - name: Run repository checks
         run: npm run check
 
-      - name: Resolve registry base at this commit
-        run: npx --yes shadcn@latest view "russfranky/hubzzcn/hubzz#${GITHUB_SHA}" >/dev/null
+      - name: Resolve every public registry item at this commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          items=(
+            hubzz
+            hubzz-theme
+            button
+            hubzz-logo
+            badge-category
+            capsule
+            toast-banner
+            event-ticket
+            profile-header
+            drone-photo
+          )
 
-      - name: Resolve Button at this commit
-        run: npx --yes shadcn@latest view "russfranky/hubzzcn/button#${GITHUB_SHA}" >/dev/null
+          for item in "${items[@]}"; do
+            echo "Resolving ${item}"
+            npx --yes shadcn@latest view "russfranky/hubzzcn/${item}#${GITHUB_SHA}" >/dev/null
+          done
 
   ui:
     name: Browser and accessibility
