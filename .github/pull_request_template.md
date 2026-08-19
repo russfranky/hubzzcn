@@ -19,8 +19,8 @@
 
 ## Verification
 
-- [ ] `npm run check`
-- [ ] `npm run test:ui`
+- [ ] `pnpm check`
+- [ ] `pnpm test:ui`
 - [ ] Registry source updated when the component is publicly installable
 - [ ] Catalog examples updated for new public states or props
 - [ ] No secrets, private infrastructure details, or product-specific data were added

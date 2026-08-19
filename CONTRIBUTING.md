@@ -1,6 +1,8 @@
 # Contributing
 
-Thanks for contributing to Hubzz UI. The repository is public infrastructure for a reusable design system, so changes should optimize for compatibility, accessibility, and maintainability rather than one-off product needs.
+Thanks for contributing to Hubzz UI. The repository is public infrastructure
+for a reusable design system, so changes should optimize for compatibility,
+accessibility, and maintainability rather than one-off product needs.
 
 ## Before writing code
 
@@ -14,29 +16,31 @@ Use this order of operations:
 For upstream components, inspect the current API first:
 
 ```bash
-npx shadcn@latest docs <component>
-npx shadcn@latest add <component> --dry-run
+pnpm dlx shadcn@latest docs <component>
+pnpm dlx shadcn@latest add <component> --dry-run
 ```
 
 ## Local setup
 
 ```bash
-npm install
-npm run dev
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-Node 22 is the repository default. The minimum supported development runtime is Node 20.19.
+Node 22 and pnpm 10.33.4 are the repository defaults. The minimum supported
+Node runtime is 20.19.
 
 ## Required checks
 
 Before submitting a change:
 
 ```bash
-npm run check
-npm run test:ui
+pnpm check
+pnpm test:ui
 ```
 
-`npm run check` covers formatting, linting, TypeScript, the package build, registry validation, and the published package surface.
+`pnpm check` covers formatting, linting, TypeScript, the package build,
+registry validation, and the package surface.
 
 ## Component expectations
 
@@ -53,14 +57,17 @@ Public components should:
 
 ## Registry changes
 
-The registry is validated directly from source. Do not commit generated registry payloads.
+The registry is validated directly from source. Do not commit generated
+registry payloads.
 
 ```bash
-npm run registry:validate
-npm run registry:list
+pnpm registry:validate
+pnpm registry:list
 ```
 
-Use `registry:base` for the complete system, `registry:theme` for tokens, `registry:ui` for primitive-like components, and `registry:block` or `registry:component` only when the component's structure warrants it.
+Use `registry:base` for the system foundation, `registry:theme` for tokens,
+`registry:ui` for primitive-like overrides, and `registry:component` for
+Hubzz-owned reusable source.
 
 ## Commit messages
 
@@ -74,7 +81,8 @@ Use Conventional Commit-style prefixes so public history and release notes stay 
 - `ci:` workflow changes
 - `chore:` maintenance
 
-Breaking changes should include `!` in the type or a `BREAKING CHANGE:` footer and must include migration notes.
+Breaking changes should include `!` in the type or a `BREAKING CHANGE:` footer
+and must include migration notes.
 
 ## Pull requests
 
@@ -86,8 +94,10 @@ Keep pull requests focused. Explain:
 - accessibility impact;
 - how the change was verified.
 
-Do not include secrets, deployment credentials, private infrastructure details, or unrelated product code.
+Do not include secrets, deployment credentials, private infrastructure details,
+or unrelated product code.
 
 ## Releases
 
-See [`docs/RELEASING.md`](./docs/RELEASING.md) for versioning and tag requirements.
+See [`docs/RELEASING.md`](./docs/RELEASING.md) for versioning and tag
+requirements.

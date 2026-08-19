@@ -8,30 +8,31 @@ and a deliberately small Hubzz-owned component layer.
 ## Install
 
 `hubzzcn` is a public GitHub source registry. A separate registry server is not
-required.
+required. The shadcn CLI works with npm, pnpm, Yarn, or Bun; examples here use
+pnpm because it is the repository toolchain.
 
 Start with the Hubzz base:
 
 ```bash
-npx shadcn@latest add russfranky/hubzzcn/hubzz
+pnpm dlx shadcn@latest add russfranky/hubzzcn/hubzz
 ```
 
 Apply only the Hubzz theme to an existing shadcn project:
 
 ```bash
-npx shadcn@latest add russfranky/hubzzcn/hubzz-theme
+pnpm dlx shadcn@latest add russfranky/hubzzcn/hubzz-theme
 ```
 
 Add an individual Hubzz component:
 
 ```bash
-npx shadcn@latest add russfranky/hubzzcn/event-ticket
+pnpm dlx shadcn@latest add russfranky/hubzzcn/event-ticket
 ```
 
 Install the Button override:
 
 ```bash
-npx shadcn@latest add russfranky/hubzzcn/button
+pnpm dlx shadcn@latest add russfranky/hubzzcn/button
 ```
 
 Registry addresses can be pinned to a release tag or commit when a consumer
@@ -88,16 +89,16 @@ import "@hubzz/ui/styles.css"
 
 ## Development
 
-Node 22 is the repository baseline.
+Node 22 and pnpm 10.33.4 are the repository baselines.
 
 ```bash
-npm ci
-npm run check
-npm run test:ui
-npm run build:preview
+pnpm install --frozen-lockfile
+pnpm check
+pnpm test:ui
+pnpm build:preview
 ```
 
-`npm run check` enforces formatting, zero-warning lint, TypeScript, the package
+`pnpm check` enforces formatting, zero-warning lint, TypeScript, the package
 build, registry schema validation, and package-surface validation with
 publint. Playwright covers browser behavior and automated accessibility
 checks.

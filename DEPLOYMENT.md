@@ -5,11 +5,11 @@ Nginx site behind Cloudflare.
 
 ## Build
 
-Use the lockfile-backed install and the `/cn/` preview build:
+Use the frozen pnpm lockfile and the `/cn/` preview build:
 
 ```bash
-npm ci
-npm run build:preview
+pnpm install --frozen-lockfile
+pnpm build:preview
 ```
 
 The build writes the complete static site to `dist/`.
