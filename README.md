@@ -115,5 +115,5 @@ Opens the component catalog at http://localhost:5173/.
 
 ```bash
 npm run test:ui          # Playwright: catalog sections + component specs
-npm run build:preview    # Production build for hubzzhq.com/shadcn/
+npm run build:preview    # Production build for hubzz.xyz/cn/
 ```

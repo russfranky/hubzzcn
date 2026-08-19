@@ -18,7 +18,7 @@ function usePathRoute() {
 export function App() {
   const path = usePathRoute()
 
-  if (path === "/shadcn/app" || path === "/shadcn/app/") {
+  if (path === "/cn/app" || path === "/cn/app/") {
     return (
       <>
         <SidebarApp />

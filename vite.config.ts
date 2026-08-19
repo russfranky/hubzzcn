@@ -7,7 +7,7 @@ const isPreviewApp = process.env.VITE_APP_BUILD === "preview"
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: isPreviewApp ? "/shadcn/" : undefined,
+  base: isPreviewApp ? "/cn/" : undefined,
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

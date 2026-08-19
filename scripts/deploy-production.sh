@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TARGET_DIR="${HUBZZ_SHADCN_ROOT:-/var/www/hubzzhq.com/shadcn}"
+TARGET_DIR="${HUBZZ_CN_ROOT:-/var/www/hubzz.xyz/cn}"
+LEGACY_DIR="${HUBZZ_CN_LEGACY_ROOT:-/var/www/hubzzhq.com/shadcn}"
 
-if [[ ! -d "$TARGET_DIR" ]]; then
-  echo "Production directory not found: $TARGET_DIR" >&2
-  exit 1
+mkdir -p "$TARGET_DIR"
+
+# Preserve the deployment-only ticket artwork during the path migration.
+if [[ ! -f "$TARGET_DIR/ticket-bg.jpg" && -f "$LEGACY_DIR/ticket-bg.jpg" ]]; then
+  cp -a "$LEGACY_DIR/ticket-bg.jpg" "$TARGET_DIR/ticket-bg.jpg"
 fi
 
 npm run build:preview

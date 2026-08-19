@@ -27,7 +27,7 @@ const BASE: Partial<EventTicketProps> = {
   space: "Space",
   spaceHref: "#",
   ticketNumber: "#00001/03123",
-  imageSrc: "/shadcn/ticket-bg.jpg",
+  imageSrc: "/cn/ticket-bg.jpg",
 }
 
 export const Ready: Example<EventTicketProps> = {
@@ -60,7 +60,7 @@ export const LongTitle: Example<EventTicketProps> = {
     host: "Valentina Restrepo-Gutiérrez",
     space: "The Grand Metropolitan Ballroom & Conference Centre",
     ticketNumber: "#RESERVATION/2024/00001/XTRA",
-    imageSrc: "/shadcn/ticket-bg.jpg",
+    imageSrc: "/cn/ticket-bg.jpg",
     onLeave: () => {},
     testId: "ticket-longTitle",
   } as EventTicketProps,
