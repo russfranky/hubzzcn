@@ -1,18 +1,38 @@
 # @hubzz/ui
 
-Hubzz UI system built on shadcn/ui and Radix primitives. The package keeps upstream component behavior where possible and adds Hubzz tokens, variants, and reusable product UI where it is actually needed.
+Hubzz UI system built on shadcn/ui and Radix primitives. Keep upstream behavior where possible, then add Hubzz tokens, variants, and reusable product UI only where the product needs them.
 
-**Component principles:** see [`docs/PRINCIPLES.md`](./docs/PRINCIPLES.md) for the upstream-first boundary between themed primitives, thin compositions, and custom product UI.
+**Live catalog:** `https://hubzz.xyz/cn/`
 
-**Design spec:** see [`DESIGN.md`](./DESIGN.md) for tokens, definition of done, and integration patterns.
+**Component principles:** see [`docs/PRINCIPLES.md`](./docs/PRINCIPLES.md).
 
-## Install
+## Add with shadcn
+
+`hubzzcn` is a public GitHub source registry. No registry server or namespace configuration is required.
+
+Add the Hubzz theme:
+
+```bash
+npx shadcn@latest add russfranky/hubzzcn/hubzz-theme
+```
+
+Add the Hubzz Button override:
+
+```bash
+npx shadcn@latest add russfranky/hubzzcn/button
+```
+
+Registry items use upstream shadcn dependencies whenever possible, so custom Hubzz components do not need to carry copies of every primitive they use.
+
+## Package install
+
+The same system can also be consumed as `@hubzz/ui`:
 
 ```bash
 npm install @hubzz/ui
 ```
 
-If you consume the package from GitHub Packages, add the Hubzz registry to your `.npmrc`:
+If you consume the package from GitHub Packages, add the Hubzz package scope to your `.npmrc`:
 
 ```text
 @hubzz:registry=https://npm.pkg.github.com
@@ -46,73 +66,37 @@ function App() {
 }
 ```
 
-## Components
+## Upstream-first rule
 
-- Alert, AlertTitle, AlertDescription
-- Avatar, AvatarImage, AvatarFallback
-- Badge
-- Button
-- Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent
-- Checkbox
-- Dialog (+ Portal, Overlay, Trigger, Close, Content, Header, Footer, Title, Description)
-- Input
-- Label
-- Select (+ Group, Value, Trigger, Content, Label, Item, Separator)
-- Separator
-- Sheet (+ Trigger, Close, Content, Header, Footer, Title, Description)
-- Switch
-- Tabs, TabsList, TabsTrigger, TabsContent
-- Textarea
-- Toggle
-
-## Utilities
-
-```tsx
-import { cn } from "@hubzz/ui"
-
-cn("text-sm", isActive && "text-primary", className)
-```
-
-## Brand Colors
-
-| Token | Hex | Usage |
-|-------|-----|-------|
-| Primary | #735FFA | Hubzz Purple — buttons, links, focus rings |
-| Background | #181B1F | Page background |
-| Card | #24262B | Panel/card surfaces |
-| Control | #393E44 | Control hover and neutral borders |
-| Foreground | #FCFDFE | Primary text |
-| Muted Foreground | #7C878E | Secondary/muted text |
-| Destructive | #D92D20 | Destructive controls |
-
-## Peer Dependencies
-
-- `react` ^18 or ^19
-- `react-dom` ^18 or ^19
-
-## Adding Components
-
-Start with the closest upstream shadcn component:
+Start with the closest shadcn component:
 
 ```bash
 npx shadcn@latest add <component>
 ```
 
-Theme or extend that component before creating a parallel implementation. Then export supported package components from `src/index.ts` and rebuild:
+Theme or extend that component before creating a parallel implementation. Use `registryDependencies` for stock primitives and reserve custom source for Hubzz-specific composition or interaction.
+
+## Brand tokens
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| Primary | #735FFA | Buttons, links, focus rings |
+| Background | #181B1F | Dark-first page background |
+| Card | #24262B | Panel/card surfaces |
+| Control | #393E44 | Neutral controls and hover states |
+| Foreground | #FCFDFE | Primary text |
+| Muted Foreground | #7C878E | Secondary text |
+| Destructive | #D92D20 | Destructive controls |
+
+## Development
 
 ```bash
-npm run build
-```
-
-## Dev Preview
-
-```bash
+npm install
 npm run dev
+npm run typecheck
+npm run test:ui
+npm run build
+npm run build:preview
 ```
 
-Opens the component catalog at http://localhost:5173/.
-
-```bash
-npm run test:ui          # Playwright: catalog sections + component specs
-npm run build:preview    # Production build for hubzz.xyz/cn/
-```
+`npm run build:preview` produces the production catalog for `hubzz.xyz/cn/`.

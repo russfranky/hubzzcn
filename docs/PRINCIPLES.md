@@ -68,14 +68,25 @@ These earn custom components because their structure or interaction is specific 
 - Group merch
 - Payment method presentation
 
-## 4. Public component rule
+## 4. Registry-first distribution
 
-A component belongs in `@hubzz/ui` when it is reusable across Hubzz surfaces and does not own product data, authentication, API calls, or application state.
+The public GitHub registry is the primary copy-in distribution path.
+
+- Stock shadcn behavior stays upstream and is pulled with `registryDependencies` when possible.
+- Hubzz-wide tokens are distributed as the `hubzz-theme` registry item.
+- A Hubzz override is published only when tokens alone cannot express the required behavior or geometry.
+- Product-specific compositions depend on stock shadcn items instead of vendoring those primitives into the composition.
+
+The package build can coexist for applications that prefer a package dependency, but registry items should remain source-readable and independently installable.
+
+## 5. Public component rule
+
+A component belongs in the public system when it is reusable across Hubzz surfaces and does not own product data, authentication, API calls, or application state.
 
 Product code passes data and callbacks in. The component owns presentation, accessible interaction, and reusable local UI behavior.
 
-## 5. Catalog rule
+## 6. Catalog rule
 
-The catalog at `hubzz.xyz/cn/` documents the package that actually exists. Examples should demonstrate supported props and states, not one-off mock screens that imply unsupported APIs.
+The catalog at `hubzz.xyz/cn/` documents the public system that actually exists. Examples should demonstrate supported props and states, not one-off mock screens that imply unsupported APIs.
 
 When a design can be represented by an existing shadcn primitive plus Hubzz tokens, add it to the existing primitive rather than creating a parallel Hubzz-named copy.

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "hubzzcn",
+  "homepage": "https://hubzz.xyz/cn/",
+  "include": [
+    "registry/foundations/registry.json",
+    "src/components/ui/registry.json"
+  ]
+}
