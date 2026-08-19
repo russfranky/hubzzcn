@@ -1,6 +1,33 @@
 # @hubzz/ui Component Reference
 
-> Auto-generated from `src/examples/`. Do not edit manually — run `npm run generate:manifest`.
+> Auto-generated from `src/examples/`. Do not edit manually. Run `npm run generate:manifest`.
+
+## Button
+
+Upstream-first shadcn button with Hubzz sizing, color, focus, and pressed-state treatment.
+
+**Import:** `import { Button } from "@hubzz/ui"`
+
+### Examples
+| Name | Description | Key Props |
+|------|-------------|-----------|
+| Primary | | `children="Continue"` |
+| Primary + icon | | `children="Share"` |
+| Secondary | | `children="Cancel"` `variant="secondary"` |
+| Outline | | `children="Details"` `variant="outline"` |
+| Destructive | | `children="Delete"` `variant="destructive"` |
+| Disabled | | `children="Unavailable"` `disabled=true` |
+| Small | | `children="Small"` `size="sm"` |
+| Large | | `children="Large"` `size="lg"` |
+| Icon only | | `aria-label="Share"` `size="icon"` |
+
+### Notes
+- Keep the shadcn API: semantic variant, size, disabled, and asChild props.
+- Use the native disabled attribute instead of a disabled visual variant.
+- Default size is the medium Hubzz control; sm and lg map to the compact and large control sizes.
+- Primary, secondary, and destructive states are themed here; avoid creating one-off button components.
+
+---
 
 ## EventTicket
 

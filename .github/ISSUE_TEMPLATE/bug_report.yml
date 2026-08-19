@@ -1,0 +1,64 @@
+name: Bug report
+description: Report a reproducible problem in a component, registry item, package build, or catalog.
+title: "bug: "
+body:
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected surface
+      options:
+        - Component behavior
+        - shadcn registry
+        - Package build
+        - Public catalog
+        - Documentation
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Provide a release tag, package version, or commit SHA when possible.
+      placeholder: v0.2.0 or abc1234
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide the smallest reproducible example and exact steps.
+      placeholder: Steps, code, registry command, or repository link.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include browser, React version, Tailwind version, shadcn base, and OS when relevant.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I checked that this is not a security vulnerability. Security issues belong in the private reporting path described in SECURITY.md.
+          required: true
+        - label: I searched existing issues for the same problem.
+          required: true

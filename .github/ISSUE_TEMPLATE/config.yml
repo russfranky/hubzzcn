@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security policy
+    url: https://github.com/russfranky/hubzzcn/blob/main/SECURITY.md
+    about: Please use the private reporting path for security-sensitive issues.
+  - name: Public component catalog
+    url: https://hubzz.xyz/cn/
+    about: Review the current public component behavior and examples.

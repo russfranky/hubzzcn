@@ -9,10 +9,10 @@ import { hexToRgb } from "../helpers/colors"
 
 // spec background colors per type
 const BG_NEUTRAL = hexToRgb("#24262B") // rgb(36, 38, 43)
-const BG_BLUE    = hexToRgb("#194084") // rgb(25, 64, 132)
+const BG_BLUE = hexToRgb("#194084") // rgb(25, 64, 132)
 const BG_SUCCESS = hexToRgb("#054E31") // rgb(5, 78, 49)
 const BG_WARNING = hexToRgb("#792D0D") // rgb(121, 45, 13)
-const BG_ERROR   = hexToRgb("#7A2619") // rgb(122, 38, 25)
+const BG_ERROR = hexToRgb("#7A2619") // rgb(122, 38, 25)
 
 test.describe("ToastBanner", () => {
   let page: Page
@@ -55,7 +55,9 @@ test.describe("ToastBanner", () => {
 
     const expected = [BG_NEUTRAL, BG_BLUE, BG_SUCCESS, BG_WARNING, BG_ERROR]
     for (let i = 0; i < all.length; i++) {
-      const bg = await all[i].evaluate((el) => getComputedStyle(el).backgroundColor)
+      const bg = await all[i].evaluate(
+        (el) => getComputedStyle(el).backgroundColor
+      )
       expect(bg, `banner[${i}] background`).toBe(expected[i])
     }
   })
@@ -64,13 +66,15 @@ test.describe("ToastBanner", () => {
 
   test("icon container is 36×36px circle with black bg", async () => {
     const iconContainers = page.locator(
-      "#toast-banner [class*='max-w-\\[349px\\]'] .rounded-full"
+      "#toast-banner [class*='max-w-\\[349px\\]'] .rounded-full.bg-black"
     )
     for (const container of await iconContainers.all()) {
       const box = await container.boundingBox()
       expect(box?.width, "icon container width").toBe(36)
       expect(box?.height, "icon container height").toBe(36)
-      const bg = await container.evaluate((el) => getComputedStyle(el).backgroundColor)
+      const bg = await container.evaluate(
+        (el) => getComputedStyle(el).backgroundColor
+      )
       expect(bg, "icon container bg").toBe("rgb(0, 0, 0)")
     }
   })

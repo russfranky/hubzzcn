@@ -8,9 +8,8 @@ import { test, expect, type Page } from "@playwright/test"
 import { hexToRgb, normalizeCssColor } from "../helpers/colors"
 
 // spec colors
-const BG_BASE       = hexToRgb("#24262B") // rgb(36, 38, 43)
-const BG_HOVER      = hexToRgb("#2E3238") // rgb(46, 50, 56) — intentional UX addition
-const TEXT_ACTIVE   = hexToRgb("#FCFDFE") // rgb(252, 253, 254)
+const BG_BASE = hexToRgb("#24262B") // rgb(36, 38, 43)
+const TEXT_ACTIVE = hexToRgb("#FCFDFE") // rgb(252, 253, 254)
 const TEXT_INACTIVE = hexToRgb("#ACB9C4") // rgb(172, 185, 196)
 
 test.describe("Capsule", () => {

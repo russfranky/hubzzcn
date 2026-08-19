@@ -2,11 +2,37 @@
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "items": [
     {
-      "name": "hubzz-theme",
-      "type": "registry:theme",
-      "title": "Hubzz Theme",
-      "description": "Dark-first Hubzz color tokens for shadcn/ui projects.",
+      "name": "hubzz",
+      "type": "registry:base",
+      "title": "Hubzz UI",
+      "description": "Complete Hubzz design-system base for shadcn/ui projects using the Radix component base.",
+      "author": "Hubzz",
+      "config": {
+        "style": "radix-nova",
+        "iconLibrary": "lucide",
+        "rsc": false,
+        "tsx": true,
+        "rtl": false,
+        "menuColor": "default-translucent",
+        "menuAccent": "subtle",
+        "tailwind": {
+          "baseColor": "neutral"
+        }
+      },
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "lucide-react",
+        "radix-ui",
+        "tailwind-merge",
+        "tw-animate-css"
+      ],
+      "registryDependencies": ["utils", "font-inter"],
       "cssVars": {
+        "theme": {
+          "radius": "0.75rem",
+          "font-sans": "'Inter Variable', sans-serif"
+        },
         "light": {
           "background": "oklch(0.979 0.011 291.957)",
           "foreground": "oklch(0.189 0.014 278.565)",
@@ -14,19 +40,24 @@
           "card-foreground": "oklch(0.189 0.014 278.565)",
           "popover": "oklch(0.994 0.002 247.839)",
           "popover-foreground": "oklch(0.189 0.014 278.565)",
-          "primary": "oklch(0.592 0.221 283.180)",
-          "primary-foreground": "oklch(0.994 0.002 247.839)",
+          "primary": "#735FFA",
+          "primary-foreground": "#FCFDFE",
           "secondary": "oklch(0.953 0.024 291.043)",
           "secondary-foreground": "oklch(0.189 0.014 278.565)",
           "muted": "oklch(0.953 0.024 291.043)",
-          "muted-foreground": "oklch(0.617 0.017 235.553)",
+          "muted-foreground": "#7C878E",
           "accent": "oklch(0.916 0.042 291.468)",
           "accent-foreground": "oklch(0.518 0.191 283.113)",
           "destructive": "#D92D20",
           "border": "oklch(0 0 0 / 0.08)",
           "input": "oklch(0 0 0 / 0.15)",
-          "ring": "oklch(0.592 0.221 283.180)",
-          "primary-gradient": "linear-gradient(180deg, #9A77FF 0%, #735FFA 100%)"
+          "ring": "#735FFA",
+          "primary-gradient": "linear-gradient(180deg, #9A77FF 0%, #735FFA 100%)",
+          "control-hover": "#E3E9EE",
+          "destructive-hover": "#B42318",
+          "focus-primary": "rgba(227, 223, 254, 0.24)",
+          "focus-neutral": "rgba(122, 123, 125, 0.25)",
+          "focus-error": "rgba(254, 228, 226, 0.24)"
         },
         "dark": {
           "background": "#181B1F",
@@ -47,8 +78,99 @@
           "border": "#393E44",
           "input": "#393E44",
           "ring": "#735FFA",
-          "primary-gradient": "linear-gradient(180deg, #9A77FF 0%, #735FFA 100%)"
+          "primary-gradient": "linear-gradient(180deg, #9A77FF 0%, #735FFA 100%)",
+          "control-hover": "#393E44",
+          "destructive-hover": "#B42318",
+          "focus-primary": "rgba(227, 223, 254, 0.24)",
+          "focus-neutral": "rgba(122, 123, 125, 0.4)",
+          "focus-error": "rgba(254, 228, 226, 0.24)"
         }
+      },
+      "css": {
+        "@import \"tw-animate-css\"": {},
+        "@layer base": {
+          "*": {
+            "@apply border-border outline-ring/50": {}
+          },
+          "body": {
+            "@apply bg-background text-foreground": {}
+          }
+        }
+      },
+      "categories": ["design-system", "theme"],
+      "meta": {
+        "base": "radix",
+        "stability": "beta"
+      }
+    },
+    {
+      "name": "hubzz-theme",
+      "type": "registry:theme",
+      "title": "Hubzz Theme",
+      "description": "Dark-first Hubzz color and typography tokens for existing shadcn/ui projects.",
+      "author": "Hubzz",
+      "registryDependencies": ["font-inter"],
+      "cssVars": {
+        "theme": {
+          "radius": "0.75rem",
+          "font-sans": "'Inter Variable', sans-serif"
+        },
+        "light": {
+          "background": "oklch(0.979 0.011 291.957)",
+          "foreground": "oklch(0.189 0.014 278.565)",
+          "card": "oklch(0.994 0.002 247.839)",
+          "card-foreground": "oklch(0.189 0.014 278.565)",
+          "popover": "oklch(0.994 0.002 247.839)",
+          "popover-foreground": "oklch(0.189 0.014 278.565)",
+          "primary": "#735FFA",
+          "primary-foreground": "#FCFDFE",
+          "secondary": "oklch(0.953 0.024 291.043)",
+          "secondary-foreground": "oklch(0.189 0.014 278.565)",
+          "muted": "oklch(0.953 0.024 291.043)",
+          "muted-foreground": "#7C878E",
+          "accent": "oklch(0.916 0.042 291.468)",
+          "accent-foreground": "oklch(0.518 0.191 283.113)",
+          "destructive": "#D92D20",
+          "border": "oklch(0 0 0 / 0.08)",
+          "input": "oklch(0 0 0 / 0.15)",
+          "ring": "#735FFA",
+          "primary-gradient": "linear-gradient(180deg, #9A77FF 0%, #735FFA 100%)",
+          "control-hover": "#E3E9EE",
+          "destructive-hover": "#B42318",
+          "focus-primary": "rgba(227, 223, 254, 0.24)",
+          "focus-neutral": "rgba(122, 123, 125, 0.25)",
+          "focus-error": "rgba(254, 228, 226, 0.24)"
+        },
+        "dark": {
+          "background": "#181B1F",
+          "foreground": "#FCFDFE",
+          "card": "#24262B",
+          "card-foreground": "#FCFDFE",
+          "popover": "#24262B",
+          "popover-foreground": "#FCFDFE",
+          "primary": "#735FFA",
+          "primary-foreground": "#FCFDFE",
+          "secondary": "#181B1F",
+          "secondary-foreground": "#FCFDFE",
+          "muted": "#24262B",
+          "muted-foreground": "#7C878E",
+          "accent": "#393E44",
+          "accent-foreground": "#FCFDFE",
+          "destructive": "#D92D20",
+          "border": "#393E44",
+          "input": "#393E44",
+          "ring": "#735FFA",
+          "primary-gradient": "linear-gradient(180deg, #9A77FF 0%, #735FFA 100%)",
+          "control-hover": "#393E44",
+          "destructive-hover": "#B42318",
+          "focus-primary": "rgba(227, 223, 254, 0.24)",
+          "focus-neutral": "rgba(122, 123, 125, 0.4)",
+          "focus-error": "rgba(254, 228, 226, 0.24)"
+        }
+      },
+      "categories": ["theme"],
+      "meta": {
+        "stability": "beta"
       }
     }
   ]

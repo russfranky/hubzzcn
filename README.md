@@ -1,102 +1,145 @@
-# @hubzz/ui
+# Hubzz UI
 
-Hubzz UI system built on shadcn/ui and Radix primitives. Keep upstream behavior where possible, then add Hubzz tokens, variants, and reusable product UI only where the product needs them.
+[![CI](https://github.com/russfranky/hubzzcn/actions/workflows/ci.yml/badge.svg)](https://github.com/russfranky/hubzzcn/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/russfranky/hubzzcn/actions/workflows/codeql.yml/badge.svg)](https://github.com/russfranky/hubzzcn/actions/workflows/codeql.yml)
 
-**Live catalog:** `https://hubzz.xyz/cn/`
+Hubzz UI is the public Hubzz design system built on shadcn/ui, Radix primitives, Tailwind CSS, and React. The project stays upstream-first: use standard shadcn behavior whenever it fits, theme it with Hubzz tokens, compose primitives for recurring patterns, and write custom UI only when the product actually needs custom structure or interaction.
 
-**Component principles:** see [`docs/PRINCIPLES.md`](./docs/PRINCIPLES.md).
+**Catalog:** https://hubzz.xyz/cn/
 
-## Add with shadcn
+> **Status:** pre-1.0. The registry and package APIs are usable, but component coverage and naming may still change before the first stable release.
 
-`hubzzcn` is a public GitHub source registry. No registry server or namespace configuration is required.
+## Install from the shadcn registry
 
-Add the Hubzz theme:
+The public GitHub registry is the primary distribution path. No custom registry server or namespace configuration is required.
+
+### Full Hubzz base
+
+Use this for a new or existing shadcn project that should adopt the complete Hubzz foundation. It pins the Radix-based Hubzz style, tokens, Inter typography, and shared dependencies.
+
+```bash
+npx shadcn@latest add russfranky/hubzzcn/hubzz
+```
+
+### Theme only
+
+Use this when the project already has its preferred shadcn base and only needs Hubzz design tokens.
 
 ```bash
 npx shadcn@latest add russfranky/hubzzcn/hubzz-theme
 ```
 
-Add the Hubzz Button override:
+### Individual components
 
 ```bash
 npx shadcn@latest add russfranky/hubzzcn/button
 ```
 
-Registry items use upstream shadcn dependencies whenever possible, so custom Hubzz components do not need to carry copies of every primitive they use.
-
-## Package install
-
-The same system can also be consumed as `@hubzz/ui`:
+Before installing third-party registry code, the shadcn CLI can show the resolved payload or a dry run:
 
 ```bash
-npm install @hubzz/ui
+npx shadcn@latest view russfranky/hubzzcn/button
+npx shadcn@latest add russfranky/hubzzcn/button --dry-run
 ```
 
-If you consume the package from GitHub Packages, add the Hubzz package scope to your `.npmrc`:
+For production builds, prefer a released tag once available, for example `russfranky/hubzzcn/button#v0.2.0`, so the installed source is reproducible.
 
-```text
-@hubzz:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
-```
+## Package build
 
-Or install directly from a local clone:
-
-```bash
-npm install /path/to/hubzzcn
-```
-
-## Usage
+The repository also builds the `@hubzz/ui` package for package-based consumption. Public package publishing is intentionally separate from the source-registry release process.
 
 ```tsx
-import { Button, Card, CardHeader, CardTitle, CardContent, Badge } from "@hubzz/ui"
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@hubzz/ui"
 import "@hubzz/ui/styles.css"
 
-function App() {
+export function Example() {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Dashboard</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex items-center gap-3">
         <Badge>Online</Badge>
-        <Button>Click me</Button>
+        <Button>Continue</Button>
       </CardContent>
     </Card>
   )
 }
 ```
 
-## Upstream-first rule
+## Component model
 
-Start with the closest shadcn component:
+Hubzz UI uses three implementation tiers:
 
-```bash
-npx shadcn@latest add <component>
-```
+1. **Theme-only primitives** stay as close as possible to upstream shadcn/Radix behavior. Examples include Button, Input, Checkbox, Dialog, Select, Tabs, Sheet, and Dropdown Menu.
+2. **Thin compositions** combine those primitives into reusable Hubzz patterns without reimplementing accessible behavior. Examples include search controls, sidebars, profile headers, and menu items.
+3. **Custom product UI** is reserved for interaction or structure that is genuinely Hubzz-specific, such as space cards, badge selection, chat surfaces, event tickets, and other product compositions.
 
-Theme or extend that component before creating a parallel implementation. Use `registryDependencies` for stock primitives and reserve custom source for Hubzz-specific composition or interaction.
-
-## Brand tokens
-
-| Token | Hex | Usage |
-|-------|-----|-------|
-| Primary | #735FFA | Buttons, links, focus rings |
-| Background | #181B1F | Dark-first page background |
-| Card | #24262B | Panel/card surfaces |
-| Control | #393E44 | Neutral controls and hover states |
-| Foreground | #FCFDFE | Primary text |
-| Muted Foreground | #7C878E | Secondary text |
-| Destructive | #D92D20 | Destructive controls |
+See [`docs/PRINCIPLES.md`](./docs/PRINCIPLES.md) for the decision rules.
 
 ## Development
+
+Requirements:
+
+- Node.js 20.19+; Node 22 is the repository default.
+- npm.
 
 ```bash
 npm install
 npm run dev
-npm run typecheck
-npm run test:ui
-npm run build
+```
+
+Useful checks:
+
+```bash
+npm run check              # formatting, lint, types, package build, registry, package surface
+npm run test:ui            # Playwright component and accessibility tests
+npm run registry:validate  # validate source registry files
+npm run registry:list      # list public registry items
+npm run registry:view      # inspect the full Hubzz base payload
+```
+
+The production catalog is built with:
+
+```bash
 npm run build:preview
 ```
 
-`npm run build:preview` produces the production catalog for `hubzz.xyz/cn/`.
+Deployment details are in [`DEPLOYMENT.md`](./DEPLOYMENT.md).
+
+## Compatibility
+
+- React 18 and 19
+- Tailwind CSS 4
+- shadcn CLI 4
+- Radix component base
+- TypeScript-first source
+
+The repository intentionally remains on Radix while it is stable and working. The `hubzz` registry base makes that choice explicit for consumers instead of allowing upstream defaults to change it implicitly.
+
+## Repository standards
+
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md) — contribution and review expectations
+- [`SECURITY.md`](./SECURITY.md) — vulnerability reporting policy
+- [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) — community expectations
+- [`CHANGELOG.md`](./CHANGELOG.md) — notable public changes
+- [`docs/RELEASING.md`](./docs/RELEASING.md) — version and release process
+- [`docs/PRINCIPLES.md`](./docs/PRINCIPLES.md) — shadcn-first component architecture
+
+## Adding a component
+
+Start with upstream before writing custom code:
+
+```bash
+npx shadcn@latest docs <component>
+npx shadcn@latest add <component>
+```
+
+Then apply Hubzz tokens or a thin variant layer. If a new public item is required, add it to the source registry and run `npm run registry:validate` before opening a pull request.

@@ -6,20 +6,21 @@
       "type": "registry:ui",
       "title": "Button",
       "description": "Hubzz button that preserves the shadcn Button API and adds Hubzz visual states.",
-      "dependencies": [
-        "class-variance-authority",
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "utils",
-        "russfranky/hubzzcn/hubzz-theme"
-      ],
+      "author": "Hubzz",
+      "dependencies": ["class-variance-authority", "radix-ui"],
+      "registryDependencies": ["utils", "russfranky/hubzzcn/hubzz-theme"],
       "files": [
         {
           "path": "button.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "categories": ["controls", "buttons"],
+      "docs": "For the complete Hubzz setup, install russfranky/hubzzcn/hubzz first. The component keeps the standard shadcn variant, size, disabled, and asChild contract.",
+      "meta": {
+        "stability": "beta",
+        "base": "radix"
+      }
     }
   ]
 }

@@ -1,19 +1,14 @@
-import path from "path"
+import path from "node:path"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
 const isPreviewApp = process.env.VITE_APP_BUILD === "preview"
 
-// https://vite.dev/config/
 export default defineConfig({
   base: isPreviewApp ? "/cn/" : undefined,
   plugins: [react(), tailwindcss()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
+  resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
   ...(isPreviewApp
     ? {}
     : {
@@ -22,21 +17,12 @@ export default defineConfig({
             entry: path.resolve(__dirname, "src/index.ts"),
             name: "HubzzUI",
             formats: ["es", "cjs"],
-            fileName: (format) => `hubzz-ui.${format === "es" ? "mjs" : "cjs"}`,
+            fileName: (format: string) =>
+              `hubzz-ui.${format === "es" ? "mjs" : "cjs"}`,
+            cssFileName: "hubzz-ui",
           },
-          rollupOptions: {
+          rolldownOptions: {
             external: ["react", "react-dom", "react/jsx-runtime"],
-            output: {
-              globals: {
-                react: "React",
-                "react-dom": "ReactDOM",
-                "react/jsx-runtime": "jsxRuntime",
-              },
-              assetFileNames: (assetInfo) => {
-                if (assetInfo.name === "style.css") return "hubzz-ui.css"
-                return assetInfo.name!
-              },
-            },
           },
           cssCodeSplit: false,
         },

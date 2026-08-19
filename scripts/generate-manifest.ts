@@ -1,35 +1,57 @@
+import { mkdirSync, writeFileSync } from "node:fs"
+import type { ElementType } from "react"
 import { allExamples } from "../src/examples"
-import { writeFileSync, mkdirSync } from "fs"
+import type { Example, Meta } from "../src/examples/types"
 
-// Ensure dist/ and docs/ exist
+type ManifestArgs = Record<string, unknown>
+type ManifestExample = Example<ManifestArgs>
+type ManifestMeta = Meta<ElementType>
+type ExampleModule = {
+  meta: ManifestMeta
+  examples?: ManifestExample[]
+} & Record<string, unknown>
+
+function isExample(value: unknown): value is ManifestExample {
+  if (value === null || typeof value !== "object") return false
+  const candidate = value as Record<string, unknown>
+  return typeof candidate.name === "string" && "args" in candidate
+}
+
+function normalizeModule(module: unknown) {
+  const record = module as ExampleModule
+  const examples =
+    record.examples ??
+    Object.entries(record)
+      .filter(
+        ([key, value]) =>
+          key !== "meta" && key !== "examples" && isExample(value)
+      )
+      .map(([, value]) => value as ManifestExample)
+  return { meta: record.meta, examples }
+}
+
 mkdirSync("dist", { recursive: true })
 mkdirSync("docs", { recursive: true })
-
-// ── components.json ──────────────────────────────────────────────────────────
 
 const manifest = {
   version: process.env.npm_package_version ?? "0.0.0",
   generated: new Date().toISOString(),
   components: Object.fromEntries(
-    allExamples.map((mod) => {
-      const { meta, examples, ...named } = mod as any
-      const exampleList = examples ?? Object.values(named).filter(
-        (v: any) => v !== null && typeof v === "object" && "name" in v
-      )
-      const examplesForManifest = (exampleList as any[]).map((ex: any) => ({
-        key: ex.name.toLowerCase().replace(/\s+/g, "_"),
-        name: ex.name,
-        args: ex.args,
-      }))
+    allExamples.map((module) => {
+      const { meta, examples } = normalizeModule(module)
       return [
         meta.title,
         {
-          title:       meta.title,
-          slug:        meta.slug ?? meta.title.toLowerCase(),
+          title: meta.title,
+          slug: meta.slug ?? meta.title.toLowerCase(),
           description: meta.description,
-          category:    meta.category,
-          notes:       meta.notes ?? [],
-          examples:    examplesForManifest,
+          category: meta.category,
+          notes: meta.notes ?? [],
+          examples: examples.map((example) => ({
+            key: example.name.toLowerCase().replace(/\s+/g, "_"),
+            name: example.name,
+            args: example.args,
+          })),
         },
       ]
     })
@@ -39,32 +61,30 @@ const manifest = {
 writeFileSync("dist/components.json", JSON.stringify(manifest, null, 2))
 console.log(`✓ dist/components.json — ${allExamples.length} components`)
 
-// ── COMPONENTS.md ────────────────────────────────────────────────────────────
-
-// Args keys that are shared demo data, not meaningful for package guidance.
-// testId is also excluded — it's a test harness prop, not a usage prop.
 const NOISE_KEYS = new Set([
-  "title", "date", "time", "host", "space", "imageSrc",
-  "hostHref", "spaceHref", "testId",
+  "title",
+  "date",
+  "time",
+  "host",
+  "space",
+  "imageSrc",
+  "hostHref",
+  "spaceHref",
+  "testId",
 ])
 
-const sections = allExamples.map((mod) => {
-  const { meta, examples, ...named } = mod as any
-  const exampleList = examples ?? Object.values(named).filter(
-    (v: any) => v !== null && typeof v === "object" && "name" in v
-  )
-
-  const rows = (exampleList as any[]).map((ex: any) => {
-    const keyArgs = Object.entries(ex.args as Record<string, unknown>)
-      .filter(([k]) => !NOISE_KEYS.has(k))
-      .map(([k, v]) => {
-        // Skip functions — they're not useful in docs
-        if (typeof v === "function") return null
-        return `\`${k}=${JSON.stringify(v)}\``
+const sections = allExamples.map((module) => {
+  const { meta, examples } = normalizeModule(module)
+  const rows = examples.map((example) => {
+    const keyArgs = Object.entries(example.args)
+      .filter(([key]) => !NOISE_KEYS.has(key))
+      .map(([key, value]) => {
+        if (typeof value === "function") return null
+        return `\`${key}=${JSON.stringify(value)}\``
       })
-      .filter(Boolean)
+      .filter((value): value is string => value !== null)
       .join(" ")
-    return `| ${ex.name} | | ${keyArgs || "—"} |`
+    return `| ${example.name} | | ${keyArgs || "—"} |`
   })
 
   const parts = [
@@ -81,17 +101,17 @@ const sections = allExamples.map((mod) => {
     "|------|-------------|-----------|",
     ...rows,
     meta.notes?.length
-      ? `\n### Notes\n${(meta.notes as string[]).map((n) => `- ${n}`).join("\n")}`
+      ? `\n### Notes\n${meta.notes.map((note) => `- ${note}`).join("\n")}`
       : null,
   ]
 
-  return parts.filter((p) => p !== null).join("\n")
+  return parts.filter((part): part is string => part !== null).join("\n")
 })
 
-const md =
+const markdown =
   "# @hubzz/ui Component Reference\n\n" +
-  "> Auto-generated from `src/examples/`. Do not edit manually — run `npm run generate:manifest`.\n\n" +
+  "> Auto-generated from `src/examples/`. Do not edit manually. Run `npm run generate:manifest`.\n\n" +
   sections.join("\n\n---\n\n")
 
-writeFileSync("docs/COMPONENTS.md", md)
-console.log(`✓ docs/COMPONENTS.md`)
+writeFileSync("docs/COMPONENTS.md", markdown)
+console.log("✓ docs/COMPONENTS.md")

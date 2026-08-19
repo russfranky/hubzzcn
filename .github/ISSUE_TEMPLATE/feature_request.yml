@@ -1,0 +1,55 @@
+name: Component or system proposal
+description: Propose a reusable component, variant, registry item, or design-system improvement.
+title: "feat: "
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Proposal type
+      options:
+        - Theme or token change
+        - Existing shadcn primitive customization
+        - Thin composition
+        - Custom Hubzz component
+        - Registry improvement
+        - Developer experience
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Describe the reusable product or developer need, not only the proposed implementation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: upstream
+    attributes:
+      label: Upstream shadcn fit
+      description: What existing shadcn component or composition is closest, and why is it sufficient or insufficient?
+    validations:
+      required: true
+
+  - type: textarea
+    id: api
+    attributes:
+      label: Proposed public API
+      description: Include likely props, variants, states, and registry dependencies when known.
+
+  - type: textarea
+    id: accessibility
+    attributes:
+      label: Accessibility considerations
+      description: Note keyboard, focus, semantic, screen-reader, or contrast behavior that matters.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: This belongs in a reusable public UI system rather than one product screen.
+          required: true
+        - label: I searched existing issues and registry items for an equivalent proposal.
+          required: true
