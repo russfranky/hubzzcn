@@ -1,0 +1,38 @@
+name: Refresh npm lockfile
+
+on:
+  push:
+    branches:
+      - migration
+    paths:
+      - ".github/workflows/refresh-lock.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: migration
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Regenerate lockfile with the CI npm version
+        run: |
+          rm package-lock.json
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Commit lockfile
+        run: |
+          git config user.name "Russfranky"
+          git config user.email "90220424+russfranky@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore: regenerate npm lockfile"
+          git push origin HEAD:migration
