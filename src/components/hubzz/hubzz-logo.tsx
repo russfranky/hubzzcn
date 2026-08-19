@@ -5,8 +5,10 @@ const ICON_PATH =
 
 export type HubzzLogoVariant = "purple" | "light" | "dark" | "icon"
 
-export interface HubzzLogoProps
-  extends Omit<React.SVGProps<SVGSVGElement>, "width" | "height"> {
+export interface HubzzLogoProps extends Omit<
+  React.SVGProps<SVGSVGElement>,
+  "width" | "height"
+> {
   variant?: HubzzLogoVariant
   size?: number
   title?: string

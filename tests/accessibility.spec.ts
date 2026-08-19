@@ -9,19 +9,12 @@ test.describe("Accessibility", () => {
     await page.waitForLoadState("networkidle")
 
     const results = await new AxeBuilder({ page })
-      .withTags([
-        "wcag2a",
-        "wcag2aa",
-        "wcag21a",
-        "wcag21aa",
-        "wcag22aa",
-      ])
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
       .analyze()
 
     const violations = results.violations.filter(
       (violation) =>
-        violation.impact === "critical" ||
-        violation.impact === "serious"
+        violation.impact === "critical" || violation.impact === "serious"
     )
 
     expect(

@@ -2,8 +2,7 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-export interface DronePhotoProps
-  extends React.HTMLAttributes<HTMLDivElement> {
+export interface DronePhotoProps extends React.HTMLAttributes<HTMLDivElement> {
   imageUrl: string
   alt?: string
   timestamp?: string
@@ -40,7 +39,7 @@ export function DronePhoto({
             className="pointer-events-none absolute bottom-0 left-0 h-[60px] w-[196px] bg-gradient-to-t from-black to-transparent"
             aria-hidden="true"
           />
-          <figcaption className="absolute bottom-3 left-3 flex flex-col text-[11px] font-medium leading-4 tracking-[0.88px] text-hubzz-muted uppercase opacity-72">
+          <figcaption className="absolute bottom-3 left-3 flex flex-col text-[11px] leading-4 font-medium tracking-[0.88px] text-hubzz-muted uppercase opacity-72">
             {timestamp ? <span>{timestamp}</span> : null}
             {locationUrl ? <span>{locationUrl}</span> : null}
           </figcaption>

@@ -44,7 +44,10 @@ export function Landing() {
               <HubzzLogo size={27} />
               <span className="font-semibold text-foreground">Hubzz UI</span>
             </a>
-            <nav className="hidden items-center gap-5 lg:flex" aria-label="Catalog">
+            <nav
+              className="hidden items-center gap-5 lg:flex"
+              aria-label="Catalog"
+            >
               {NAV.map((link) => (
                 <a
                   key={link.href}
@@ -161,7 +164,10 @@ function InstallCard({ label, command }: { label: string; command: string }) {
         <code className="min-w-0 flex-1 overflow-x-auto font-mono text-xs text-muted-foreground">
           {command}
         </code>
-        <Copy className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <Copy
+          className="size-4 shrink-0 text-muted-foreground"
+          aria-hidden="true"
+        />
       </div>
     </div>
   )

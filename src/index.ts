@@ -155,7 +155,10 @@ export {
   type BadgeCategoryState,
 } from "./components/hubzz/badge-category"
 export { Capsule, type CapsuleProps } from "./components/hubzz/capsule"
-export { DronePhoto, type DronePhotoProps } from "./components/hubzz/drone-photo"
+export {
+  DronePhoto,
+  type DronePhotoProps,
+} from "./components/hubzz/drone-photo"
 export {
   EventTicket,
   type EventTicketProps,

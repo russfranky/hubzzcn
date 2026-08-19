@@ -24,10 +24,7 @@
       "description": "Hubzz category tag composed from the Button override.",
       "author": "Hubzz",
       "dependencies": ["lucide-react"],
-      "registryDependencies": [
-        "utils",
-        "russfranky/hubzzcn/button"
-      ],
+      "registryDependencies": ["utils", "russfranky/hubzzcn/button"],
       "files": [
         {
           "path": "badge-category.tsx",
@@ -66,10 +63,7 @@
       "description": "Hubzz notification banner with semantic status variants.",
       "author": "Hubzz",
       "dependencies": ["lucide-react"],
-      "registryDependencies": [
-        "utils",
-        "russfranky/hubzzcn/button"
-      ],
+      "registryDependencies": ["utils", "russfranky/hubzzcn/button"],
       "files": [
         {
           "path": "toast-banner.tsx",
@@ -108,11 +102,7 @@
       "description": "Hubzz profile customization pattern composed from Avatar and Button.",
       "author": "Hubzz",
       "dependencies": ["lucide-react"],
-      "registryDependencies": [
-        "utils",
-        "avatar",
-        "russfranky/hubzzcn/button"
-      ],
+      "registryDependencies": ["utils", "avatar", "russfranky/hubzzcn/button"],
       "files": [
         {
           "path": "profile-header.tsx",
@@ -129,10 +119,7 @@
       "title": "Drone Photo",
       "description": "Responsive Hubzz media treatment for in-world captures and metadata.",
       "author": "Hubzz",
-      "registryDependencies": [
-        "utils",
-        "russfranky/hubzzcn/hubzz-theme"
-      ],
+      "registryDependencies": ["utils", "russfranky/hubzzcn/hubzz-theme"],
       "files": [
         {
           "path": "drone-photo.tsx",

@@ -18,7 +18,9 @@ async function computedStyles(
 ): Promise<Record<string, string>> {
   return locator.evaluate(
     (el, keys) =>
-      Object.fromEntries(keys.map((k) => [k, getComputedStyle(el)[k as never]])),
+      Object.fromEntries(
+        keys.map((k) => [k, getComputedStyle(el)[k as never]])
+      ),
     props
   )
 }
@@ -120,9 +122,7 @@ test.describe("EventTicket", () => {
   test("action buttons have pointer cursor", async () => {
     const buttons = page.locator("[data-ticket-state] button")
     for (const button of await buttons.all()) {
-      const cursor = await button.evaluate(
-        (el) => getComputedStyle(el).cursor
-      )
+      const cursor = await button.evaluate((el) => getComputedStyle(el).cursor)
       expect(cursor, "button cursor").toBe("pointer")
     }
   })
@@ -150,7 +150,9 @@ test.describe("EventTicket", () => {
 
   test("loading skeleton barcode is 37×139px", async () => {
     const card = page.locator('[data-testid="ticket-loading"]')
-    const skeleton = card.locator(".animate-pulse").filter({ hasNot: page.locator("button") })
+    const skeleton = card
+      .locator(".animate-pulse")
+      .filter({ hasNot: page.locator("button") })
     // Find the tall thin one (the barcode skeleton)
     const allSkeletons = await skeleton.all()
     const barcodeSkeleton = await (async () => {

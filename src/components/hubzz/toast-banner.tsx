@@ -12,11 +12,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 export type ToastBannerType =
-  | "blue"
-  | "success"
-  | "warning"
-  | "error"
-  | "neutral"
+  "blue" | "success" | "warning" | "error" | "neutral"
 
 const TYPE_CONFIG: Record<
   ToastBannerType,
@@ -62,7 +58,7 @@ export function ToastBanner({
         <Icon size={20} color="#EFEDFF" />
       </div>
 
-      <span className="flex-1 text-sm font-medium leading-5 text-[#EFF8FF]">
+      <span className="flex-1 text-sm leading-5 font-medium text-[#EFF8FF]">
         {children}
       </span>
 

@@ -1,10 +1,6 @@
 import { ChevronLeft, Plus, X } from "lucide-react"
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -85,7 +81,8 @@ export function ProfileHeader({
               aria-pressed={avatar.selected ?? false}
               className={cn(
                 "size-[31px] shrink-0 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card",
-                avatar.selected && "ring-2 ring-primary ring-offset-2 ring-offset-card"
+                avatar.selected &&
+                  "ring-2 ring-primary ring-offset-2 ring-offset-card"
               )}
             >
               <Avatar className="size-full">

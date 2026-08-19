@@ -60,16 +60,16 @@ See:
 
 ## Public Hubzz components
 
-| Item | Strategy | Install |
-| --- | --- | --- |
-| `button` | shadcn API override | `russfranky/hubzzcn/button` |
-| `hubzz-logo` | brand asset | `russfranky/hubzzcn/hubzz-logo` |
-| `badge-category` | Button composition | `russfranky/hubzzcn/badge-category` |
-| `capsule` | Toggle composition | `russfranky/hubzzcn/capsule` |
-| `toast-banner` | Button composition | `russfranky/hubzzcn/toast-banner` |
-| `event-ticket` | custom event UI | `russfranky/hubzzcn/event-ticket` |
+| Item             | Strategy                | Install                             |
+| ---------------- | ----------------------- | ----------------------------------- |
+| `button`         | shadcn API override     | `russfranky/hubzzcn/button`         |
+| `hubzz-logo`     | brand asset             | `russfranky/hubzzcn/hubzz-logo`     |
+| `badge-category` | Button composition      | `russfranky/hubzzcn/badge-category` |
+| `capsule`        | Toggle composition      | `russfranky/hubzzcn/capsule`        |
+| `toast-banner`   | Button composition      | `russfranky/hubzzcn/toast-banner`   |
+| `event-ticket`   | custom event UI         | `russfranky/hubzzcn/event-ticket`   |
 | `profile-header` | Avatar + Button pattern | `russfranky/hubzzcn/profile-header` |
-| `drone-photo` | media component | `russfranky/hubzzcn/drone-photo` |
+| `drone-photo`    | media component         | `russfranky/hubzzcn/drone-photo`    |
 
 Ordinary primitives such as Dialog, Select, Sheet, Tabs, Checkbox, Input, and
 Tooltip remain upstream-first rather than receiving Hubzz copies in the

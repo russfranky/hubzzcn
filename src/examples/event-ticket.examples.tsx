@@ -50,7 +50,11 @@ export const Upcoming: Example<EventTicketProps> = {
 
 export const Joined: Example<EventTicketProps> = {
   name: "Joined",
-  args: { ...BASE, state: "joined", testId: "ticket-joined" } as EventTicketProps,
+  args: {
+    ...BASE,
+    state: "joined",
+    testId: "ticket-joined",
+  } as EventTicketProps,
 }
 
 export const Past: Example<EventTicketProps> = {

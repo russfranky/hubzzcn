@@ -2,11 +2,7 @@ import * as React from "react"
 
 import { Badge } from "@/components/ui/badge"
 import { allExamples } from "@/examples"
-import type {
-  ComponentLayer,
-  Example,
-  Meta,
-} from "@/examples/types"
+import type { ComponentLayer, Example, Meta } from "@/examples/types"
 
 type CatalogProps = Record<string, unknown>
 type CatalogComponent = React.ComponentType<CatalogProps>

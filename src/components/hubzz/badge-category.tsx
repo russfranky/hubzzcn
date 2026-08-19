@@ -27,7 +27,7 @@ export function BadgeCategory({
     <div
       data-state={state}
       className={cn(
-        "inline-flex h-9 items-center gap-1.5 rounded-[10px] px-3 py-2 text-sm font-medium leading-5 text-white transition-colors",
+        "inline-flex h-9 items-center gap-1.5 rounded-[10px] px-3 py-2 text-sm leading-5 font-medium text-white transition-colors",
         state === "default" && "bg-background hover:bg-card",
         state === "hover" && "bg-card",
         state === "active" && "bg-[#392F7D]",

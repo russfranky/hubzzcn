@@ -110,9 +110,7 @@ const sections = allExamples.map((module) => {
       : null,
   ]
 
-  return parts
-    .filter((part): part is string => part !== null)
-    .join("\n")
+  return parts.filter((part): part is string => part !== null).join("\n")
 })
 
 const markdown =

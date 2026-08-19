@@ -24,5 +24,10 @@
     },
     "outDir": "./dist"
   },
-  "include": ["src/index.ts", "src/components/**/*", "src/lib/**/*", "src/hooks/**/*"]
+  "include": [
+    "src/index.ts",
+    "src/components/**/*",
+    "src/lib/**/*",
+    "src/hooks/**/*"
+  ]
 }

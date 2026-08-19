@@ -51,15 +51,15 @@ shape or interaction that upstream shadcn does not provide directly.
 
 Current public Hubzz components:
 
-| Component | Strategy | Upstream dependencies |
-| --- | --- | --- |
-| HubzzLogo | Custom brand asset | None |
-| BadgeCategory | Thin composition | Button |
-| Capsule | Thin composition | Toggle |
-| ToastBanner | Thin composition | Button |
-| EventTicket | Custom component | Button, Skeleton |
-| ProfileHeader | Product composition | Avatar, Button |
-| DronePhoto | Product component | None |
+| Component     | Strategy            | Upstream dependencies |
+| ------------- | ------------------- | --------------------- |
+| HubzzLogo     | Custom brand asset  | None                  |
+| BadgeCategory | Thin composition    | Button                |
+| Capsule       | Thin composition    | Toggle                |
+| ToastBanner   | Thin composition    | Button                |
+| EventTicket   | Custom component    | Button, Skeleton      |
+| ProfileHeader | Product composition | Avatar, Button        |
+| DronePhoto    | Product component   | None                  |
 
 A new file belongs here only when composing or theming existing primitives is
 not enough.

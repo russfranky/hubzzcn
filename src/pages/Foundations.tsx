@@ -94,9 +94,14 @@ export function Foundations() {
               key={token.token}
               className="overflow-hidden rounded-xl border border-border bg-card/40"
             >
-              <div className="h-20 border-b border-border" style={token.style} />
+              <div
+                className="h-20 border-b border-border"
+                style={token.style}
+              />
               <div className="p-4">
-                <p className="text-sm font-medium text-foreground">{token.label}</p>
+                <p className="text-sm font-medium text-foreground">
+                  {token.label}
+                </p>
                 <p className="mt-1 font-mono text-xs text-muted-foreground">
                   {token.token}
                 </p>
