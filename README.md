@@ -1,6 +1,8 @@
 # @hubzz/ui
 
-Hubzz branded shadcn/ui component library. Dark-first design system with the Hubzz purple palette.
+Hubzz UI system built on shadcn/ui and Radix primitives. The package keeps upstream component behavior where possible and adds Hubzz tokens, variants, and reusable product UI where it is actually needed.
+
+**Component principles:** see [`docs/PRINCIPLES.md`](./docs/PRINCIPLES.md) for the upstream-first boundary between themed primitives, thin compositions, and custom product UI.
 
 **Design spec:** see [`DESIGN.md`](./DESIGN.md) for tokens, definition of done, and integration patterns.
 
@@ -76,15 +78,12 @@ cn("text-sm", isActive && "text-primary", className)
 | Token | Hex | Usage |
 |-------|-----|-------|
 | Primary | #735FFA | Hubzz Purple — buttons, links, focus rings |
-| Background | #0E0F12 | Page background |
-| Card | #1C1E23 | Panel/card surfaces |
-| Muted | #2D3039 | Hover states, borders |
-| Foreground | #c7d2da | Primary text |
-| Card Foreground | #fcfdfe | Highlight text |
-| Muted Foreground | #5A6268 | Secondary/muted text |
-| Destructive | #FF5A5A | Error states |
-| Chart 2 (Success) | #4CC38A | Success indicators |
-| Chart 3 (Warning) | #E5B849 | Warning indicators |
+| Background | #181B1F | Page background |
+| Card | #24262B | Panel/card surfaces |
+| Control | #393E44 | Control hover and neutral borders |
+| Foreground | #FCFDFE | Primary text |
+| Muted Foreground | #7C878E | Secondary/muted text |
+| Destructive | #D92D20 | Destructive controls |
 
 ## Peer Dependencies
 
@@ -93,13 +92,13 @@ cn("text-sm", isActive && "text-primary", className)
 
 ## Adding Components
 
-To add more shadcn components to the library:
+Start with the closest upstream shadcn component:
 
 ```bash
 npx shadcn@latest add <component>
 ```
 
-Then export it from `src/index.ts` and rebuild:
+Theme or extend that component before creating a parallel implementation. Then export supported package components from `src/index.ts` and rebuild:
 
 ```bash
 npm run build
