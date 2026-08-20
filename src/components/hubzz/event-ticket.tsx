@@ -38,7 +38,7 @@ const PATH_STUB_PERFORATIONS =
 
 // Past state — no stub, perforated right edge at x=342/344
 const PATH_PAST =
-  "M9.98831 0H333.012C333.249 5.06337 337.073 9.18888 342 9.89367V13.1343H344V17.2556H342V21.3769H344V25.4982H342V29.6196H344V33.7409H342V37.8622H344V41.9835H342V46.1048H344V50.2262H342V54.3475H344V58.4688H342V62.5901H344V66.7114L342 66.7114V70.8327H344V74.9541H342V79.0754H344V83.1967H342V87.318H344V91.4393H342V95.5606H344V99.682H342V103.803H344V107.925H342V112.046H344V116.167H342V120.289H344V124.41H342V128.531L344 128.531V132.652H342V136.774H344V140.895H342V145.016H344V149.138H342V153.259H344V157.38H342V161.502H344V165.623H342V169.744H344V173.012C343.834 173.004 343.668 173 343.5 173C337.701 173 333 177.701 333 183.5C333 183.668 333.004 183.834 333.012 184H9.98831C9.99607 183.834 10 183.668 10 183.5C10 177.869 5.56682 173.273 0 173.012V9.98831C5.40113 9.7351 9.7351 5.40113 9.98831 0Z"
+  "M9.98831 0H333.012C333.249 5.06337 337.073 9.18888 342 9.89367V13.1343H344V17.2556H342V21.3769H344V25.4982H342V29.6196H344V33.7409H342V37.8622H344V41.9835H342V46.1048H344V50.2262H342V54.3475H344V58.4688H342V62.5901H344V66.7114L342 66.7114V70.8327H344V74.9541H342V79.0754H344V83.1967H342V87.318H344V91.4393H342V95.5606H344V99.682H342V103.803H344V107.925H342V112.046H344V116.167H342V120.289H344V124.41H342V128.531L344 128.531V132.652H342V136.774H344V140.895H342V145.016H344V149.138H342V153.259H344V157.38H342V161.502H344V165.623H342V169.744H344V173.012C343.834 173.004 343.668 173 343.5 173C337.701 173 333 177.701 333 183.5C333 183.668 333.004 183.834 333.012 184H9.98831C9.99607 183.834 10 183.668 10 183.5C10 177.869 5.56682 172.273 0 173.012V9.98831C5.40113 9.7351 9.7351 5.40113 9.98831 0Z"
 
 // Barcode bars — exact y/h values from SVG export (x=289-326 in ticket space → 0-37 local)
 // All bars are full width (37px), y positions relative to barcode top (ticket y=22 → local y=0)
@@ -274,7 +274,7 @@ export function EventTicket({
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="hover:bg-hubzz-hover h-8 shrink-0 cursor-pointer rounded-full bg-background px-[14px] text-[12px] font-semibold text-white"
+                    className="h-8 shrink-0 cursor-pointer rounded-full bg-background px-[14px] text-[12px] font-semibold text-foreground hover:bg-accent"
                     onClick={onJoin}
                   >
                     Join event
@@ -284,7 +284,7 @@ export function EventTicket({
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="hover:bg-hubzz-hover h-8 shrink-0 cursor-pointer rounded-full bg-background px-[14px] text-[12px] font-semibold text-white"
+                    className="h-8 shrink-0 cursor-pointer rounded-full bg-background px-[14px] text-[12px] font-semibold text-foreground hover:bg-accent"
                     onClick={onLeave}
                   >
                     Leave
@@ -294,7 +294,7 @@ export function EventTicket({
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="hover:bg-hubzz-hover h-8 shrink-0 cursor-pointer rounded-full bg-background px-[14px] text-[12px] font-semibold text-white"
+                    className="h-8 shrink-0 cursor-pointer rounded-full bg-background px-[14px] text-[12px] font-semibold text-foreground hover:bg-accent"
                     onClick={onSeeDetail}
                   >
                     See detail
