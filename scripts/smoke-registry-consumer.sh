@@ -23,17 +23,33 @@ cd "$WORKDIR"
 
 cd consumer
 
-"$SHADCN" add "russfranky/hubzzcn/hubzz#${REF}" --yes --silent
-"$SHADCN" add "russfranky/hubzzcn/capsule#${REF}" --yes --silent
-"$SHADCN" add "russfranky/hubzzcn/drone-photo#${REF}" --yes --silent
-"$SHADCN" add "russfranky/hubzzcn/event-ticket#${REF}" --yes --silent
-"$SHADCN" add "russfranky/hubzzcn/profile-header#${REF}" --yes --silent
+items=(
+  hubzz
+  button
+  hubzz-logo
+  badge-category
+  capsule
+  toast-banner
+  event-ticket
+  profile-header
+  drone-photo
+)
 
+for item in "${items[@]}"; do
+  echo "Installing ${item} at ${REF}"
+  "$SHADCN" add "russfranky/hubzzcn/${item}#${REF}" --yes
+ done
+
+test -f src/components/ui/button.tsx
+test -f src/components/hubzz/hubzz-logo.tsx
+test -f src/components/hubzz/badge-category.tsx
 test -f src/components/hubzz/capsule.tsx
-test -f src/components/hubzz/drone-photo.tsx
+test -f src/components/hubzz/toast-banner.tsx
 test -f src/components/hubzz/event-ticket.tsx
 test -f src/components/hubzz/profile-header.tsx
+test -f src/components/hubzz/drone-photo.tsx
+grep -q -- "--primary:" src/index.css
 
 pnpm build
 
-echo "Verified Hubzz registry installation in a clean Vite consumer at ${REF}."
+echo "Verified the complete Hubzz registry surface in a clean Vite consumer at ${REF}."
