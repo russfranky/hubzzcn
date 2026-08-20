@@ -26,9 +26,10 @@ export function SearchDialog({
 }) {
   const [query, setQuery] = React.useState("")
 
-  React.useEffect(() => {
-    if (!open) setQuery("")
-  }, [open])
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) setQuery("")
+    onOpenChange(nextOpen)
+  }
 
   const normalizedQuery = query.trim().toLowerCase()
   const results = normalizedQuery
@@ -40,7 +41,7 @@ export function SearchDialog({
     : entries
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="top-[18%] translate-y-0 gap-0 overflow-hidden p-0 sm:max-w-xl">
         <DialogTitle className="sr-only">Search Hubzz UI</DialogTitle>
         <DialogDescription className="sr-only">
@@ -71,7 +72,7 @@ export function SearchDialog({
               <a
                 key={`${entry.group}-${entry.href}`}
                 href={entry.href}
-                onClick={() => onOpenChange(false)}
+                onClick={() => handleOpenChange(false)}
                 className="flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors outline-none hover:bg-accent focus-visible:bg-accent"
               >
                 <span className="mt-0.5 w-20 shrink-0 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
