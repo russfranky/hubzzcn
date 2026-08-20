@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs"
+import { format } from "prettier"
 
 const SOURCE = "src/index.css"
 const TARGET = "registry/foundations/registry.json"
@@ -123,17 +124,15 @@ if (!light.background || !dark.background || !light.primary || !dark.primary) {
   throw new Error("Theme source is missing required semantic tokens")
 }
 
-const output = `${JSON.stringify(
-  {
-    $schema: "https://ui.shadcn.com/schema/registry.json",
-    items: [
-      registryItem("registry:base", light, dark),
-      registryItem("registry:theme", light, dark),
-    ],
-  },
-  null,
-  2
-)}\n`
+const registry = {
+  $schema: "https://ui.shadcn.com/schema/registry.json",
+  items: [
+    registryItem("registry:base", light, dark),
+    registryItem("registry:theme", light, dark),
+  ],
+}
+
+const output = await format(JSON.stringify(registry), { parser: "json" })
 
 if (CHECK) {
   const current = readFileSync(TARGET, "utf8")
