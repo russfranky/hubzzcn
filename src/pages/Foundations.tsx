@@ -4,43 +4,49 @@ const TOKENS = [
   {
     label: "Background",
     token: "--background",
-    value: "#181B1F",
+    description: "Application canvas",
     style: { backgroundColor: "var(--background)" },
   },
   {
     label: "Card",
     token: "--card",
-    value: "#24262B",
+    description: "Raised surfaces",
     style: { backgroundColor: "var(--card)" },
-  },
-  {
-    label: "Accent",
-    token: "--accent",
-    value: "#393E44",
-    style: { backgroundColor: "var(--accent)" },
   },
   {
     label: "Primary",
     token: "--primary",
-    value: "#735FFA",
+    description: "Brand and primary action",
     style: { backgroundColor: "var(--primary)" },
   },
   {
-    label: "Foreground",
-    token: "--foreground",
-    value: "#FCFDFE",
-    style: { backgroundColor: "var(--foreground)" },
+    label: "Secondary",
+    token: "--secondary",
+    description: "Secondary control surface",
+    style: { backgroundColor: "var(--secondary)" },
   },
   {
-    label: "Muted",
+    label: "Accent",
+    token: "--accent",
+    description: "Hover and selection surface",
+    style: { backgroundColor: "var(--accent)" },
+  },
+  {
+    label: "Border",
+    token: "--border",
+    description: "Structural separation",
+    style: { backgroundColor: "var(--border)" },
+  },
+  {
+    label: "Muted text",
     token: "--muted-foreground",
-    value: "#7C878E",
+    description: "Supporting information",
     style: { backgroundColor: "var(--muted-foreground)" },
   },
   {
     label: "Destructive",
     token: "--destructive",
-    value: "#D92D20",
+    description: "Destructive actions and errors",
     style: { backgroundColor: "var(--destructive)" },
   },
 ]
@@ -74,67 +80,95 @@ const UPSTREAM = [
 
 export function Foundations() {
   return (
-    <div className="space-y-20">
-      <section id="foundations" className="scroll-mt-24">
-        <div className="mb-8 max-w-2xl">
-          <Badge variant="outline">Foundations</Badge>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
-            Theme the system before changing the components.
-          </h2>
-          <p className="mt-3 text-muted-foreground">
-            Hubzz uses semantic shadcn tokens as the first customization layer.
-            Components consume roles such as primary, card, accent, and ring
-            instead of carrying copies of brand values.
+    <div className="space-y-24">
+      <section id="foundations" className="scroll-mt-20">
+        <div className="mb-8 grid gap-3 border-b border-border pb-7 md:grid-cols-[180px_1fr]">
+          <p className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+            Foundations
           </p>
+          <div className="max-w-2xl">
+            <h2 className="text-2xl font-semibold tracking-[-0.025em] text-foreground">
+              Theme the system before changing components.
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Hubzz uses the standard shadcn semantic roles as the customization
+              boundary. The catalog and public registry are generated from the
+              same CSS token source.
+            </p>
+          </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
           {TOKENS.map((token) => (
-            <div
-              key={token.token}
-              className="overflow-hidden rounded-xl border border-border bg-card/40"
-            >
+            <div key={token.token} className="bg-background p-4">
               <div
-                className="h-20 border-b border-border"
+                className="h-14 rounded-lg border border-border/70"
                 style={token.style}
               />
-              <div className="p-4">
-                <p className="text-sm font-medium text-foreground">
-                  {token.label}
-                </p>
-                <p className="mt-1 font-mono text-xs text-secondary-foreground">
-                  {token.token}
-                </p>
-                <p className="mt-1 font-mono text-xs text-secondary-foreground">
-                  {token.value}
-                </p>
-              </div>
+              <p className="mt-4 text-sm font-medium text-foreground">
+                {token.label}
+              </p>
+              <p className="mt-1 font-mono text-[10px] text-secondary-foreground">
+                {token.token}
+              </p>
+              <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
+                {token.description}
+              </p>
             </div>
           ))}
         </div>
+
+        <div className="mt-4 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-3">
+          <FoundationDatum label="Type" value="Inter Variable" detail="One sans family across UI and documentation." />
+          <FoundationDatum label="Radius" value="12px base" detail="Pills are reserved for actions and compact filters." />
+          <FoundationDatum label="Theme" value="Light + dark" detail="The catalog defaults dark; registry semantics stay shadcn-standard." />
+        </div>
       </section>
 
-      <section id="upstream" className="scroll-mt-24">
-        <div className="mb-8 max-w-2xl">
-          <Badge variant="outline">Upstream primitives</Badge>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
-            Keep commodity UI upstream.
-          </h2>
-          <p className="mt-3 text-muted-foreground">
-            These are shadcn/Radix building blocks, not parallel Hubzz-owned
-            components. Hubzz consumes them directly and customizes them through
-            the base theme unless a documented override is necessary.
+      <section id="upstream" className="scroll-mt-20">
+        <div className="mb-8 grid gap-3 border-b border-border pb-7 md:grid-cols-[180px_1fr]">
+          <p className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+            Primitives
           </p>
+          <div className="max-w-2xl">
+            <h2 className="text-2xl font-semibold tracking-[-0.025em] text-foreground">
+              Commodity UI stays upstream.
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              These are shadcn/Radix building blocks, not parallel Hubzz-owned
+              components. Prefer upstream behavior, then tokens, then composition.
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
           {UPSTREAM.map((name) => (
-            <Badge key={name} variant="secondary" className="px-3 py-1.5">
+            <Badge key={name} variant="secondary" className="px-3 py-1.5 text-[11px]">
               {name}
             </Badge>
           ))}
         </div>
       </section>
+    </div>
+  )
+}
+
+function FoundationDatum({
+  label,
+  value,
+  detail,
+}: {
+  label: string
+  value: string
+  detail: string
+}) {
+  return (
+    <div className="bg-background p-4">
+      <p className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+        {label}
+      </p>
+      <p className="mt-3 text-sm font-medium text-foreground">{value}</p>
+      <p className="mt-1.5 text-xs leading-5 text-muted-foreground">{detail}</p>
     </div>
   )
 }
