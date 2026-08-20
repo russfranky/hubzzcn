@@ -77,10 +77,12 @@ registry.
 
 ## Package build
 
-The repository also builds a compiled `@hubzz/ui` package artifact. Release
-tags produce a package tarball on GitHub Releases. The GitHub source registry
-is the canonical public distribution path unless a package registry is
-explicitly configured later.
+The repository also builds a compiled `@hubzz/ui` package artifact. Its public
+surface is intentionally limited to the Hubzz-owned components and the Button
+override above. It does not re-export ordinary upstream shadcn primitives.
+Release tags produce a package tarball on GitHub Releases. The GitHub source
+registry is the canonical public distribution path unless a package registry
+is explicitly configured later.
 
 ```tsx
 import { Button, EventTicket } from "@hubzz/ui"
