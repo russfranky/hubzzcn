@@ -102,10 +102,10 @@ export function Foundations() {
                 <p className="text-sm font-medium text-foreground">
                   {token.label}
                 </p>
-                <p className="mt-1 font-mono text-xs text-muted-foreground">
+                <p className="mt-1 font-mono text-xs text-secondary-foreground">
                   {token.token}
                 </p>
-                <p className="mt-1 font-mono text-xs text-muted-foreground">
+                <p className="mt-1 font-mono text-xs text-secondary-foreground">
                   {token.value}
                 </p>
               </div>
