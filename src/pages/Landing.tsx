@@ -2,7 +2,7 @@ import * as React from "react"
 import {
   Box,
   CheckCircle2,
-  Github,
+  Code2,
   Layers3,
   Moon,
   Search,
@@ -179,7 +179,7 @@ export function Landing() {
             rel="noopener noreferrer"
             className="flex h-8 items-center gap-2 rounded-md px-2 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
-            <Github className="size-3.5" aria-hidden="true" />
+            <Code2 className="size-3.5" aria-hidden="true" />
             Source on GitHub
           </a>
         </div>
@@ -229,7 +229,7 @@ export function Landing() {
                 rel="noopener noreferrer"
                 aria-label="Open Hubzz UI source on GitHub"
               >
-                <Github aria-hidden="true" />
+                <Code2 aria-hidden="true" />
               </a>
             </Button>
           </div>
