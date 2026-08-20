@@ -71,6 +71,8 @@
     "registry:sync:check": "tsx scripts/sync-foundations-registry.ts --check",
     "registry:validate": "shadcn registry validate",
     "registry:view": "shadcn view russfranky/hubzzcn/hubzz",
+    "release:pin-registry": "tsx scripts/release-registry-refs.ts pin",
+    "release:verify-registry": "tsx scripts/release-registry-refs.ts verify",
     "test": "pnpm test:ui",
     "test:ui": "playwright test",
     "typecheck": "tsc --noEmit",
