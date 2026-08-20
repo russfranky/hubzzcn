@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs"
+import { format } from "prettier"
 
 const REPOSITORY_PREFIX = "russfranky/hubzzcn/"
 const REGISTRY_FILES = [
@@ -11,7 +12,7 @@ function normalizeRef(address: string, ref: string) {
   return `${item}#${ref}`
 }
 
-function updateRegistryFile(path: string, ref: string) {
+async function updateRegistryFile(path: string, ref: string) {
   const registry = JSON.parse(readFileSync(path, "utf8")) as {
     items: Array<{ registryDependencies?: string[] }>
   }
@@ -25,7 +26,8 @@ function updateRegistryFile(path: string, ref: string) {
     )
   }
 
-  writeFileSync(path, `${JSON.stringify(registry, null, 2)}\n`)
+  const output = await format(JSON.stringify(registry), { parser: "json" })
+  writeFileSync(path, output)
 }
 
 function verifyRegistryFile(path: string, ref: string) {
@@ -59,7 +61,7 @@ if (!ref || !["pin", "verify"].includes(mode ?? "")) {
 }
 
 if (mode === "pin") {
-  for (const path of REGISTRY_FILES) updateRegistryFile(path, ref)
+  for (const path of REGISTRY_FILES) await updateRegistryFile(path, ref)
   console.log(`✓ pinned Hubzz registry dependencies to ${ref}`)
 } else {
   const failures = REGISTRY_FILES.flatMap((path) =>
