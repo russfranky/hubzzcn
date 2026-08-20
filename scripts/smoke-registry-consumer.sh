@@ -16,6 +16,7 @@ cd "$WORKDIR"
 "$SHADCN" init \
   --template vite \
   --base radix \
+  --preset nova \
   --name consumer \
   --yes \
   --no-monorepo \
@@ -38,7 +39,7 @@ items=(
 for item in "${items[@]}"; do
   echo "Installing ${item} at ${REF}"
   "$SHADCN" add "russfranky/hubzzcn/${item}#${REF}" --yes
- done
+done
 
 test -f src/components/ui/button.tsx
 test -f src/components/hubzz/hubzz-logo.tsx
