@@ -62,7 +62,7 @@ export function ProfileHeader({
             className="h-full w-full object-cover"
           />
         ) : (
-          <span className="text-xs text-muted-foreground">No preview</span>
+          <span className="text-xs text-secondary-foreground">No preview</span>
         )}
       </div>
 
