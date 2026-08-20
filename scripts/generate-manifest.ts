@@ -115,7 +115,7 @@ const sections = allExamples.map((module) => {
 
 const markdown =
   "# @hubzz/ui Component Reference\n\n" +
-  "> Auto-generated from `src/examples/`. Do not edit manually. Run `npm run generate:manifest`.\n\n" +
+  "> Auto-generated from `src/examples/`. Do not edit manually. Run `pnpm generate:manifest`.\n\n" +
   sections.join("\n\n---\n\n")
 
 writeFileSync("docs/COMPONENTS.md", markdown)
