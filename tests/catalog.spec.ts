@@ -2,9 +2,12 @@ import { expect, test } from "@playwright/test"
 
 import { allExamples } from "../src/examples"
 
-const CATALOG_SLUGS = allExamples.map((module) => {
+const CATALOG_SECTIONS = allExamples.map((module) => {
   const meta = (module as { meta: { slug?: string; title: string } }).meta
-  return meta.slug ?? meta.title.toLowerCase()
+  return {
+    slug: meta.slug ?? meta.title.toLowerCase(),
+    title: meta.title,
+  }
 })
 
 test.describe("Component catalog", () => {
@@ -22,12 +25,14 @@ test.describe("Component catalog", () => {
     await expect(page.locator("#patterns")).toBeVisible()
   })
 
-  for (const slug of CATALOG_SLUGS) {
+  for (const { slug, title } of CATALOG_SECTIONS) {
     test(`section #${slug} is present`, async ({ page }) => {
       const section = page.locator(`#${slug}`)
       await section.scrollIntoViewIfNeeded()
       await expect(section).toBeVisible()
-      await expect(section.getByRole("heading", { level: 3 })).toBeVisible()
+      await expect(
+        section.getByRole("heading", { level: 3, name: title, exact: true })
+      ).toBeVisible()
     })
   }
 })
