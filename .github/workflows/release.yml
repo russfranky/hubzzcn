@@ -7,11 +7,14 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
+  artifact-metadata: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -43,24 +46,42 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Verify registry dependency refs
+        run: pnpm release:verify-registry "${GITHUB_REF_NAME}"
+
       - name: Run repository checks
         run: pnpm check
 
-      - name: Install Chromium
-        run: pnpm exec playwright install chromium --with-deps
+      - name: Install supported browsers
+        run: pnpm exec playwright install chromium firefox webkit --with-deps
 
-      - name: Run Playwright tests
+      - name: Run browser and accessibility tests
         run: pnpm test:ui
 
       - name: Verify tagged registry base
         run: pnpm dlx shadcn@latest view "russfranky/hubzzcn/hubzz#${GITHUB_REF_NAME}" >/dev/null
 
-      - name: Pack package artifact
+      - name: Verify tagged registry in a clean consumer
+        run: pnpm registry:smoke "${GITHUB_REF_NAME}"
+
+      - name: Pack release artifact
         run: |
           mkdir -p release-assets
           npm pack --pack-destination release-assets
+          (cd release-assets && sha256sum *.tgz > SHA256SUMS)
+
+      - name: Attest release artifact provenance
+        uses: actions/attest@v4.2.1
+        with:
+          subject-path: release-assets/*.tgz
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" release-assets/*.tgz --verify-tag --generate-notes --title "${GITHUB_REF_NAME}"
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            release-assets/*.tgz \
+            release-assets/SHA256SUMS \
+            --verify-tag \
+            --generate-notes \
+            --title "${GITHUB_REF_NAME}"
