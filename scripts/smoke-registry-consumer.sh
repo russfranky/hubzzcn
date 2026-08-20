@@ -2,11 +2,18 @@
 set -euo pipefail
 
 REF="${1:-${GITHUB_SHA:-main}}"
+REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+SHADCN="${REPO_ROOT}/node_modules/.bin/shadcn"
 WORKDIR=$(mktemp -d)
 trap 'rm -rf "$WORKDIR"' EXIT
 
+if [[ ! -x "$SHADCN" ]]; then
+  echo "Locked shadcn CLI is unavailable at ${SHADCN}. Run pnpm install --frozen-lockfile first." >&2
+  exit 1
+fi
+
 cd "$WORKDIR"
-pnpm dlx shadcn@latest init \
+"$SHADCN" init \
   --template vite \
   --base radix \
   --name consumer \
@@ -16,11 +23,11 @@ pnpm dlx shadcn@latest init \
 
 cd consumer
 
-pnpm dlx shadcn@latest add "russfranky/hubzzcn/hubzz#${REF}" --yes --silent
-pnpm dlx shadcn@latest add "russfranky/hubzzcn/capsule#${REF}" --yes --silent
-pnpm dlx shadcn@latest add "russfranky/hubzzcn/drone-photo#${REF}" --yes --silent
-pnpm dlx shadcn@latest add "russfranky/hubzzcn/event-ticket#${REF}" --yes --silent
-pnpm dlx shadcn@latest add "russfranky/hubzzcn/profile-header#${REF}" --yes --silent
+"$SHADCN" add "russfranky/hubzzcn/hubzz#${REF}" --yes --silent
+"$SHADCN" add "russfranky/hubzzcn/capsule#${REF}" --yes --silent
+"$SHADCN" add "russfranky/hubzzcn/drone-photo#${REF}" --yes --silent
+"$SHADCN" add "russfranky/hubzzcn/event-ticket#${REF}" --yes --silent
+"$SHADCN" add "russfranky/hubzzcn/profile-header#${REF}" --yes --silent
 
 test -f src/components/hubzz/capsule.tsx
 test -f src/components/hubzz/drone-photo.tsx
