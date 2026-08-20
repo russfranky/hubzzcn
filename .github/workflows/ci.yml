@@ -20,7 +20,7 @@ jobs:
   quality:
     name: Quality and registry
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -62,10 +62,13 @@ jobs:
             pnpm dlx shadcn@latest view "russfranky/hubzzcn/${item}#${GITHUB_SHA}" >/dev/null
           done
 
+      - name: Install registry into a clean Vite consumer
+        run: pnpm registry:smoke "$GITHUB_SHA"
+
   ui:
     name: Browser and accessibility
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -82,8 +85,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Chromium
-        run: pnpm exec playwright install chromium --with-deps
+      - name: Install supported browsers
+        run: pnpm exec playwright install chromium firefox webkit --with-deps
 
       - name: Run Playwright tests
         run: pnpm test:ui
