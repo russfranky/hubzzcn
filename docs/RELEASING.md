@@ -1,23 +1,23 @@
 # Releasing
 
 Hubzz UI uses Semantic Versioning and Git tags as the stable public boundary
-for both the source registry and the package build.
+for both the GitHub source registry and the compiled package artifact.
 
 ## Release requirements
 
-A release must start from a clean `main` commit where all required checks pass:
+A release starts from a clean `main` commit with the required quality,
+registry, browser, accessibility, and CodeQL checks passing.
+
+Run the local gates before preparing release metadata:
 
 ```bash
 pnpm check
 pnpm test:ui
+pnpm registry:smoke main
 ```
 
-The registry must also resolve at the exact commit being released:
-
-```bash
-pnpm dlx shadcn@latest registry validate russfranky/hubzzcn#<commit-sha>
-pnpm dlx shadcn@latest view russfranky/hubzzcn/hubzz#<commit-sha>
-```
+`pnpm check` also verifies that the generated foundations registry still
+matches the canonical semantic tokens in `src/index.css`.
 
 ## Versioning
 
@@ -30,37 +30,62 @@ when they ship in a minor release.
 
 ## Release steps
 
-1. Update `CHANGELOG.md` by moving relevant entries from **Unreleased** into a versioned section.
+1. Move the relevant `CHANGELOG.md` entries out of **Unreleased** into the new version section.
 2. Update `package.json` to the release version.
-3. Run the full checks.
-4. Commit the release metadata.
-5. Create an annotated `vX.Y.Z` tag on that commit and push it.
-6. Let the release workflow validate the tag and create the GitHub Release.
-7. Verify pinned registry installs using the tag:
+3. Pin every same-repository registry dependency to the release tag:
+
+```bash
+pnpm release:pin-registry vX.Y.Z
+```
+
+4. If semantic tokens changed, regenerate the foundations registry:
+
+```bash
+pnpm registry:sync
+```
+
+5. Run the complete gates again:
+
+```bash
+pnpm check
+pnpm test:ui
+pnpm registry:smoke vX.Y.Z
+```
+
+   Before the tag exists, use the full release commit SHA for the smoke test.
+
+6. Commit the release metadata and pinned registry refs.
+7. Create an annotated `vX.Y.Z` tag on that exact commit and push it.
+8. Let the release workflow verify the tag, verify pinned dependency refs, run the full gates, create checksums, attest the package artifact with GitHub/Sigstore provenance, and create the GitHub Release.
+9. Verify tagged registry installs:
 
 ```bash
 pnpm dlx shadcn@latest view russfranky/hubzzcn/hubzz#vX.Y.Z
 pnpm dlx shadcn@latest view russfranky/hubzzcn/button#vX.Y.Z
 ```
 
-8. Verify the public catalog after deployment.
+10. Verify the public catalog after production deployment.
 
 ## Registry compatibility
 
-Published documentation should prefer tagged registry addresses for
-reproducible production installs:
+Refs are not inherited across GitHub registry dependencies. Release commits
+therefore pin every Hubzz-to-Hubzz registry dependency to the same tag. The
+release workflow refuses to publish if any same-repository dependency is
+floating.
+
+Published documentation should prefer tagged registry addresses:
 
 ```text
 russfranky/hubzzcn/hubzz#vX.Y.Z
 russfranky/hubzzcn/button#vX.Y.Z
 ```
 
-Development documentation may use the unpinned `main` address when it is
-explicitly describing the latest source.
+Development documentation may use unpinned addresses only when it is explicitly
+describing the latest `main` source.
 
 ## Package publishing
 
-The repository builds a package-compatible `@hubzz/ui` artifact, but package
-publication is a separate release channel. Do not add a package-registry
-publish step until the destination, access policy, and credentials are
-intentionally configured.
+The repository builds and attests a package-compatible `@hubzz/ui` artifact,
+but npm publication is intentionally not configured. The GitHub source registry
+is the canonical public distribution channel. If npm publication is introduced,
+use npm trusted publishing with OIDC rather than a long-lived automation token.
