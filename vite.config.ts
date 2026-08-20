@@ -21,7 +21,7 @@ export default defineConfig({
               `hubzz-ui.${format === "es" ? "mjs" : "cjs"}`,
             cssFileName: "hubzz-ui",
           },
-          rolldownOptions: {
+          rollupOptions: {
             external: ["react", "react-dom", "react/jsx-runtime"],
           },
           cssCodeSplit: false,
