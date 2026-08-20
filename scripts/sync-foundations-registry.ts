@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs"
+import { isDeepStrictEqual } from "node:util"
 import { format } from "prettier"
 
 const SOURCE = "src/index.css"
@@ -135,9 +136,9 @@ const registry = {
 const output = await format(JSON.stringify(registry), { parser: "json" })
 
 if (CHECK) {
-  const current = readFileSync(TARGET, "utf8")
-  if (current !== output) {
-    console.error(`${TARGET} is out of sync with ${SOURCE}.`)
+  const current = JSON.parse(readFileSync(TARGET, "utf8"))
+  if (!isDeepStrictEqual(current, registry)) {
+    console.error(`${TARGET} is semantically out of sync with ${SOURCE}.`)
     console.error("Run `pnpm registry:sync` and commit the generated file.")
     process.exit(1)
   }
