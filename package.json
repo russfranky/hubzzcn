@@ -57,7 +57,7 @@
     "dev": "vite",
     "build": "vite build && tsc -p tsconfig.lib.json && node --input-type=module -e \"import { copyFileSync } from 'node:fs'; copyFileSync('dist/index.d.ts', 'dist/index.d.cts')\" && pnpm generate:manifest",
     "build:preview": "tsc -b && VITE_APP_BUILD=preview vite build",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm build && pnpm registry:validate && pnpm pack:check",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm build:preview && pnpm build && pnpm registry:validate && pnpm pack:check",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml,css}\"",
     "generate:manifest": "tsx scripts/generate-manifest.ts",
