@@ -48,7 +48,10 @@ export function SearchDialog({
         </DialogDescription>
 
         <div className="flex items-center gap-3 border-b border-border px-4">
-          <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <Search
+            className="size-4 shrink-0 text-muted-foreground"
+            aria-hidden="true"
+          />
           <input
             autoFocus
             value={query}
@@ -69,7 +72,7 @@ export function SearchDialog({
                 key={`${entry.group}-${entry.href}`}
                 href={entry.href}
                 onClick={() => onOpenChange(false)}
-                className="flex items-start gap-3 rounded-lg px-3 py-2.5 outline-none transition-colors hover:bg-accent focus-visible:bg-accent"
+                className="flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors outline-none hover:bg-accent focus-visible:bg-accent"
               >
                 <span className="mt-0.5 w-20 shrink-0 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
                   {entry.group}

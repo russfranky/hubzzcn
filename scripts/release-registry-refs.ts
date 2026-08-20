@@ -52,7 +52,9 @@ const mode = process.argv[2]
 const ref = process.argv[3]
 
 if (!ref || !["pin", "verify"].includes(mode ?? "")) {
-  console.error("Usage: tsx scripts/release-registry-refs.ts <pin|verify> <ref>")
+  console.error(
+    "Usage: tsx scripts/release-registry-refs.ts <pin|verify> <ref>"
+  )
   process.exit(1)
 }
 
@@ -60,7 +62,9 @@ if (mode === "pin") {
   for (const path of REGISTRY_FILES) updateRegistryFile(path, ref)
   console.log(`✓ pinned Hubzz registry dependencies to ${ref}`)
 } else {
-  const failures = REGISTRY_FILES.flatMap((path) => verifyRegistryFile(path, ref))
+  const failures = REGISTRY_FILES.flatMap((path) =>
+    verifyRegistryFile(path, ref)
+  )
   if (failures.length) {
     console.error(`Registry dependencies are not pinned to ${ref}:`)
     for (const failure of failures) console.error(`- ${failure}`)

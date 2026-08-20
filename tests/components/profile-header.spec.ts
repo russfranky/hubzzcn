@@ -9,13 +9,21 @@ test.describe("ProfileHeader", () => {
 
   test("exposes accessible profile appearance controls", async ({ page }) => {
     const section = page.locator("#profile-header")
-    const panel = section.getByRole("region", { name: "Profile appearance" }).first()
+    const panel = section
+      .getByRole("region", { name: "Profile appearance" })
+      .first()
 
     await expect(panel).toBeVisible()
-    await expect(panel.getByRole("button", { name: "Close profile appearance" })).toBeVisible()
-    await expect(panel.getByRole("button", { name: "Add avatar" })).toBeVisible()
+    await expect(
+      panel.getByRole("button", { name: "Close profile appearance" })
+    ).toBeVisible()
+    await expect(
+      panel.getByRole("button", { name: "Add avatar" })
+    ).toBeVisible()
     await expect(panel.getByRole("button", { name: "Go back" })).toBeVisible()
-    await expect(panel.getByRole("button", { name: "Save changes" })).toBeVisible()
+    await expect(
+      panel.getByRole("button", { name: "Save changes" })
+    ).toBeVisible()
   })
 
   test("avatar selection exposes pressed state", async ({ page }) => {
@@ -24,17 +32,17 @@ test.describe("ProfileHeader", () => {
       .getByRole("region", { name: "Profile appearance" })
       .first()
 
-    await expect(panel.getByRole("button", { name: "Avatar A" })).toHaveAttribute(
-      "aria-pressed",
-      "true"
-    )
-    await expect(panel.getByRole("button", { name: "Avatar B" })).toHaveAttribute(
-      "aria-pressed",
-      "false"
-    )
+    await expect(
+      panel.getByRole("button", { name: "Avatar A" })
+    ).toHaveAttribute("aria-pressed", "true")
+    await expect(
+      panel.getByRole("button", { name: "Avatar B" })
+    ).toHaveAttribute("aria-pressed", "false")
   })
 
-  test("fallback state remains explicit when no preview is supplied", async ({ page }) => {
+  test("fallback state remains explicit when no preview is supplied", async ({
+    page,
+  }) => {
     const section = page.locator("#profile-header")
     await expect(section.getByText("No preview")).toBeVisible()
   })

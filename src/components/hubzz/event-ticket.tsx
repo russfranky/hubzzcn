@@ -274,7 +274,7 @@ export function EventTicket({
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="h-8 shrink-0 cursor-pointer rounded-full bg-background px-[14px] text-[12px] font-semibold text-white hover:bg-hubzz-hover"
+                    className="hover:bg-hubzz-hover h-8 shrink-0 cursor-pointer rounded-full bg-background px-[14px] text-[12px] font-semibold text-white"
                     onClick={onJoin}
                   >
                     Join event
@@ -284,7 +284,7 @@ export function EventTicket({
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="h-8 shrink-0 cursor-pointer rounded-full bg-background px-[14px] text-[12px] font-semibold text-white hover:bg-hubzz-hover"
+                    className="hover:bg-hubzz-hover h-8 shrink-0 cursor-pointer rounded-full bg-background px-[14px] text-[12px] font-semibold text-white"
                     onClick={onLeave}
                   >
                     Leave
@@ -294,7 +294,7 @@ export function EventTicket({
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="h-8 shrink-0 cursor-pointer rounded-full bg-background px-[14px] text-[12px] font-semibold text-white hover:bg-hubzz-hover"
+                    className="hover:bg-hubzz-hover h-8 shrink-0 cursor-pointer rounded-full bg-background px-[14px] text-[12px] font-semibold text-white"
                     onClick={onSeeDetail}
                   >
                     See detail

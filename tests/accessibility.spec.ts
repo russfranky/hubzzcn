@@ -12,7 +12,9 @@ for (const theme of THEMES) {
 
       await page.goto("/")
       await page.waitForLoadState("networkidle")
-      await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${theme}\\b`))
+      await expect(page.locator("html")).toHaveClass(
+        new RegExp(`\\b${theme}\\b`)
+      )
 
       const results = await new AxeBuilder({ page })
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])

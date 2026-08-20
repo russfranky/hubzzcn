@@ -21,6 +21,8 @@ test.describe("DronePhoto", () => {
 
   test("metadata is exposed as a figure caption", async ({ page }) => {
     const figure = page.locator("#drone-photo figure").first()
-    await expect(figure.locator("figcaption")).toContainText("06/13/24 11:12 UTC")
+    await expect(figure.locator("figcaption")).toContainText(
+      "06/13/24 11:12 UTC"
+    )
   })
 })

@@ -119,9 +119,21 @@ export function Foundations() {
         </div>
 
         <div className="mt-4 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-3">
-          <FoundationDatum label="Type" value="Inter Variable" detail="One sans family across UI and documentation." />
-          <FoundationDatum label="Radius" value="12px base" detail="Pills are reserved for actions and compact filters." />
-          <FoundationDatum label="Theme" value="Light + dark" detail="The catalog defaults dark; registry semantics stay shadcn-standard." />
+          <FoundationDatum
+            label="Type"
+            value="Inter Variable"
+            detail="One sans family across UI and documentation."
+          />
+          <FoundationDatum
+            label="Radius"
+            value="12px base"
+            detail="Pills are reserved for actions and compact filters."
+          />
+          <FoundationDatum
+            label="Theme"
+            value="Light + dark"
+            detail="The catalog defaults dark; registry semantics stay shadcn-standard."
+          />
         </div>
       </section>
 
@@ -136,14 +148,19 @@ export function Foundations() {
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               These are shadcn/Radix building blocks, not parallel Hubzz-owned
-              components. Prefer upstream behavior, then tokens, then composition.
+              components. Prefer upstream behavior, then tokens, then
+              composition.
             </p>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
           {UPSTREAM.map((name) => (
-            <Badge key={name} variant="secondary" className="px-3 py-1.5 text-[11px]">
+            <Badge
+              key={name}
+              variant="secondary"
+              className="px-3 py-1.5 text-[11px]"
+            >
               {name}
             </Badge>
           ))}

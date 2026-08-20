@@ -189,7 +189,10 @@ function ComponentSection({
           </p>
           <ul className="space-y-1.5">
             {meta.notes.map((note) => (
-              <li key={note} className="text-xs leading-5 text-secondary-foreground">
+              <li
+                key={note}
+                className="text-xs leading-5 text-secondary-foreground"
+              >
                 {note}
               </li>
             ))}

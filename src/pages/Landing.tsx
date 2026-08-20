@@ -11,10 +11,7 @@ import {
 } from "lucide-react"
 
 import { CopyCommand } from "@/catalog/copy-command"
-import {
-  SearchDialog,
-  type SearchEntry,
-} from "@/catalog/search-dialog"
+import { SearchDialog, type SearchEntry } from "@/catalog/search-dialog"
 import { useTheme } from "@/catalog/theme-provider"
 import { HubzzLogo } from "@/components/hubzz/hubzz-logo"
 import { Badge } from "@/components/ui/badge"
@@ -85,7 +82,8 @@ const PRINCIPLES = [
   {
     icon: Box,
     title: "Source registry",
-    description: "Install public source directly from GitHub with the shadcn CLI.",
+    description:
+      "Install public source directly from GitHub with the shadcn CLI.",
   },
   {
     icon: ShieldCheck,
@@ -95,7 +93,8 @@ const PRINCIPLES = [
   {
     icon: CheckCircle2,
     title: "Consumer verified",
-    description: "Registry items are installed and built in a clean Vite project in CI.",
+    description:
+      "Registry items are installed and built in a clean Vite project in CI.",
   },
 ]
 
@@ -105,7 +104,10 @@ export function Landing() {
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() !== "k" || !(event.metaKey || event.ctrlKey)) {
+      if (
+        event.key.toLowerCase() !== "k" ||
+        !(event.metaKey || event.ctrlKey)
+      ) {
         return
       }
 
@@ -123,7 +125,9 @@ export function Landing() {
         <div className="flex h-14 items-center border-b border-border px-4">
           <a href="#overview" className="flex items-center gap-2.5">
             <HubzzLogo size={24} />
-            <span className="text-sm font-semibold tracking-tight">Hubzz UI</span>
+            <span className="text-sm font-semibold tracking-tight">
+              Hubzz UI
+            </span>
             <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[9px]">
               beta
             </Badge>
@@ -163,7 +167,10 @@ export function Landing() {
 
         <div className="border-t border-border p-3">
           <div className="mb-3 flex items-center gap-2 px-2 text-[11px] text-muted-foreground">
-            <span className="size-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+            <span
+              className="size-1.5 rounded-full bg-emerald-400"
+              aria-hidden="true"
+            />
             Public source registry
           </div>
           <a
@@ -229,7 +236,10 @@ export function Landing() {
         </header>
 
         <main>
-          <section id="overview" className="scroll-mt-16 border-b border-border">
+          <section
+            id="overview"
+            className="scroll-mt-16 border-b border-border"
+          >
             <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-18">
               <div className="max-w-3xl">
                 <div className="mb-5 flex flex-wrap items-center gap-2">
@@ -242,14 +252,17 @@ export function Landing() {
                   Hubzz UI
                 </h1>
                 <p className="mt-4 max-w-2xl text-[15px] leading-7 text-secondary-foreground sm:text-base">
-                  A shadcn-first interface system. Keep upstream behavior, define
-                  the brand with semantic tokens, and own custom source only when
-                  Hubzz owns the interaction.
+                  A shadcn-first interface system. Keep upstream behavior,
+                  define the brand with semantic tokens, and own custom source
+                  only when Hubzz owns the interaction.
                 </p>
               </div>
 
               <div className="mt-8 max-w-3xl">
-                <CopyCommand command={BASE_COMMAND} label="Copy base install command" />
+                <CopyCommand
+                  command={BASE_COMMAND}
+                  label="Copy base install command"
+                />
               </div>
 
               <div className="mt-10 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
@@ -257,8 +270,13 @@ export function Landing() {
                   const Icon = principle.icon
                   return (
                     <div key={principle.title} className="bg-background p-4">
-                      <Icon className="size-4 text-primary" aria-hidden="true" />
-                      <h2 className="mt-4 text-sm font-medium">{principle.title}</h2>
+                      <Icon
+                        className="size-4 text-primary"
+                        aria-hidden="true"
+                      />
+                      <h2 className="mt-4 text-sm font-medium">
+                        {principle.title}
+                      </h2>
                       <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
                         {principle.description}
                       </p>

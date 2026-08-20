@@ -17,7 +17,9 @@ test.describe("Component catalog", () => {
   })
 
   test("exposes the design-system hierarchy", async ({ page }) => {
-    await expect(page.getByRole("heading", { level: 1, name: "Hubzz UI" })).toBeVisible()
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Hubzz UI" })
+    ).toBeVisible()
     await expect(page.locator("#foundations")).toBeVisible()
     await expect(page.locator("#upstream")).toBeVisible()
     await expect(page.locator("#overrides")).toBeVisible()

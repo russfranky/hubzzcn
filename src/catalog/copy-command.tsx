@@ -28,7 +28,7 @@ export function CopyCommand({
         className
       )}
     >
-      <code className="min-w-0 flex-1 overflow-x-auto font-mono text-[11px] leading-5 text-secondary-foreground [scrollbar-width:none]">
+      <code className="min-w-0 flex-1 [scrollbar-width:none] overflow-x-auto font-mono text-[11px] leading-5 text-secondary-foreground">
         {command}
       </code>
       <Button
