@@ -3,13 +3,16 @@ import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
-const isPreviewApp = process.env.VITE_APP_BUILD === "preview"
+const appBuild = process.env.VITE_APP_BUILD
+const isProductionCatalog = appBuild === "preview"
+const isVercelCatalog = appBuild === "vercel"
+const isCatalogBuild = isProductionCatalog || isVercelCatalog
 
 export default defineConfig({
-  base: isPreviewApp ? "/cn/" : undefined,
+  base: isProductionCatalog ? "/cn/" : undefined,
   plugins: [react(), tailwindcss()],
   resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
-  ...(isPreviewApp
+  ...(isCatalogBuild
     ? {}
     : {
         build: {
