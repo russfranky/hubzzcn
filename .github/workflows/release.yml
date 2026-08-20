@@ -59,7 +59,7 @@ jobs:
         run: pnpm test:ui
 
       - name: Verify tagged registry base
-        run: pnpm dlx shadcn@latest view "russfranky/hubzzcn/hubzz#${GITHUB_REF_NAME}" >/dev/null
+        run: pnpm exec shadcn view "russfranky/hubzzcn/hubzz#${GITHUB_REF_NAME}" >/dev/null
 
       - name: Verify tagged registry in a clean consumer
         run: pnpm registry:smoke "${GITHUB_REF_NAME}"
@@ -67,7 +67,7 @@ jobs:
       - name: Pack release artifact
         run: |
           mkdir -p release-assets
-          npm pack --pack-destination release-assets
+          pnpm pack --pack-destination release-assets
           (cd release-assets && sha256sum *.tgz > SHA256SUMS)
 
       - name: Attest release artifact provenance
