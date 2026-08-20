@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs"
 import type { ElementType } from "react"
+
 import { allExamples } from "../src/examples"
 import type { Example, Meta } from "../src/examples/types"
 
@@ -27,6 +28,7 @@ function normalizeModule(module: unknown) {
           key !== "meta" && key !== "examples" && isExample(value)
       )
       .map(([, value]) => value as ManifestExample)
+
   return { meta: record.meta, examples }
 }
 
@@ -35,7 +37,6 @@ mkdirSync("docs", { recursive: true })
 
 const manifest = {
   version: process.env.npm_package_version ?? "0.0.0",
-  generated: new Date().toISOString(),
   components: Object.fromEntries(
     allExamples.map((module) => {
       const { meta, examples } = normalizeModule(module)
@@ -46,6 +47,7 @@ const manifest = {
           slug: meta.slug ?? meta.title.toLowerCase(),
           description: meta.description,
           category: meta.category,
+          layer: meta.layer ?? "component",
           notes: meta.notes ?? [],
           examples: examples.map((example) => ({
             key: example.name.toLowerCase().replace(/\s+/g, "_"),
@@ -84,6 +86,7 @@ const sections = allExamples.map((module) => {
       })
       .filter((value): value is string => value !== null)
       .join(" ")
+
     return `| ${example.name} | | ${keyArgs || "—"} |`
   })
 
@@ -92,8 +95,10 @@ const sections = allExamples.map((module) => {
     "",
     meta.description,
     "",
+    `**Layer:** ${meta.layer ?? "component"}`,
+    "",
     meta.composeOnly
-      ? `**Import:** Compose multiple exports from \`@hubzz/ui\` (see \`DESIGN.md\`).`
+      ? `**Import:** Compose multiple exports from \`@hubzz/ui\`.`
       : `**Import:** \`import { ${meta.title} } from "@hubzz/ui"\``,
     "",
     "### Examples",

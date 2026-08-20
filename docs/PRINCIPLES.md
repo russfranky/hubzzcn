@@ -1,84 +1,100 @@
 # Component principles
 
-Hubzz UI is upstream-first. The goal is to keep shadcn behavior intact wherever the product can be expressed through it, then spend custom code only on genuinely Hubzz-specific interaction and composition.
+Hubzz UI is upstream-first. The system keeps shadcn behavior intact wherever
+the product can be expressed through it, then spends custom code only on
+genuinely Hubzz-specific structure and interaction.
 
 ## 1. Theme before forking
 
-Prefer design tokens, CVA variants, and size/state styling over copying a primitive into a second component.
+Prefer semantic tokens and supported variants over creating a second component
+with the same anatomy.
 
-If a stock shadcn component already has the right anatomy and accessibility behavior, keep its API and theme it. Button is the reference implementation for this approach.
+If a stock shadcn component already has the right behavior and accessibility,
+keep its API and theme it. Button is the reference Hubzz override.
 
 ## 2. Preserve semantic APIs
 
-Keep familiar shadcn concepts such as `variant`, `size`, `asChild`, and native HTML states such as `disabled` while the current Radix base remains in use.
+Keep familiar shadcn concepts such as `variant`, `size`, `asChild`, and native
+HTML states such as `disabled`.
 
-Do not encode transient UI states such as hover, pressed, focus, or disabled as bespoke component props when CSS or native HTML already expresses them.
+Do not model hover, focus, pressed, or disabled as custom visual props when
+CSS, ARIA, or the underlying primitive already expresses them.
 
 ## 3. Keep the primitive base explicit
 
-Hubzz UI currently uses the Radix-based shadcn implementation. That is an intentional compatibility choice, not an assumption.
+Hubzz UI intentionally uses the Radix-based shadcn implementation.
 
-The public registry exposes a `registry:base` item so consumers get the same component base and configuration. Do not migrate the primitive base as incidental cleanup. A base migration is a deliberate project with component-by-component verification.
+The public `registry:base` item pins that choice so a future shadcn default
+cannot silently change the component substrate. A base migration requires
+component-by-component review.
 
-## 4. Three implementation tiers
+## 4. Use three implementation strategies
 
-### Theme-only
+### Upstream or theme-only
 
-These should stay closest to upstream shadcn and primarily differ through Hubzz tokens and variants:
+These stay structurally close to shadcn and are not re-published as parallel
+Hubzz components:
 
-- Button
-- Badge
+- Alert
 - Avatar
-- Input
-- Label
-- Checkbox
-- Switch
-- Select
-- Tabs
-- Dialog
-- Sheet
-- Dropdown Menu
-- Separator
+- Badge
 - Breadcrumb
+- Card
+- Checkbox
+- Collapsible
+- Dialog
+- Dropdown Menu
+- Form
+- Input
+- Item
+- Label
+- Select
+- Separator
+- Sheet
+- Sidebar
+- Skeleton
+- Sonner
+- Switch
+- Tabs
 - Textarea
 - Toggle
-- Form primitives
+- Tooltip
 
-### Thin composition
+### Hubzz override
 
-These combine primitives into a reusable Hubzz pattern but should still delegate behavior to the underlying shadcn components:
+An override keeps the upstream public contract and changes a deliberately
+small layer.
 
-- Sidebar
-- Form input
-- Search box
-- Menu item
-- Profile header
-- Popup header
-- Toast presentation
-- Top bar
+Current override:
 
-### Custom product UI
+- Button
 
-These earn custom components because their structure or interaction is specific to Hubzz rather than a themed generic primitive:
+### Hubzz composition or custom component
 
-- Space card
-- Select badge
-- Chat input
-- Chat item
-- Chat bubble
-- Reaction item
-- Video area
+A Hubzz-owned component must add reusable product value that is not already an
+upstream primitive.
+
+Current public components:
+
+- HubzzLogo
+- BadgeCategory
 - Capsule
-- Event ticket
-- Backpack item
-- Group merch
-- Payment method presentation
+- ToastBanner
+- EventTicket
+- ProfileHeader
+- DronePhoto
+
+The exact ownership and upstream dependencies are documented in
+`docs/ARCHITECTURE.md`.
 
 ## 5. Public component rule
 
-A component belongs in the public system when it is reusable across Hubzz surfaces and does not own product data, authentication, API calls, or application state.
+A component belongs in the public system when it is reusable across Hubzz
+surfaces and does not own product data, authentication, API calls, or
+application state.
 
-Product code passes data and callbacks in. The component owns presentation, accessible interaction, and reusable local UI behavior.
+Consumers pass data and callbacks in. The component owns presentation,
+accessible interaction, and reusable local behavior.
 
 ## 6. Registry rule
 
@@ -86,25 +102,40 @@ Every public registry item must:
 
 - have a clear title and description;
 - declare runtime and registry dependencies explicitly;
+- use upstream shadcn registry dependencies instead of copied primitives;
 - keep source files reviewable and free of generated content;
 - validate with `shadcn registry validate`;
-- use the full GitHub address for same-repository registry dependencies;
-- avoid unnecessary dependencies when an upstream shadcn item already provides the behavior.
+- resolve successfully from the public repository at the tested commit.
 
-The complete `hubzz` base is the recommended starting point. Individual items exist for incremental adoption.
+The `hubzz` base is the recommended foundation. Individual items exist for
+incremental adoption.
 
-## 7. Accessibility is part of the component API
+## 7. Accessibility is part of the API
 
-Keyboard operation, focus visibility, semantic HTML, accessible names, disabled behavior, and contrast are acceptance criteria, not optional polish.
+Keyboard operation, focus visibility, semantic HTML, accessible names,
+disabled behavior, and contrast are acceptance criteria.
 
-Prefer the accessibility behavior already supplied by the underlying primitive. Custom interaction must include equivalent keyboard and screen-reader behavior before it is considered complete.
+Prefer the behavior supplied by the underlying primitive. Custom interaction
+must provide equivalent semantics before it is considered complete.
 
 ## 8. Catalog rule
 
-The catalog at `hubzz.xyz/cn/` documents the package and registry that actually exist. Examples demonstrate supported props and states, not one-off mock screens that imply unsupported APIs.
+The catalog at `hubzz.xyz/cn/` documents the registry and package surfaces that
+actually exist.
 
-When a design can be represented by an existing shadcn primitive plus Hubzz tokens, add it to the existing primitive rather than creating a parallel Hubzz-named copy.
+It explicitly separates:
+
+- foundations;
+- upstream primitives;
+- Hubzz overrides;
+- Hubzz components;
+- reusable patterns.
+
+The catalog should not imply that Hubzz owns an upstream component merely
+because the product uses it.
 
 ## 9. Change discipline
 
-Public API changes require tests and documentation. Breaking changes require a versioned release and migration notes. Component refactors should not silently change keyboard behavior, DOM semantics, or registry install paths.
+Public API changes require tests and documentation. Breaking changes require a
+versioned release and migration notes. Refactors must not silently change
+keyboard behavior, DOM semantics, registry install paths, or package exports.

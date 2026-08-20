@@ -1,0 +1,134 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "hubzz-logo",
+      "type": "registry:component",
+      "title": "Hubzz Logo",
+      "description": "Hubzz brand mark as a reusable React SVG component.",
+      "author": "Hubzz",
+      "files": [
+        {
+          "path": "hubzz-logo.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/hubzz-logo.tsx"
+        }
+      ],
+      "categories": ["brand"],
+      "meta": { "stability": "beta", "strategy": "custom" }
+    },
+    {
+      "name": "badge-category",
+      "type": "registry:component",
+      "title": "Badge Category",
+      "description": "Hubzz category tag composed from the Button override.",
+      "author": "Hubzz",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "russfranky/hubzzcn/button"],
+      "files": [
+        {
+          "path": "badge-category.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/badge-category.tsx"
+        }
+      ],
+      "categories": ["data-display", "filters"],
+      "meta": { "stability": "beta", "strategy": "composition" }
+    },
+    {
+      "name": "capsule",
+      "type": "registry:component",
+      "title": "Capsule",
+      "description": "Hubzz filter pill built on the upstream Toggle primitive.",
+      "author": "Hubzz",
+      "registryDependencies": [
+        "utils",
+        "toggle",
+        "russfranky/hubzzcn/hubzz-theme"
+      ],
+      "files": [
+        {
+          "path": "capsule.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/capsule.tsx"
+        }
+      ],
+      "categories": ["controls", "filters"],
+      "meta": { "stability": "beta", "strategy": "composition" }
+    },
+    {
+      "name": "toast-banner",
+      "type": "registry:component",
+      "title": "Toast Banner",
+      "description": "Hubzz notification banner with semantic status variants.",
+      "author": "Hubzz",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "russfranky/hubzzcn/button"],
+      "files": [
+        {
+          "path": "toast-banner.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/toast-banner.tsx"
+        }
+      ],
+      "categories": ["feedback"],
+      "meta": { "stability": "beta", "strategy": "composition" }
+    },
+    {
+      "name": "event-ticket",
+      "type": "registry:component",
+      "title": "Event Ticket",
+      "description": "Hubzz event ticket with ready, upcoming, joined, past, and loading states.",
+      "author": "Hubzz",
+      "registryDependencies": [
+        "utils",
+        "skeleton",
+        "russfranky/hubzzcn/button"
+      ],
+      "files": [
+        {
+          "path": "event-ticket.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/event-ticket.tsx"
+        }
+      ],
+      "categories": ["events", "data-display"],
+      "meta": { "stability": "beta", "strategy": "custom" }
+    },
+    {
+      "name": "profile-header",
+      "type": "registry:component",
+      "title": "Profile Header",
+      "description": "Hubzz profile customization pattern composed from Avatar and Button.",
+      "author": "Hubzz",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "avatar", "russfranky/hubzzcn/button"],
+      "files": [
+        {
+          "path": "profile-header.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/profile-header.tsx"
+        }
+      ],
+      "categories": ["profile", "patterns"],
+      "meta": { "stability": "beta", "strategy": "composition" }
+    },
+    {
+      "name": "drone-photo",
+      "type": "registry:component",
+      "title": "Drone Photo",
+      "description": "Responsive Hubzz media treatment for in-world captures and metadata.",
+      "author": "Hubzz",
+      "registryDependencies": ["utils", "russfranky/hubzzcn/hubzz-theme"],
+      "files": [
+        {
+          "path": "drone-photo.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/drone-photo.tsx"
+        }
+      ],
+      "categories": ["media"],
+      "meta": { "stability": "beta", "strategy": "custom" }
+    }
+  ]
+}

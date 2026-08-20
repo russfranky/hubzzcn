@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Public Hubzz design system and shadcn/ui registry.",
+  "license": "MIT",
   "keywords": [
     "hubzz",
     "shadcn",
@@ -24,6 +25,7 @@
   "engines": {
     "node": ">=20.19.0"
   },
+  "packageManager": "pnpm@10.33.4",
   "main": "./dist/hubzz-ui.cjs",
   "module": "./dist/hubzz-ui.mjs",
   "types": "./dist/index.d.ts",
@@ -53,22 +55,22 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build && tsc -p tsconfig.lib.json && node --input-type=module -e \"import { copyFileSync } from 'node:fs'; copyFileSync('dist/index.d.ts', 'dist/index.d.cts')\" && npm run generate:manifest",
+    "build": "vite build && tsc -p tsconfig.lib.json && node --input-type=module -e \"import { copyFileSync } from 'node:fs'; copyFileSync('dist/index.d.ts', 'dist/index.d.cts')\" && pnpm generate:manifest",
     "build:preview": "tsc -b && VITE_APP_BUILD=preview vite build",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm run build && npm run registry:validate && npm run pack:check",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm build && pnpm registry:validate && pnpm pack:check",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml,css}\"",
     "generate:manifest": "tsx scripts/generate-manifest.ts",
     "lint": "eslint . --max-warnings=0",
-    "pack:check": "npm pack --dry-run --json >/dev/null && publint",
+    "pack:check": "publint",
     "preview": "vite preview",
     "registry:list": "shadcn list russfranky/hubzzcn",
     "registry:validate": "shadcn registry validate",
     "registry:view": "shadcn view russfranky/hubzzcn/hubzz",
-    "test": "npm run test:ui",
+    "test": "pnpm test:ui",
     "test:ui": "playwright test",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run check"
+    "prepublishOnly": "pnpm check"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

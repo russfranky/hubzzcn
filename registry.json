@@ -4,6 +4,7 @@
   "homepage": "https://hubzz.xyz/cn/",
   "include": [
     "registry/foundations/registry.json",
-    "src/components/ui/registry.json"
+    "src/components/ui/registry.json",
+    "src/components/hubzz/registry.json"
   ]
 }

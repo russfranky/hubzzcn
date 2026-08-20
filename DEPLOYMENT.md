@@ -1,15 +1,18 @@
 # Production deployment
 
-The production catalog is served at `https://hubzz.xyz/cn/` from the existing Nginx site behind Cloudflare.
+The public catalog is served at `https://hubzz.xyz/cn/` from the existing
+Nginx site behind Cloudflare.
 
 ## Build
 
+Use the frozen pnpm lockfile and the `/cn/` preview build:
+
 ```bash
-npm install
-npm run build:preview
+pnpm install --frozen-lockfile
+pnpm build:preview
 ```
 
-The preview build uses the `/cn/` base path and writes the static site to `dist/`.
+The build writes the complete static site to `dist/`.
 
 ## Deploy
 
@@ -25,26 +28,32 @@ The default target is:
 /var/www/hubzz.xyz/cn
 ```
 
-Set `HUBZZ_CN_ROOT` to override that path.
+Set `HUBZZ_CN_ROOT` to override it.
 
-On the first migration deploy, the script copies the deployment-only `ticket-bg.jpg` from `/var/www/hubzzhq.com/shadcn` when the new target does not already have it. The script then removes only the generated `assets/` directory before copying the new build, so other static files remain in place.
+The deployment mirrors `dist/` into the target. When `rsync` is available it
+uses `--delete` so removed build files do not remain publicly reachable. The
+fallback clears the target before copying the new build.
+
+All runtime assets used by the catalog should be versioned in this repository.
+Production-only files are not part of the component contract.
 
 ## CDN behavior
 
-Cloudflare remains in front of the existing `hubzz.xyz` Nginx origin. DNS does not need to change for this deployment.
+Cloudflare remains in front of the existing `hubzz.xyz` Nginx origin. DNS does
+not change for catalog releases.
 
-After a production deploy, verify the existing cache behavior:
+After deployment, verify:
 
 ```bash
 curl -I https://hubzz.xyz/cn/
 curl -I https://hubzz.xyz/cn/assets/<current-hashed-asset>.js
-curl -I https://hubzz.xyz/cn/ticket-bg.jpg
 ```
 
 Expected behavior:
 
 - HTML is revalidated rather than long-term cached.
-- Hashed files under `/cn/assets/` receive long-lived immutable caching at the Cloudflare edge.
-- `ticket-bg.jpg` keeps the existing four-hour cache lifetime.
+- Hashed files under `/cn/assets/` receive long-lived immutable caching at the
+  Cloudflare edge.
 
-Because asset filenames are content-hashed, a new build naturally produces new asset URLs while older cached assets remain harmless.
+Content-hashed asset names allow new releases to roll out without purging old
+JS or CSS URLs.

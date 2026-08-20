@@ -1,145 +1,121 @@
 # Hubzz UI
 
-[![CI](https://github.com/russfranky/hubzzcn/actions/workflows/ci.yml/badge.svg)](https://github.com/russfranky/hubzzcn/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/russfranky/hubzzcn/actions/workflows/codeql.yml/badge.svg)](https://github.com/russfranky/hubzzcn/actions/workflows/codeql.yml)
+Public Hubzz design system built on shadcn/ui, Radix primitives, Tailwind CSS,
+and a deliberately small Hubzz-owned component layer.
 
-Hubzz UI is the public Hubzz design system built on shadcn/ui, Radix primitives, Tailwind CSS, and React. The project stays upstream-first: use standard shadcn behavior whenever it fits, theme it with Hubzz tokens, compose primitives for recurring patterns, and write custom UI only when the product actually needs custom structure or interaction.
+**Catalog:** `https://hubzz.xyz/cn/`
 
-**Catalog:** https://hubzz.xyz/cn/
+## Install
 
-> **Status:** pre-1.0. The registry and package APIs are usable, but component coverage and naming may still change before the first stable release.
+`hubzzcn` is a public GitHub source registry. A separate registry server is not
+required. The shadcn CLI works with npm, pnpm, Yarn, or Bun; examples here use
+pnpm because it is the repository toolchain.
 
-## Install from the shadcn registry
-
-The public GitHub registry is the primary distribution path. No custom registry server or namespace configuration is required.
-
-### Full Hubzz base
-
-Use this for a new or existing shadcn project that should adopt the complete Hubzz foundation. It pins the Radix-based Hubzz style, tokens, Inter typography, and shared dependencies.
+Start with the Hubzz base:
 
 ```bash
-npx shadcn@latest add russfranky/hubzzcn/hubzz
+pnpm dlx shadcn@latest add russfranky/hubzzcn/hubzz
 ```
 
-### Theme only
-
-Use this when the project already has its preferred shadcn base and only needs Hubzz design tokens.
+Apply only the Hubzz theme to an existing shadcn project:
 
 ```bash
-npx shadcn@latest add russfranky/hubzzcn/hubzz-theme
+pnpm dlx shadcn@latest add russfranky/hubzzcn/hubzz-theme
 ```
 
-### Individual components
+Add an individual Hubzz component:
 
 ```bash
-npx shadcn@latest add russfranky/hubzzcn/button
+pnpm dlx shadcn@latest add russfranky/hubzzcn/event-ticket
 ```
 
-Before installing third-party registry code, the shadcn CLI can show the resolved payload or a dry run:
+Install the Button override:
 
 ```bash
-npx shadcn@latest view russfranky/hubzzcn/button
-npx shadcn@latest add russfranky/hubzzcn/button --dry-run
+pnpm dlx shadcn@latest add russfranky/hubzzcn/button
 ```
 
-For production builds, prefer a released tag once available, for example `russfranky/hubzzcn/button#v0.2.0`, so the installed source is reproducible.
+Registry addresses can be pinned to a release tag or commit when a consumer
+needs reproducible source installs.
+
+## Architecture
+
+Hubzz UI uses four decisions in order:
+
+1. Use the upstream shadcn primitive.
+2. Theme it with semantic tokens.
+3. Add a supported variant or thin composition.
+4. Write custom Hubzz source only when the product owns the structure or
+   interaction.
+
+That keeps upstream behavior and accessibility work intact while making the
+Hubzz layer obvious.
+
+See:
+
+- [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)
+- [`docs/FOUNDATIONS.md`](./docs/FOUNDATIONS.md)
+- [`docs/PRINCIPLES.md`](./docs/PRINCIPLES.md)
+- [`docs/COMPONENTS.md`](./docs/COMPONENTS.md)
+
+## Public Hubzz components
+
+| Item             | Strategy                | Install                             |
+| ---------------- | ----------------------- | ----------------------------------- |
+| `button`         | shadcn API override     | `russfranky/hubzzcn/button`         |
+| `hubzz-logo`     | brand asset             | `russfranky/hubzzcn/hubzz-logo`     |
+| `badge-category` | Button composition      | `russfranky/hubzzcn/badge-category` |
+| `capsule`        | Toggle composition      | `russfranky/hubzzcn/capsule`        |
+| `toast-banner`   | Button composition      | `russfranky/hubzzcn/toast-banner`   |
+| `event-ticket`   | custom event UI         | `russfranky/hubzzcn/event-ticket`   |
+| `profile-header` | Avatar + Button pattern | `russfranky/hubzzcn/profile-header` |
+| `drone-photo`    | media component         | `russfranky/hubzzcn/drone-photo`    |
+
+Ordinary primitives such as Dialog, Select, Sheet, Tabs, Checkbox, Input, and
+Tooltip remain upstream-first rather than receiving Hubzz copies in the
+registry.
 
 ## Package build
 
-The repository also builds the `@hubzz/ui` package for package-based consumption. Public package publishing is intentionally separate from the source-registry release process.
+The repository also builds a compiled `@hubzz/ui` package artifact. Release
+tags produce a package tarball on GitHub Releases. The GitHub source registry
+is the canonical public distribution path unless a package registry is
+explicitly configured later.
 
 ```tsx
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@hubzz/ui"
+import { Button, EventTicket } from "@hubzz/ui"
 import "@hubzz/ui/styles.css"
-
-export function Example() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Dashboard</CardTitle>
-      </CardHeader>
-      <CardContent className="flex items-center gap-3">
-        <Badge>Online</Badge>
-        <Button>Continue</Button>
-      </CardContent>
-    </Card>
-  )
-}
 ```
-
-## Component model
-
-Hubzz UI uses three implementation tiers:
-
-1. **Theme-only primitives** stay as close as possible to upstream shadcn/Radix behavior. Examples include Button, Input, Checkbox, Dialog, Select, Tabs, Sheet, and Dropdown Menu.
-2. **Thin compositions** combine those primitives into reusable Hubzz patterns without reimplementing accessible behavior. Examples include search controls, sidebars, profile headers, and menu items.
-3. **Custom product UI** is reserved for interaction or structure that is genuinely Hubzz-specific, such as space cards, badge selection, chat surfaces, event tickets, and other product compositions.
-
-See [`docs/PRINCIPLES.md`](./docs/PRINCIPLES.md) for the decision rules.
 
 ## Development
 
-Requirements:
-
-- Node.js 20.19+; Node 22 is the repository default.
-- npm.
+Node 22 and pnpm 10.33.4 are the repository baselines.
 
 ```bash
-npm install
-npm run dev
+pnpm install --frozen-lockfile
+pnpm check
+pnpm test:ui
+pnpm build:preview
 ```
 
-Useful checks:
+`pnpm check` enforces formatting, zero-warning lint, TypeScript, the package
+build, registry schema validation, and package-surface validation with
+publint. Playwright covers browser behavior and automated accessibility
+checks.
 
-```bash
-npm run check              # formatting, lint, types, package build, registry, package surface
-npm run test:ui            # Playwright component and accessibility tests
-npm run registry:validate  # validate source registry files
-npm run registry:list      # list public registry items
-npm run registry:view      # inspect the full Hubzz base payload
-```
+## Releases
 
-The production catalog is built with:
+The project follows Semantic Versioning. See
+[`docs/RELEASING.md`](./docs/RELEASING.md) and
+[`CHANGELOG.md`](./CHANGELOG.md).
 
-```bash
-npm run build:preview
-```
+## Security
 
-Deployment details are in [`DEPLOYMENT.md`](./DEPLOYMENT.md).
+Do not open a public issue for a suspected vulnerability. Follow
+[`SECURITY.md`](./SECURITY.md).
 
-## Compatibility
+## License
 
-- React 18 and 19
-- Tailwind CSS 4
-- shadcn CLI 4
-- Radix component base
-- TypeScript-first source
-
-The repository intentionally remains on Radix while it is stable and working. The `hubzz` registry base makes that choice explicit for consumers instead of allowing upstream defaults to change it implicitly.
-
-## Repository standards
-
-- [`CONTRIBUTING.md`](./CONTRIBUTING.md) — contribution and review expectations
-- [`SECURITY.md`](./SECURITY.md) — vulnerability reporting policy
-- [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) — community expectations
-- [`CHANGELOG.md`](./CHANGELOG.md) — notable public changes
-- [`docs/RELEASING.md`](./docs/RELEASING.md) — version and release process
-- [`docs/PRINCIPLES.md`](./docs/PRINCIPLES.md) — shadcn-first component architecture
-
-## Adding a component
-
-Start with upstream before writing custom code:
-
-```bash
-npx shadcn@latest docs <component>
-npx shadcn@latest add <component>
-```
-
-Then apply Hubzz tokens or a thin variant layer. If a new public item is required, add it to the source registry and run `npm run registry:validate` before opening a pull request.
+Hubzz UI is MIT licensed. See [`LICENSE`](./LICENSE). Source derived from
+shadcn/ui retains its upstream notice in
+[`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md).

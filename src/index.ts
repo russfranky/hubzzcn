@@ -1,93 +1,115 @@
-// Styles
 import "./index.css"
 
-// Components
-export { Alert, AlertTitle, AlertDescription } from "./components/ui/alert"
-export { Avatar, AvatarImage, AvatarFallback } from "./components/ui/avatar"
+export { Alert, AlertDescription, AlertTitle } from "./components/ui/alert"
+export {
+  Avatar,
+  AvatarBadge,
+  AvatarFallback,
+  AvatarGroup,
+  AvatarGroupCount,
+  AvatarImage,
+} from "./components/ui/avatar"
 export { Badge, badgeVariants } from "./components/ui/badge"
+export {
+  Breadcrumb,
+  BreadcrumbEllipsis,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "./components/ui/breadcrumb"
 export { Button, buttonVariants } from "./components/ui/button"
 export {
   Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardDescription,
   CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from "./components/ui/card"
 export { Checkbox } from "./components/ui/checkbox"
 export {
-  Dialog,
-  DialogPortal,
-  DialogOverlay,
-  DialogTrigger,
-  DialogClose,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "./components/ui/dialog"
-
-export { Input } from "./components/ui/input"
-export { Label } from "./components/ui/label"
-export {
-  Select,
-  SelectGroup,
-  SelectValue,
-  SelectTrigger,
-  SelectContent,
-  SelectLabel,
-  SelectItem,
-  SelectSeparator,
-  SelectScrollUpButton,
-  SelectScrollDownButton,
-} from "./components/ui/select"
-export { Separator } from "./components/ui/separator"
-export {
-  Sheet,
-  SheetTrigger,
-  SheetClose,
-  SheetContent,
-  SheetHeader,
-  SheetFooter,
-  SheetTitle,
-  SheetDescription,
-} from "./components/ui/sheet"
-export { Switch } from "./components/ui/switch"
-export { Tabs, TabsList, TabsTrigger, TabsContent } from "./components/ui/tabs"
-export { Textarea } from "./components/ui/textarea"
-export { Toggle, toggleVariants } from "./components/ui/toggle"
-export {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  BreadcrumbEllipsis,
-} from "./components/ui/breadcrumb"
-export {
   Collapsible,
-  CollapsibleTrigger,
   CollapsibleContent,
+  CollapsibleTrigger,
 } from "./components/ui/collapsible"
 export {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  DialogTrigger,
+} from "./components/ui/dialog"
+export {
   DropdownMenu,
-  DropdownMenuPortal,
-  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
-  DropdownMenuLabel,
   DropdownMenuItem,
-  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
-  DropdownMenuSubTrigger,
   DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 } from "./components/ui/dropdown-menu"
+export {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  useFormField,
+} from "./components/ui/form"
+export { Input } from "./components/ui/input"
+export {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemFooter,
+  ItemGroup,
+  ItemHeader,
+  ItemMedia,
+  ItemSeparator,
+  ItemTitle,
+} from "./components/ui/item"
+export { Label } from "./components/ui/label"
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "./components/ui/select"
+export { Separator } from "./components/ui/separator"
+export {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "./components/ui/sheet"
 export {
   Sidebar,
   SidebarContent,
@@ -115,6 +137,11 @@ export {
   useSidebar,
 } from "./components/ui/sidebar"
 export { Skeleton } from "./components/ui/skeleton"
+export { Toaster } from "./components/ui/sonner"
+export { Switch } from "./components/ui/switch"
+export { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs"
+export { Textarea } from "./components/ui/textarea"
+export { Toggle, toggleVariants } from "./components/ui/toggle"
 export {
   Tooltip,
   TooltipContent,
@@ -122,40 +149,36 @@ export {
   TooltipTrigger,
 } from "./components/ui/tooltip"
 
-// Brand
-export { HubzzLogo } from "./components/hubzz-logo"
-
-// EventTicket
-export { EventTicket, type EventTicketState, type EventTicketProps } from "./components/ui/event-ticket"
-
-// Form
 export {
-  useFormField,
-  Form,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormField,
-  FormDescription,
-  FormMessage,
-} from "./components/ui/form"
+  BadgeCategory,
+  type BadgeCategoryProps,
+  type BadgeCategoryState,
+} from "./components/hubzz/badge-category"
+export { Capsule, type CapsuleProps } from "./components/hubzz/capsule"
+export {
+  DronePhoto,
+  type DronePhotoProps,
+} from "./components/hubzz/drone-photo"
+export {
+  EventTicket,
+  type EventTicketProps,
+  type EventTicketState,
+} from "./components/hubzz/event-ticket"
+export {
+  HubzzLogo,
+  type HubzzLogoProps,
+  type HubzzLogoVariant,
+} from "./components/hubzz/hubzz-logo"
+export {
+  ProfileHeader,
+  type ProfileHeaderAvatar,
+  type ProfileHeaderProps,
+} from "./components/hubzz/profile-header"
+export {
+  ToastBanner,
+  type ToastBannerProps,
+  type ToastBannerType,
+} from "./components/hubzz/toast-banner"
 
-// Toaster
-export { Toaster } from "./components/ui/sonner"
-
-// Hooks
 export { useIsMobile } from "./hooks/use-mobile"
-
-// Profile Header
-export { ProfileHeader, type ProfileHeaderProps } from "./components/profile-header"
-
-// Drone Photo
-export { DronePhoto, type DronePhotoProps } from "./components/drone-photo"
-
-// Additional Hubzz components (examples + tests)
-export { BadgeCategory, type BadgeCategoryProps } from "./components/ui/badge-category"
-export { Capsule, type CapsuleProps } from "./components/ui/capsule"
-export { ToastBanner, type ToastBannerProps } from "./components/ui/toast-banner"
-
-// Utilities
 export { cn } from "./lib/utils"

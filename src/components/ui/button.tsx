@@ -18,7 +18,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "[background:var(--primary-gradient)] text-primary-foreground hover:[background:var(--primary)] focus-visible:ring-4 focus-visible:ring-[rgba(227,223,254,0.24)] active:[background:var(--primary)] active:ring-4 active:ring-[rgba(227,223,254,0.24)]",
+          "text-primary-foreground [background:var(--primary-gradient)] hover:[background:var(--primary)] focus-visible:ring-4 focus-visible:ring-[rgba(227,223,254,0.24)] active:ring-4 active:ring-[rgba(227,223,254,0.24)] active:[background:var(--primary)]",
         secondary:
           "bg-background text-foreground hover:bg-[#393E44] focus-visible:ring-4 focus-visible:ring-[rgba(122,123,125,0.4)] active:bg-background active:ring-4 active:ring-[rgba(122,123,125,0.4)]",
         outline:

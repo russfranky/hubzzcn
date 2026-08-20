@@ -9,8 +9,8 @@ import { hexToRgb, normalizeCssColor } from "../helpers/colors"
 
 // spec colors
 const BG_DEFAULT = hexToRgb("#181B1F") // rgb(24, 27, 31)
-const BG_HOVER   = hexToRgb("#24262B") // rgb(36, 38, 43)
-const BG_ACTIVE  = hexToRgb("#392F7D") // rgb(57, 47, 125)
+const BG_HOVER = hexToRgb("#24262B") // rgb(36, 38, 43)
+const BG_ACTIVE = hexToRgb("#392F7D") // rgb(57, 47, 125)
 
 test.describe("BadgeCategory", () => {
   let page: Page
@@ -71,7 +71,11 @@ test.describe("BadgeCategory", () => {
     const badge = page.locator("#badge-category [data-state]").first()
     const styles = await badge.evaluate((el) => {
       const cs = getComputedStyle(el)
-      return { color: cs.color, fontSize: cs.fontSize, fontWeight: cs.fontWeight }
+      return {
+        color: cs.color,
+        fontSize: cs.fontSize,
+        fontWeight: cs.fontWeight,
+      }
     })
     expect(styles.color).toMatch(/^rgb\(25[0-5], 25[0-5], 25[0-5]\)$/)
     expect(styles.fontSize).toBe("14px")
