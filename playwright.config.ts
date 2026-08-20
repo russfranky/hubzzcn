@@ -1,4 +1,6 @@
-import { defineConfig } from "@playwright/test"
+import { defineConfig, devices } from "@playwright/test"
+
+const catalogSmoke = /(?:accessibility|catalog)\.spec\.ts/
 
 export default defineConfig({
   testDir: "./tests",
@@ -15,8 +17,24 @@ export default defineConfig({
     screenshot: "only-on-failure",
     video: "retain-on-failure",
   },
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "firefox-catalog",
+      testMatch: catalogSmoke,
+      use: { ...devices["Desktop Firefox"] },
+    },
+    {
+      name: "webkit-catalog",
+      testMatch: catalogSmoke,
+      use: { ...devices["Desktop Safari"] },
+    },
+  ],
   webServer: {
-    command: "npm run dev -- --host 127.0.0.1",
+    command: "pnpm dev -- --host 127.0.0.1",
     url: "http://127.0.0.1:5173",
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
