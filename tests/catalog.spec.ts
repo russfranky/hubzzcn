@@ -102,7 +102,9 @@ test.describe("Component catalog", () => {
       await expect(
         section.getByRole("heading", { level: 3, name: title, exact: true })
       ).toBeVisible()
-      await expect(section.locator("[data-catalog-preview]").first()).toBeVisible()
+      await expect(
+        section.locator("[data-catalog-preview]").first()
+      ).toBeVisible()
     })
   }
 })
