@@ -4,13 +4,21 @@ const SOURCE = "src/index.css"
 const TARGET = "registry/foundations/registry.json"
 const CHECK = process.argv.includes("--check")
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
 function extractBlock(css: string, selector: string) {
-  const selectorIndex = css.indexOf(selector)
-  if (selectorIndex === -1) {
+  const selectorPattern = new RegExp(
+    `(?:^|\\n)\\s*${escapeRegExp(selector)}\\s*\\{`,
+    "m"
+  )
+  const selectorMatch = selectorPattern.exec(css)
+  if (!selectorMatch) {
     throw new Error(`Missing ${selector} block in ${SOURCE}`)
   }
 
-  const openBrace = css.indexOf("{", selectorIndex)
+  const openBrace = css.indexOf("{", selectorMatch.index)
   if (openBrace === -1) {
     throw new Error(`Missing opening brace for ${selector}`)
   }
