@@ -1,26 +1,30 @@
-import { ArrowRight, Check, Copy, Moon, Sun } from "lucide-react"
+import * as React from "react"
+import {
+  Box,
+  CheckCircle2,
+  Github,
+  Layers3,
+  Moon,
+  Search,
+  ShieldCheck,
+  Sun,
+} from "lucide-react"
 
+import { CopyCommand } from "@/catalog/copy-command"
+import {
+  SearchDialog,
+  type SearchEntry,
+} from "@/catalog/search-dialog"
 import { useTheme } from "@/catalog/theme-provider"
 import { HubzzLogo } from "@/components/hubzz/hubzz-logo"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { allExamples } from "@/examples"
 import { Catalog } from "@/pages/Catalog"
 import { Foundations } from "@/pages/Foundations"
 
-function GitHubIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
-    </svg>
-  )
-}
-
 const NAV = [
+  { href: "#overview", label: "Overview" },
   { href: "#foundations", label: "Foundations" },
   { href: "#upstream", label: "Primitives" },
   { href: "#overrides", label: "Overrides" },
@@ -28,43 +32,180 @@ const NAV = [
   { href: "#patterns", label: "Patterns" },
 ]
 
-const BASE_COMMAND = "npx shadcn@latest add russfranky/hubzzcn/hubzz"
-const COMPONENT_COMMAND =
-  "npx shadcn@latest add russfranky/hubzzcn/event-ticket"
+const BASE_COMMAND = "pnpm dlx shadcn@latest add russfranky/hubzzcn/hubzz"
+
+const COMPONENT_ENTRIES: SearchEntry[] = allExamples.map((module) => {
+  const meta = (
+    module as {
+      meta: {
+        title: string
+        slug?: string
+        layer?: string
+        description: string
+      }
+    }
+  ).meta
+
+  return {
+    href: `#${meta.slug ?? meta.title.toLowerCase()}`,
+    label: meta.title,
+    group: meta.layer ?? "component",
+    description: meta.description,
+  }
+})
+
+const SEARCH_ENTRIES: SearchEntry[] = [
+  {
+    href: "#overview",
+    label: "Overview",
+    group: "system",
+    description: "Principles, install path, and system status.",
+  },
+  {
+    href: "#foundations",
+    label: "Foundations",
+    group: "system",
+    description: "Semantic tokens and theming contract.",
+  },
+  {
+    href: "#upstream",
+    label: "Upstream primitives",
+    group: "system",
+    description: "Commodity UI that stays with shadcn.",
+  },
+  ...COMPONENT_ENTRIES,
+]
+
+const PRINCIPLES = [
+  {
+    icon: Layers3,
+    title: "Upstream first",
+    description: "Keep commodity interaction contracts with shadcn and Radix.",
+  },
+  {
+    icon: Box,
+    title: "Source registry",
+    description: "Install public source directly from GitHub with the shadcn CLI.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Accessible by default",
+    description: "WCAG A/AA checks run across dark and light catalog themes.",
+  },
+  {
+    icon: CheckCircle2,
+    title: "Consumer verified",
+    description: "Registry items are installed and built in a clean Vite project in CI.",
+  },
+]
 
 export function Landing() {
   const { theme, setTheme } = useTheme()
+  const [searchOpen, setSearchOpen] = React.useState(false)
+
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() !== "k" || !(event.metaKey || event.ctrlKey)) {
+        return
+      }
+
+      event.preventDefault()
+      setSearchOpen((current) => !current)
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
 
   return (
-    <div className="min-h-svh bg-background">
-      <header className="sticky top-0 z-50 border-b border-border/50 bg-background/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-8">
-            <a href="#top" className="flex items-center gap-2 text-primary">
-              <HubzzLogo size={27} />
-              <span className="font-semibold text-foreground">Hubzz UI</span>
-            </a>
-            <nav
-              className="hidden items-center gap-5 lg:flex"
-              aria-label="Catalog"
-            >
-              {NAV.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {link.label}
-                </a>
-              ))}
-            </nav>
+    <div className="min-h-svh bg-background text-foreground">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-border bg-sidebar/90 backdrop-blur-xl md:flex">
+        <div className="flex h-14 items-center border-b border-border px-4">
+          <a href="#overview" className="flex items-center gap-2.5">
+            <HubzzLogo size={24} />
+            <span className="text-sm font-semibold tracking-tight">Hubzz UI</span>
+            <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[9px]">
+              beta
+            </Badge>
+          </a>
+        </div>
+
+        <div className="p-3">
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            className="flex h-9 w-full items-center gap-2 rounded-lg border border-border bg-background/60 px-2.5 text-left text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:outline-none"
+          >
+            <Search className="size-3.5" aria-hidden="true" />
+            <span className="flex-1">Search</span>
+            <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[9px] text-muted-foreground">
+              ⌘K
+            </kbd>
+          </button>
+        </div>
+
+        <nav className="flex-1 px-3 py-2" aria-label="Catalog navigation">
+          <p className="mb-2 px-2 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+            Catalog
+          </p>
+          <div className="space-y-0.5">
+            {NAV.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="flex h-8 items-center rounded-md px-2 text-[13px] text-secondary-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:bg-sidebar-accent focus-visible:outline-none"
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </nav>
+
+        <div className="border-t border-border p-3">
+          <div className="mb-3 flex items-center gap-2 px-2 text-[11px] text-muted-foreground">
+            <span className="size-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+            Public source registry
+          </div>
+          <a
+            href="https://github.com/russfranky/hubzzcn"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-8 items-center gap-2 rounded-md px-2 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          >
+            <Github className="size-3.5" aria-hidden="true" />
+            Source on GitHub
+          </a>
+        </div>
+      </aside>
+
+      <div className="md:pl-60">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/88 px-4 backdrop-blur-xl sm:px-6">
+          <a href="#overview" className="flex items-center gap-2 md:hidden">
+            <HubzzLogo size={22} />
+            <span className="text-sm font-semibold">Hubzz UI</span>
+          </a>
+
+          <div className="hidden items-center gap-2 text-xs text-muted-foreground md:flex">
+            <span>Design system</span>
+            <span aria-hidden="true">/</span>
+            <span className="text-foreground">Catalog</span>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <Button
               type="button"
               variant="ghost"
-              size="icon"
+              size="sm"
+              onClick={() => setSearchOpen(true)}
+              className="hidden gap-2 text-muted-foreground sm:flex md:hidden"
+            >
+              <Search className="size-3.5" aria-hidden="true" />
+              Search
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
               aria-label="Toggle color theme"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
@@ -74,101 +215,79 @@ export function Landing() {
                 <Moon aria-hidden="true" />
               )}
             </Button>
-            <Button variant="ghost" size="icon" asChild>
+            <Button variant="ghost" size="icon-sm" asChild>
               <a
                 href="https://github.com/russfranky/hubzzcn"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Open Hubzz UI source on GitHub"
               >
-                <GitHubIcon className="size-4" />
+                <Github aria-hidden="true" />
               </a>
             </Button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main id="top">
-        <section className="relative overflow-hidden border-b border-border/40">
-          <div className="hero-glow" />
-          <div className="relative z-10 mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28">
-            <div className="max-w-4xl">
-              <Badge variant="outline">Public shadcn registry</Badge>
-              <h1 className="mt-6 max-w-4xl text-5xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl">
-                Use the upstream.
-                <span className="block text-primary">Own the Hubzz layer.</span>
-              </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-                Hubzz UI keeps standard shadcn/Radix behavior for commodity UI,
-                applies the brand through semantic tokens, and publishes custom
-                source only where the product actually owns the interaction.
-              </p>
+        <main>
+          <section id="overview" className="scroll-mt-16 border-b border-border">
+            <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-18">
+              <div className="max-w-3xl">
+                <div className="mb-5 flex flex-wrap items-center gap-2">
+                  <Badge variant="outline">Public registry</Badge>
+                  <span className="text-xs text-muted-foreground">
+                    Radix base · React · Tailwind CSS
+                  </span>
+                </div>
+                <h1 className="text-4xl font-semibold tracking-[-0.035em] text-balance sm:text-5xl">
+                  Hubzz UI
+                </h1>
+                <p className="mt-4 max-w-2xl text-[15px] leading-7 text-secondary-foreground sm:text-base">
+                  A shadcn-first interface system. Keep upstream behavior, define
+                  the brand with semantic tokens, and own custom source only when
+                  Hubzz owns the interaction.
+                </p>
+              </div>
 
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Button size="lg" asChild>
-                  <a href="#foundations">
-                    Explore the system
-                    <ArrowRight aria-hidden="true" />
-                  </a>
-                </Button>
-                <Button variant="outline" size="lg" asChild>
-                  <a
-                    href="https://github.com/russfranky/hubzzcn"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <GitHubIcon className="size-4" />
-                    Source
-                  </a>
-                </Button>
+              <div className="mt-8 max-w-3xl">
+                <CopyCommand command={BASE_COMMAND} label="Copy base install command" />
+              </div>
+
+              <div className="mt-10 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+                {PRINCIPLES.map((principle) => {
+                  const Icon = principle.icon
+                  return (
+                    <div key={principle.title} className="bg-background p-4">
+                      <Icon className="size-4 text-primary" aria-hidden="true" />
+                      <h2 className="mt-4 text-sm font-medium">{principle.title}</h2>
+                      <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
+                        {principle.description}
+                      </p>
+                    </div>
+                  )
+                })}
               </div>
             </div>
+          </section>
 
-            <div className="mt-14 grid gap-4 lg:grid-cols-2">
-              <InstallCard
-                label="Start with the Hubzz base"
-                command={BASE_COMMAND}
-              />
-              <InstallCard
-                label="Add one Hubzz component"
-                command={COMPONENT_COMMAND}
-              />
-            </div>
+          <div className="mx-auto max-w-6xl space-y-24 px-5 py-16 sm:px-8 sm:py-20">
+            <Foundations />
+            <Catalog />
           </div>
-        </section>
+        </main>
 
-        <div className="mx-auto max-w-7xl space-y-24 px-4 py-20 sm:px-6">
-          <Foundations />
-          <Catalog />
-        </div>
-      </main>
-
-      <footer className="border-t border-border/50">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-10 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p>Hubzz UI · public shadcn source registry · MIT licensed</p>
-          <p>Radix base · React · Tailwind CSS</p>
-        </div>
-      </footer>
-    </div>
-  )
-}
-
-function InstallCard({ label, command }: { label: string; command: string }) {
-  return (
-    <div className="rounded-xl border border-border bg-card/50 p-4">
-      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-        <Check className="size-4 text-primary" aria-hidden="true" />
-        {label}
+        <footer className="border-t border-border">
+          <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-8 text-[11px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-8">
+            <p>Hubzz UI · MIT · public shadcn source registry</p>
+            <p>Upstream first · semantic theme · composable source</p>
+          </div>
+        </footer>
       </div>
-      <div className="mt-3 flex items-center gap-3 rounded-lg border border-border bg-background px-3 py-3">
-        <code className="min-w-0 flex-1 overflow-x-auto font-mono text-xs text-muted-foreground">
-          {command}
-        </code>
-        <Copy
-          className="size-4 shrink-0 text-muted-foreground"
-          aria-hidden="true"
-        />
-      </div>
+
+      <SearchDialog
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        entries={SEARCH_ENTRIES}
+      />
     </div>
   )
 }
