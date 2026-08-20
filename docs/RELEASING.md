@@ -21,48 +21,54 @@ matches the canonical semantic tokens in `src/index.css`.
 
 ## Versioning
 
-- **Patch**: bug fixes, accessibility fixes, documentation corrections, and compatible visual fixes.
-- **Minor**: new components, new compatible variants, new registry items, or documented pre-1.0 API evolution.
-- **Major**: breaking changes after 1.0, including incompatible public APIs, registry item paths, or primitive-base migrations.
+- **Patch**: bug fixes, accessibility fixes, documentation corrections, and
+  compatible visual fixes.
+- **Minor**: new components, new compatible variants, new registry items, or
+  documented pre-1.0 API evolution.
+- **Major**: breaking changes after 1.0, including incompatible public APIs,
+  registry item paths, or primitive-base migrations.
 
 Before 1.0, intentional breaking changes still require migration notes even
 when they ship in a minor release.
 
 ## Release steps
 
-1. Move the relevant `CHANGELOG.md` entries out of **Unreleased** into the new version section.
+1. Move the relevant `CHANGELOG.md` entries out of **Unreleased** into the new
+   version section.
 2. Update `package.json` to the release version.
 3. Pin every same-repository registry dependency to the release tag:
 
-```bash
-pnpm release:pin-registry vX.Y.Z
-```
+   ```bash
+   pnpm release:pin-registry vX.Y.Z
+   ```
 
 4. If semantic tokens changed, regenerate the foundations registry:
 
-```bash
-pnpm registry:sync
-```
+   ```bash
+   pnpm registry:sync
+   ```
 
 5. Run the complete gates again:
 
-```bash
-pnpm check
-pnpm test:ui
-pnpm registry:smoke vX.Y.Z
-```
+   ```bash
+   pnpm check
+   pnpm test:ui
+   pnpm registry:smoke vX.Y.Z
+   ```
 
    Before the tag exists, use the full release commit SHA for the smoke test.
 
 6. Commit the release metadata and pinned registry refs.
 7. Create an annotated `vX.Y.Z` tag on that exact commit and push it.
-8. Let the release workflow verify the tag, verify pinned dependency refs, run the full gates, create checksums, attest the package artifact with GitHub/Sigstore provenance, and create the GitHub Release.
+8. Let the release workflow verify the tag, verify pinned dependency refs, run
+   the full gates, create checksums, attest the package artifact with
+   GitHub/Sigstore provenance, and create the GitHub Release.
 9. Verify tagged registry installs:
 
-```bash
-pnpm dlx shadcn@latest view russfranky/hubzzcn/hubzz#vX.Y.Z
-pnpm dlx shadcn@latest view russfranky/hubzzcn/button#vX.Y.Z
-```
+   ```bash
+   pnpm dlx shadcn@latest view russfranky/hubzzcn/hubzz#vX.Y.Z
+   pnpm dlx shadcn@latest view russfranky/hubzzcn/button#vX.Y.Z
+   ```
 
 10. Verify the public catalog after production deployment.
 
