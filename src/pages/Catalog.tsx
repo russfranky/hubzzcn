@@ -73,6 +73,7 @@ function normalizeModule(module: unknown): {
 }
 
 const CATALOG = allExamples.map(normalizeModule)
+const SOURCE_REF = import.meta.env.VITE_SOURCE_REF || "main"
 
 export function Catalog() {
   return (
@@ -139,7 +140,7 @@ function ComponentSection({
   const slug = meta.slug ?? meta.title.toLowerCase()
   const command = `pnpm dlx shadcn@latest add russfranky/hubzzcn/${slug}`
   const sourceDirectory = meta.category === "shadcn" ? "ui" : "hubzz"
-  const sourceUrl = `https://github.com/russfranky/hubzzcn/blob/main/src/components/${sourceDirectory}/${slug}.tsx`
+  const sourceUrl = `https://github.com/russfranky/hubzzcn/blob/${SOURCE_REF}/src/components/${sourceDirectory}/${slug}.tsx`
 
   return (
     <article
@@ -215,8 +216,14 @@ function ExamplePreview({
     : React.createElement(meta.component, example.args)
 
   return (
-    <div className="flex min-h-40 min-w-0 flex-col bg-background p-4 sm:p-5">
-      <div className="flex min-h-28 flex-1 items-center justify-center overflow-x-auto rounded-lg border border-dashed border-border bg-card/20 p-4">
+    <div
+      data-catalog-example={example.name}
+      className="flex min-h-40 min-w-0 flex-col bg-background p-4 sm:p-5"
+    >
+      <div
+        data-catalog-preview={example.name}
+        className="flex min-h-28 flex-1 items-center justify-center overflow-x-auto rounded-lg border border-dashed border-border bg-card/20 p-4"
+      >
         {rendered}
       </div>
       <p className="mt-3 text-[11px] font-medium text-muted-foreground">

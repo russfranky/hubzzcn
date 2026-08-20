@@ -43,7 +43,10 @@ test.describe("ProfileHeader", () => {
   test("fallback state remains explicit when no preview is supplied", async ({
     page,
   }) => {
-    const section = page.locator("#profile-header")
-    await expect(section.getByText("No preview")).toBeVisible()
+    const preview = page
+      .locator("#profile-header")
+      .locator('[data-catalog-preview="No preview"]')
+
+    await expect(preview.getByText("No preview", { exact: true })).toBeVisible()
   })
 })

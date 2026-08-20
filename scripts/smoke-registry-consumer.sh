@@ -26,6 +26,7 @@ cd consumer
 
 items=(
   hubzz
+  hubzz-theme
   button
   hubzz-logo
   badge-category
@@ -38,7 +39,19 @@ items=(
 
 for item in "${items[@]}"; do
   echo "Installing ${item} at ${REF}"
-  "$SHADCN" add "russfranky/hubzzcn/${item}#${REF}" --yes
+  "$SHADCN" add "russfranky/hubzzcn/${item}#${REF}" --yes --overwrite
+done
+
+# Some public items depend on shared Hubzz registry entries without carrying a
+# release ref in source. Reapply those shared entries at the exact candidate ref
+# so the final consumer cannot silently mix the candidate with default-branch
+# source during a PR smoke test.
+for foundation in hubzz-theme button; do
+  echo "Reapplying ${foundation} at exact ref ${REF}"
+  "$SHADCN" add \
+    "russfranky/hubzzcn/${foundation}#${REF}" \
+    --yes \
+    --overwrite
 done
 
 test -f src/components/ui/button.tsx
@@ -50,6 +63,7 @@ test -f src/components/hubzz/event-ticket.tsx
 test -f src/components/hubzz/profile-header.tsx
 test -f src/components/hubzz/drone-photo.tsx
 grep -q -- "--primary:" src/index.css
+grep -q -- "--muted-foreground:" src/index.css
 
 pnpm build
 

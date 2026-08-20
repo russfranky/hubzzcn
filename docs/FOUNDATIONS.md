@@ -5,16 +5,20 @@ copying raw colors and measurements across the repository.
 
 ## Color
 
-| Token              | Dark value | Purpose                      |
-| ------------------ | ---------- | ---------------------------- |
-| `background`       | `#181B1F`  | Application background       |
-| `card`             | `#24262B`  | Raised surfaces              |
-| `accent`           | `#393E44`  | Neutral interactive surface  |
-| `foreground`       | `#FCFDFE`  | Primary text and icons       |
-| `muted-foreground` | `#7C878E`  | Secondary text               |
-| `primary`          | `#735FFA`  | Primary action and selection |
-| `destructive`      | `#D92D20`  | Destructive action           |
-| `ring`             | `#735FFA`  | Focus indication             |
+`src/index.css` is the canonical source for light and dark semantic color
+values. The generated registry foundation must remain in parity with that
+source; documentation should describe roles rather than duplicate raw values.
+
+| Token              | Purpose                      |
+| ------------------ | ---------------------------- |
+| `background`       | Application background       |
+| `card`             | Raised surfaces              |
+| `accent`           | Neutral interactive surface  |
+| `foreground`       | Primary text and icons       |
+| `muted-foreground` | Secondary text               |
+| `primary`          | Primary action and selection |
+| `destructive`      | Destructive action           |
+| `ring`             | Focus indication             |
 
 Component-specific status colors may exist when they communicate semantic
 state, but ordinary interaction states should resolve through semantic tokens.
