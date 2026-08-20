@@ -59,7 +59,7 @@ jobs:
 
           for item in "${items[@]}"; do
             echo "Resolving ${item}"
-            pnpm dlx shadcn@latest view "russfranky/hubzzcn/${item}#${GITHUB_SHA}" >/dev/null
+            pnpm exec shadcn view "russfranky/hubzzcn/${item}#${GITHUB_SHA}" >/dev/null
           done
 
       - name: Install registry into a clean Vite consumer
