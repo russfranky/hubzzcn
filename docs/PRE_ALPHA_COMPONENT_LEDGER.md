@@ -51,7 +51,7 @@ HubzzCN follows an upstream-first, Unix-style component model:
 | `components/common/Modal.module.css`                                                                | modal shell/backdrop                                                                  | upstream primitive               | shadcn `Dialog` / `AlertDialog` as appropriate      | **UPSTREAM** | Product composes content and actions.                                                                                                                                                  |
 | `components/common/Spinner.tsx`                                                                     | loading indicator                                                                     | upstream/icon-level behavior     | `Skeleton` or Lucide `LoaderCircle`                 | **UPSTREAM** | Pick based on whether layout or operation is loading.                                                                                                                                  |
 | `components/game/onboarding/SelectAvatar.tsx`                                                       | avatar list selection view                                                            | Hubzz analog                     | `AvatarPicker`                                      | **DONE**     | Native radios, arrow-key selection, adaptive 3/10+ density thresholds, loading/empty states, registry + clean consumer + browser/WCAG. Product keeps wallet discovery and `setAvatar`. |
-| `components/game/onboarding/Onboarding.tsx#OnboardingAvatarCarousel`                                | cyclic previous/current/next avatar chooser                                           | Hubzz analog                     | `AvatarCarousel`                                    | **NEXT**     | Preserve 3-up geometry, cyclic previous/next behavior, selected-avatar announcement, responsive sizing. Product supplies avatar data and selected index.                               |
+| `components/game/onboarding/Onboarding.tsx#OnboardingAvatarCarousel`                                | cyclic previous/current/next avatar chooser                                           | Hubzz analog                     | `AvatarCarousel`                                    | **DONE**     | Three-up geometry, cyclic previous/next behavior, selected-avatar announcement, responsive sizing, registry + clean consumer + browser/WCAG. Product supplies avatar data and value.   |
 | `components/game/onboarding/Onboarding.tsx#CloseButton`                                             | icon close action                                                                     | upstream composition             | `Button` with icon sizing + Lucide `X`              | **UPSTREAM** | No dedicated Hubzz close component.                                                                                                                                                    |
 | `components/game/onboarding/Onboarding.tsx#ConfirmClose`                                            | destructive confirmation                                                              | upstream composition             | shadcn `AlertDialog` + `Button`                     | **UPSTREAM** | Product owns copy and cancellation flow.                                                                                                                                               |
 | `components/game/onboarding/Onboarding.tsx#SubmitButton`                                            | async submit state presentation                                                       | direct composition               | `Button` + status copy/icon                         | **UPSTREAM** | Keep checking/success/error state machine in product. Add a Hubzz analog only if a second independent feature proves the same contract.                                                |
@@ -91,19 +91,18 @@ upstream shadcn:
 - `DronePhoto`
 - `AvatarPicker`
 - `SpectatorBanner`
-- `AvatarCarousel` (**NEXT**, verification in progress)
+- `AvatarCarousel`
 
 A new name should not be added to this list until the ledger first shows why
 upstream composition is insufficient.
 
 ## Work order
 
-1. **AvatarCarousel**: finish registry, clean-consumer, browser/WCAG, and CodeQL
-   verification.
-2. Stop. There is no approved speculative analog after `AvatarCarousel`.
-3. Re-scan pre-alpha only when new repeated product UI creates evidence for a
-   smaller shared contract. Do not port editor, screen, or recovery assemblies
-   by momentum.
+1. There is no active analog extraction after `AvatarCarousel`.
+2. Re-scan pre-alpha only when new repeated product UI creates evidence for a
+   smaller shared contract.
+3. Do not port editor, screen, onboarding workflow, or recovery assemblies by
+   momentum.
 
 The desired end state is not parity by component count. It is the smallest
 stable Hubzz-owned layer that lets product code express the current experience
