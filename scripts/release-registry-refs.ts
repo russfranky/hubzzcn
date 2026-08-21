@@ -1,48 +1,51 @@
-import { readFileSync, writeFileSync } from "node:fs"
+import { writeFileSync } from "node:fs"
 import { format } from "prettier"
 
-const REPOSITORY_PREFIX = "russfranky/hubzzcn/"
-const REGISTRY_FILES = [
-  "src/components/ui/registry.json",
-  "src/components/hubzz/registry.json",
-]
+import {
+  loadRegistryGraph,
+  repoRelative,
+  type RegistryFile,
+} from "./registry-graph"
 
-function normalizeRef(address: string, ref: string) {
+const REPOSITORY_PREFIX = "russfranky/hubzzcn/"
+
+function normalizeRef(address: string, ref: string): string {
   const [item] = address.split("#", 1)
   return `${item}#${ref}`
 }
 
-async function updateRegistryFile(path: string, ref: string) {
-  const registry = JSON.parse(readFileSync(path, "utf8")) as {
-    items: Array<{ registryDependencies?: string[] }>
-  }
+async function updateRegistryFile(file: RegistryFile, ref: string) {
+  let changed = false
 
-  for (const item of registry.items) {
+  for (const item of file.document.items ?? []) {
     if (!item.registryDependencies) continue
-    item.registryDependencies = item.registryDependencies.map((dependency) =>
-      dependency.startsWith(REPOSITORY_PREFIX)
-        ? normalizeRef(dependency, ref)
-        : dependency
-    )
+    item.registryDependencies = item.registryDependencies.map((dependency) => {
+      if (!dependency.startsWith(REPOSITORY_PREFIX)) return dependency
+      const pinned = normalizeRef(dependency, ref)
+      if (pinned !== dependency) changed = true
+      return pinned
+    })
   }
 
-  const output = await format(JSON.stringify(registry), { parser: "json" })
-  writeFileSync(path, output)
+  if (!changed) return false
+
+  const output = await format(JSON.stringify(file.document), { parser: "json" })
+  writeFileSync(file.path, output)
+  return true
 }
 
-function verifyRegistryFile(path: string, ref: string) {
-  const registry = JSON.parse(readFileSync(path, "utf8")) as {
-    items: Array<{ name?: string; registryDependencies?: string[] }>
-  }
-
+function verifyRegistryFile(file: RegistryFile, ref: string): string[] {
   const failures: string[] = []
-  for (const item of registry.items) {
+
+  for (const item of file.document.items ?? []) {
     for (const dependency of item.registryDependencies ?? []) {
       if (
         dependency.startsWith(REPOSITORY_PREFIX) &&
         !dependency.endsWith(`#${ref}`)
       ) {
-        failures.push(`${item.name ?? "unnamed"}: ${dependency}`)
+        failures.push(
+          `${repoRelative(file.path)}:${item.name}: ${dependency}`
+        )
       }
     }
   }
@@ -60,13 +63,18 @@ if (!ref || !["pin", "verify"].includes(mode ?? "")) {
   process.exit(1)
 }
 
+const { files } = loadRegistryGraph()
+
 if (mode === "pin") {
-  for (const path of REGISTRY_FILES) await updateRegistryFile(path, ref)
-  console.log(`✓ pinned Hubzz registry dependencies to ${ref}`)
-} else {
-  const failures = REGISTRY_FILES.flatMap((path) =>
-    verifyRegistryFile(path, ref)
+  let changedFiles = 0
+  for (const file of files) {
+    if (await updateRegistryFile(file, ref)) changedFiles += 1
+  }
+  console.log(
+    `✓ pinned Hubzz registry dependencies to ${ref} in ${changedFiles} registry file(s)`
   )
+} else {
+  const failures = files.flatMap((file) => verifyRegistryFile(file, ref))
   if (failures.length) {
     console.error(`Registry dependencies are not pinned to ${ref}:`)
     for (const failure of failures) console.error(`- ${failure}`)
