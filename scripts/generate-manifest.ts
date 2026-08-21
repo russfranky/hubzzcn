@@ -1,4 +1,7 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+import { spawnSync } from "node:child_process"
 import type { ElementType } from "react"
 import { format } from "prettier"
 
@@ -123,9 +126,18 @@ const checkOnly = process.argv.includes("--check")
 if (checkOnly) {
   const current = readFileSync("docs/COMPONENTS.md", "utf8")
   if (current !== markdown) {
+    const tempDirectory = mkdtempSync(join(tmpdir(), "hubzz-components-"))
+    const expectedPath = join(tempDirectory, "COMPONENTS.md")
+    writeFileSync(expectedPath, markdown)
     console.error(
       "docs/COMPONENTS.md is out of date. Run `pnpm generate:manifest` and commit the result."
     )
+    spawnSync(
+      "git",
+      ["diff", "--no-index", "--", "docs/COMPONENTS.md", expectedPath],
+      { stdio: "inherit" }
+    )
+    rmSync(tempDirectory, { recursive: true, force: true })
     process.exitCode = 1
   } else {
     console.log(`✓ docs/COMPONENTS.md — ${allExamples.length} components`)
