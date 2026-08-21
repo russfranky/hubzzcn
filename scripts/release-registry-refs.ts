@@ -43,9 +43,7 @@ function verifyRegistryFile(file: RegistryFile, ref: string): string[] {
         dependency.startsWith(REPOSITORY_PREFIX) &&
         !dependency.endsWith(`#${ref}`)
       ) {
-        failures.push(
-          `${repoRelative(file.path)}:${item.name}: ${dependency}`
-        )
+        failures.push(`${repoRelative(file.path)}:${item.name}: ${dependency}`)
       }
     }
   }
