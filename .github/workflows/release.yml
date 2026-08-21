@@ -58,8 +58,18 @@ jobs:
       - name: Run browser and accessibility tests
         run: pnpm test:ui
 
-      - name: Verify tagged registry base
-        run: pnpm exec shadcn view "russfranky/hubzzcn/hubzz#${GITHUB_REF_NAME}" >/dev/null
+      - name: Verify every tagged registry item
+        shell: bash
+        run: |
+          set -euo pipefail
+          items_file="${RUNNER_TEMP}/hubzz-registry-items"
+          pnpm exec tsx scripts/list-registry-items.ts > "$items_file"
+
+          while IFS= read -r item; do
+            echo "Resolving ${item} at ${GITHUB_REF_NAME}"
+            pnpm exec shadcn view \
+              "russfranky/hubzzcn/${item}#${GITHUB_REF_NAME}" >/dev/null
+          done < "$items_file"
 
       - name: Verify tagged registry in a clean consumer
         run: pnpm registry:smoke "${GITHUB_REF_NAME}"
