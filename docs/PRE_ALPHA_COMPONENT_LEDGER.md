@@ -59,7 +59,7 @@ HubzzCN follows an upstream-first, Unix-style component model:
 | `components/game/onboarding/OnboardingIcons.tsx#HubzzLogo` | Hubzz brand mark | covered | `HubzzLogo` | **COVERED** | Check/close glyphs use Lucide. |
 | `components/game/world/SpectatorPanel.tsx` | spectator notice/action surface | Hubzz analog | `SpectatorBanner` | **DONE** | Responsive pill/stacked geometry, 12px mobile radius, brand/action composition, registry + clean consumer + browser/WCAG. Product keeps auth/world readiness and reveal timing. |
 | `components/game/Notifications.tsx` | connection-loss state machine and retry notices | product orchestration | pre-alpha/product | **PRODUCT** | Connection events and retry message history remain application code. |
-| `components/game/Notifications.module.css#disconnectOverlay` + `WebGLCrashOverlay.tsx` visual layer | full-screen technical status/terminal treatment reused by connection and GPU recovery | possible Hubzz visual pattern | `SystemStatusOverlay` | **CANDIDATE** | Only extract the view if both product flows still need the same presentation after upstream composition review. Never move retry/reload/world state into it. |
+| `components/game/Notifications.module.css#disconnectOverlay` + `WebGLCrashOverlay.tsx` visual layer | full-screen technical status/terminal treatment shared by connection and GPU recovery | shared product-local view | pre-alpha/product | **PRODUCT** | Reuse audit found only the two recovery flows, which already share `Notifications.module.css`. A cross-repo `SystemStatusOverlay` would add indirection without deleting enough code. |
 | `components/game/WebGLCrashOverlay.tsx` state machine | WebGL recovery, reload guard, countdown | application orchestration | pre-alpha/product | **PRODUCT** | Session storage and world events stay product-side. |
 | `components/game/world/screen/ScreenContent.tsx` | Three.js/CSS3D media bridge and in-world playback controls | application feature | pre-alpha/product | **PRODUCT** | Window-event bridge, CSS3D reparenting, auto-hide and platform detection are product behavior. Reuse `Button`, tooltip, slider, icons directly when refactoring product code. |
 | `components/NotFound.tsx` + `NotFound.css` | route-level not-found page | application assembly | shadcn `Card`/`Button` as needed | **PRODUCT** | A page is not a design-system component. |
@@ -91,20 +91,19 @@ upstream shadcn:
 - `DronePhoto`
 - `AvatarPicker`
 - `SpectatorBanner`
-- `AvatarCarousel` (**NEXT**, not implemented yet)
+- `AvatarCarousel` (**NEXT**, verification in progress)
 
 A new name should not be added to this list until the ledger first shows why
 upstream composition is insufficient.
 
 ## Work order
 
-1. **AvatarCarousel**: extract the small, self-contained visual/interaction
-   contract from onboarding.
-2. Re-audit the two technical full-screen overlays and decide whether one
-   `SystemStatusOverlay` view is genuinely simpler than two product-local
-   compositions.
-3. Stop. Re-scan pre-alpha before approving another analog. Do not port editor
-   or screen feature assemblies by momentum.
+1. **AvatarCarousel**: finish registry, clean-consumer, browser/WCAG, and CodeQL
+   verification.
+2. Stop. There is no approved speculative analog after `AvatarCarousel`.
+3. Re-scan pre-alpha only when new repeated product UI creates evidence for a
+   smaller shared contract. Do not port editor, screen, or recovery assemblies
+   by momentum.
 
 The desired end state is not parity by component count. It is the smallest
 stable Hubzz-owned layer that lets product code express the current experience
