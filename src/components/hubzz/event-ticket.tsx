@@ -92,7 +92,7 @@ export function EventTicket({
   // content zone paddingLeft=26, paddingRight=26, paddingTop=16, paddingBottom=16
   // date y=16 h=18   title y=42 h=56   host y=102 h=20   action y=136 h=32
   // marginTop: date→title=8, title→host=4, host→action=14
-  // date & time gap (space between the two spans) = 16px
+  // date & time align to the left and right content edges
   // divider: x=269, y=10-172, 2px wide, color #464F55, dash 4px / gap 4px
   // stub content (centered in 73px wide stub): barcode 37×139 at x=289-326, y=22-161
   // countdown frame: x=295, y=39, w=24, h=105; values Inter 16px 600 white, sep 14px 600 white
@@ -194,15 +194,12 @@ export function EventTicket({
                 flexDirection: "column",
               }}
             >
-              {/* Date & time — stub: gap 16px; past: justify-between + date flex-1 */}
+              {/* Date & time — align to opposite edges of the content zone */}
               <div
-                className={cn(
-                  "flex text-[12px] font-medium text-[#ACB9C4]",
-                  isPast ? "justify-between" : "gap-4"
-                )}
+                className="flex w-full justify-between text-[12px] font-medium text-[#ACB9C4]"
                 style={{ lineHeight: "18px" }}
               >
-                <span className={isPast ? "flex-1" : ""}>{date}</span>
+                <span>{date}</span>
                 <span>{time}</span>
               </div>
 

@@ -25,13 +25,6 @@ async function computedStyles(
   )
 }
 
-/** Gap between the right edge of `a` and the left edge of `b`, in px. */
-async function gapBetween(a: Locator, b: Locator): Promise<number> {
-  const [aBox, bBox] = await Promise.all([a.boundingBox(), b.boundingBox()])
-  if (!aBox || !bBox) throw new Error("Could not get bounding box")
-  return bBox.x - (aBox.x + aBox.width)
-}
-
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -64,23 +57,34 @@ test.describe("EventTicket", () => {
 
   // ── Date / time row ──────────────────────────────────────────────────────
 
-  test("date/time gap is ~16px (gap-4) in stub states", async () => {
-    for (const state of ["ready", "upcoming", "joined"]) {
+  test("date and time align to opposite content edges", async () => {
+    for (const state of ["ready", "upcoming", "joined", "past"]) {
       const card = page.locator(`[data-testid="ticket-${state}"]`)
-      const spans = card.locator("div.flex.gap-4 span")
-      const [dateSpan, timeSpan] = await spans.all()
-      const gap = await gapBetween(dateSpan, timeSpan)
-      expect(gap, `date/time gap: state=${state}`).toBeGreaterThanOrEqual(14)
-      expect(gap, `date/time gap: state=${state}`).toBeLessThanOrEqual(18)
-    }
-  })
+      const row = card.locator("div.flex.w-full.justify-between").first()
+      const [dateSpan, timeSpan] = await row.locator("span").all()
+      const [cardBox, dateBox, timeBox] = await Promise.all([
+        card.boundingBox(),
+        dateSpan.boundingBox(),
+        timeSpan.boundingBox(),
+      ])
 
-  test("past state date row uses justify-between", async () => {
-    const card = page.locator('[data-testid="ticket-past"]')
-    const dateRow = card.locator("div.flex.justify-between").first()
-    await expect(dateRow).toBeVisible()
-    const spans = dateRow.locator("span")
-    await expect(spans).toHaveCount(2)
+      if (!cardBox || !dateBox || !timeBox) {
+        throw new Error(`Could not measure date row for state=${state}`)
+      }
+
+      const mainWidth = state === "past" ? 344 : 269
+      const expectedLeft = cardBox.x + 26
+      const expectedRight = cardBox.x + mainWidth - 26
+
+      expect(
+        Math.abs(dateBox.x - expectedLeft),
+        `date left edge: state=${state}`
+      ).toBeLessThanOrEqual(1)
+      expect(
+        Math.abs(timeBox.x + timeBox.width - expectedRight),
+        `time right edge: state=${state}`
+      ).toBeLessThanOrEqual(1)
+    }
   })
 
   // ── Title ────────────────────────────────────────────────────────────────
