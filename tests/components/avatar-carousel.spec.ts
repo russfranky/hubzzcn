@@ -76,19 +76,19 @@ test.describe("AvatarCarousel", () => {
       carousel.boundingBox(),
       selected.evaluate((element) => {
         const style = getComputedStyle(element)
-        return { opacity: style.opacity, transform: style.transform }
+        return { opacity: style.opacity, scale: style.scale }
       }),
       side.evaluate((element) => {
         const style = getComputedStyle(element)
-        return { opacity: style.opacity, transform: style.transform }
+        return { opacity: style.opacity, scale: style.scale }
       }),
     ])
 
     expect(carouselBox?.width).toBeLessThanOrEqual(520)
     expect(selectedStyle.opacity).toBe("1")
-    expect(selectedStyle.transform).toBe("none")
     expect(sideStyle.opacity).toBe("0.4")
-    expect(sideStyle.transform).not.toBe("none")
+    expect(sideStyle.scale).not.toBe("none")
+    expect(sideStyle.scale).not.toBe(selectedStyle.scale)
   })
 
   test("disables navigation when only one avatar exists", async () => {
