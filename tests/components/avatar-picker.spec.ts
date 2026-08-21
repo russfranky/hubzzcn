@@ -13,28 +13,40 @@ test.describe("AvatarPicker", () => {
     await page.close()
   })
 
-  test("wallet selection uses accessible radio semantics", async () => {
+  test("wallet selection uses native radio keyboard behavior", async () => {
     const picker = page
-      .locator("#avatar-picker [data-catalog-preview] [data-slot='avatar-picker']")
+      .locator(
+        "#avatar-picker [data-catalog-preview] [data-slot='avatar-picker']"
+      )
       .first()
     const group = picker.getByRole("radiogroup", { name: "Choose an avatar" })
     const options = group.getByRole("radio")
 
     await expect(options).toHaveCount(3)
-    await expect(options.first()).toHaveAttribute("aria-checked", "true")
+    await expect(options.first()).toBeChecked()
 
-    await options.nth(1).click()
-    await expect(options.nth(1)).toHaveAttribute("aria-checked", "true")
-    await expect(options.first()).toHaveAttribute("aria-checked", "false")
+    await options.first().focus()
+    await page.keyboard.press("ArrowRight")
+    await expect(options.nth(1)).toBeFocused()
+    await expect(options.nth(1)).toBeChecked()
+    await expect(options.first()).not.toBeChecked()
   })
 
   test("auto density preserves the pre-alpha collection thresholds", async () => {
     const section = page.locator("#avatar-picker")
-    const largePicker = section.locator('[data-slot="avatar-picker"][data-density="large"]').first()
-    const smallPicker = section.locator('[data-slot="avatar-picker"][data-density="small"]').first()
+    const largePicker = section
+      .locator('[data-slot="avatar-picker"][data-density="large"]')
+      .first()
+    const smallPicker = section
+      .locator('[data-slot="avatar-picker"][data-density="small"]')
+      .first()
 
-    const largeOption = largePicker.locator('[data-slot="avatar-picker-option"]').first()
-    const smallOptions = smallPicker.locator('[data-slot="avatar-picker-option"]')
+    const largeOption = largePicker
+      .locator('[data-slot="avatar-picker-option"]')
+      .first()
+    const smallOptions = smallPicker.locator(
+      '[data-slot="avatar-picker-option"]'
+    )
     const [largeBox, smallBox] = await Promise.all([
       largeOption.boundingBox(),
       smallOptions.first().boundingBox(),
