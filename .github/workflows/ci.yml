@@ -37,6 +37,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Print canonical candidate closure formatting
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm exec prettier --write docs/PRE_ALPHA_COMPONENT_LEDGER.md
+          git diff -- docs/PRE_ALPHA_COMPONENT_LEDGER.md
+          exit 1
+
       - name: Run repository checks
         run: pnpm check
 
