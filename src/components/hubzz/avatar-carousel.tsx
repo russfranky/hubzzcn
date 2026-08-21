@@ -41,8 +41,7 @@ export function AvatarCarousel({
   className,
   ...props
 }: AvatarCarouselProps) {
-  const [lastDirection, setLastDirection] =
-    React.useState<Direction>("next")
+  const [lastDirection, setLastDirection] = React.useState<Direction>("next")
 
   if (items.length === 0) return null
 
