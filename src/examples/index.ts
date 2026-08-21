@@ -6,6 +6,7 @@ import * as ToastBanner from "./toast-banner.examples"
 import * as ProfileHeader from "./profile-header.examples"
 import * as DronePhoto from "./drone-photo.examples"
 import * as AvatarPicker from "./avatar-picker.examples"
+import * as AvatarCarousel from "./avatar-carousel.examples"
 import * as SpectatorBanner from "./spectator-banner.examples"
 
 export const allExamples = [
@@ -17,5 +18,6 @@ export const allExamples = [
   ProfileHeader,
   DronePhoto,
   AvatarPicker,
+  AvatarCarousel,
   SpectatorBanner,
 ]

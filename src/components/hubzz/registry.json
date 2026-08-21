@@ -152,6 +152,28 @@
       "meta": { "stability": "alpha", "strategy": "composition" }
     },
     {
+      "name": "avatar-carousel",
+      "type": "registry:component",
+      "title": "Avatar Carousel",
+      "description": "Controlled three-up Hubzz avatar chooser derived from the pre-alpha onboarding carousel.",
+      "author": "Hubzz",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "utils",
+        "russfranky/hubzzcn/button",
+        "russfranky/hubzzcn/hubzz-theme"
+      ],
+      "files": [
+        {
+          "path": "avatar-carousel.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/avatar-carousel.tsx"
+        }
+      ],
+      "categories": ["avatars", "onboarding", "selection"],
+      "meta": { "stability": "alpha", "strategy": "composition" }
+    },
+    {
       "name": "spectator-banner",
       "type": "registry:component",
       "title": "Spectator Banner",
