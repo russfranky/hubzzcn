@@ -57,6 +57,7 @@ jobs:
             drone-photo
             avatar-picker
             avatar-carousel
+            presence-indicator
             spectator-banner
           )
 
