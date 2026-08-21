@@ -40,6 +40,22 @@ jobs:
       - name: Run repository checks
         run: pnpm check
 
+      - name: Exercise release registry ref pinning
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_ref="ci-${GITHUB_SHA}"
+          pnpm release:pin-registry "$test_ref"
+          pnpm release:verify-registry "$test_ref"
+
+          if git diff --quiet; then
+            echo "Expected release pinning to change internal registry dependency refs." >&2
+            exit 1
+          fi
+
+          git reset --hard HEAD
+          git diff --exit-code
+
       - name: Resolve every public registry item at this commit
         shell: bash
         run: |
