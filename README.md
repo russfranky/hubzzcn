@@ -91,6 +91,12 @@ import { Button, EventTicket } from "@hubzz/ui"
 import "@hubzz/ui/styles.css"
 ```
 
+The source registry installs Inter through its `font-inter` dependency. The
+compiled package intentionally does not bundle font binaries: its styles define
+the Hubzz font token as `"Inter Variable", sans-serif`, while the consuming
+application owns how Inter is loaded. This avoids duplicating application font
+assets inside the design-system package.
+
 ## Development
 
 Node 22 and pnpm 10.33.4 are the repository baselines.
@@ -102,10 +108,10 @@ pnpm test:ui
 pnpm build:preview
 ```
 
-`pnpm check` enforces formatting, zero-warning lint, TypeScript, generated
-component-reference parity, the package build, registry schema validation, and
-package-surface validation with publint. Playwright covers browser behavior and
-automated accessibility checks.
+`pnpm check` enforces formatting, zero-warning lint, TypeScript, public package
+dependency closure, generated component-reference parity, the package build,
+registry schema validation, and package-surface validation with publint.
+Playwright covers browser behavior and automated accessibility checks.
 
 ## Releases
 
