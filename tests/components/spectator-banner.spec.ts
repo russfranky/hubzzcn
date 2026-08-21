@@ -8,7 +8,9 @@ test.describe("SpectatorBanner", () => {
 
   test("composes the Hubzz mark and primary action", async ({ page }) => {
     const banner = page
-      .locator("#spectator-banner [data-catalog-preview] [data-slot='spectator-banner']")
+      .locator(
+        "#spectator-banner [data-catalog-preview] [data-slot='spectator-banner']"
+      )
       .first()
 
     await expect(banner).toHaveAttribute("aria-label", "Spectator mode")
@@ -22,7 +24,9 @@ test.describe("SpectatorBanner", () => {
 
   test("switches from pill to stacked mobile layout", async ({ page }) => {
     const banner = page
-      .locator("#spectator-banner [data-catalog-preview] [data-slot='spectator-banner']")
+      .locator(
+        "#spectator-banner [data-catalog-preview] [data-slot='spectator-banner']"
+      )
       .first()
 
     await page.setViewportSize({ width: 1280, height: 900 })
@@ -50,7 +54,9 @@ test.describe("SpectatorBanner", () => {
     expect(mobile.borderRadius).toBe(12)
   })
 
-  test("supports an informational state without an action", async ({ page }) => {
+  test("supports an informational state without an action", async ({
+    page,
+  }) => {
     const section = page.locator("#spectator-banner")
     const informational = section
       .locator('[data-slot="spectator-banner"]')
