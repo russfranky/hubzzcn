@@ -44,27 +44,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          items=(
-            hubzz
-            hubzz-theme
-            button
-            hubzz-logo
-            badge-category
-            capsule
-            toast-banner
-            event-ticket
-            profile-header
-            drone-photo
-            avatar-picker
-            avatar-carousel
-            presence-indicator
-            spectator-banner
-          )
+          items_file="${RUNNER_TEMP}/hubzz-registry-items"
+          pnpm exec tsx scripts/list-registry-items.ts > "$items_file"
 
-          for item in "${items[@]}"; do
+          while IFS= read -r item; do
             echo "Resolving ${item}"
             pnpm exec shadcn view "russfranky/hubzzcn/${item}#${GITHUB_SHA}" >/dev/null
-          done
+          done < "$items_file"
 
       - name: Install registry into a clean Vite consumer
         run: pnpm registry:smoke "$GITHUB_SHA"
