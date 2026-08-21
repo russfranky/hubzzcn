@@ -71,55 +71,55 @@ HubzzCN follows an upstream-first, Unix-style component model:
 
 ## Implemented Hubzz analogs
 
-| Source contract | HubzzCN owner | Status | Boundary |
-| --- | --- | --- | --- |
-| profile-panel `hubzz-logo.tsx` square mark | `HubzzLogo` | **COVERED** | Square Hubzz icon mark only. |
-| profile-panel `ui/badge-category.tsx` | `BadgeCategory` | **COVERED** | Category/filter tag. |
-| profile-panel `ui/capsule.tsx` | `Capsule` | **COVERED** | Hubzz toggle/filter pill. |
-| profile-panel `ui/toast-banner.tsx` | `ToastBanner` | **COVERED** | Semantic compact feedback banner. |
-| profile-panel `ui/event-ticket.tsx` | `EventTicket` | **COVERED** | Event ticket geometry and states. |
-| profile-panel `profile-header.tsx` | `ProfileHeader` | **COVERED** | Profile appearance chooser, upstream-composed. |
-| profile-panel `drone-photo.tsx` | `DronePhoto` | **COVERED** | Hubzz in-world capture treatment. |
-| onboarding `SelectAvatar.tsx` | `AvatarPicker` | **DONE** | Native radio selection, adaptive density, loading/empty states. Product owns wallet discovery and avatar mutation. |
-| onboarding `OnboardingAvatarCarousel` | `AvatarCarousel` | **DONE** | Controlled three-up cyclic avatar chooser. Product owns loading/prefetch and onboarding flow. |
-| world `SpectatorPanel.tsx` | `SpectatorBanner` | **DONE** | Responsive spectator notice/action surface. Product owns auth/world readiness and reveal timing. |
+| Source contract                            | HubzzCN owner     | Status      | Boundary                                                                                                           |
+| ------------------------------------------ | ----------------- | ----------- | ------------------------------------------------------------------------------------------------------------------ |
+| profile-panel `hubzz-logo.tsx` square mark | `HubzzLogo`       | **COVERED** | Square Hubzz icon mark only.                                                                                       |
+| profile-panel `ui/badge-category.tsx`      | `BadgeCategory`   | **COVERED** | Category/filter tag.                                                                                               |
+| profile-panel `ui/capsule.tsx`             | `Capsule`         | **COVERED** | Hubzz toggle/filter pill.                                                                                          |
+| profile-panel `ui/toast-banner.tsx`        | `ToastBanner`     | **COVERED** | Semantic compact feedback banner.                                                                                  |
+| profile-panel `ui/event-ticket.tsx`        | `EventTicket`     | **COVERED** | Event ticket geometry and states.                                                                                  |
+| profile-panel `profile-header.tsx`         | `ProfileHeader`   | **COVERED** | Profile appearance chooser, upstream-composed.                                                                     |
+| profile-panel `drone-photo.tsx`            | `DronePhoto`      | **COVERED** | Hubzz in-world capture treatment.                                                                                  |
+| onboarding `SelectAvatar.tsx`              | `AvatarPicker`    | **DONE**    | Native radio selection, adaptive density, loading/empty states. Product owns wallet discovery and avatar mutation. |
+| onboarding `OnboardingAvatarCarousel`      | `AvatarCarousel`  | **DONE**    | Controlled three-up cyclic avatar chooser. Product owns loading/prefetch and onboarding flow.                      |
+| world `SpectatorPanel.tsx`                 | `SpectatorBanner` | **DONE**    | Responsive spectator notice/action surface. Product owns auth/world readiness and reveal timing.                   |
 
 ## Upstream and product mappings
 
-| Pre-alpha source | Status | Owner / decision |
-| --- | --- | --- |
-| `components/common/Buttons.module.css` | **COVERED** | Hubzz `Button` visual override. |
-| `components/common/Modal.module.css` | **UPSTREAM** | shadcn `Dialog` / `AlertDialog`. |
-| `components/common/Spinner.tsx` | **UPSTREAM** | `Skeleton` for layout loading, Lucide `LoaderCircle` for operation loading. |
-| onboarding `CloseButton` | **UPSTREAM** | `Button` + Lucide `X`. |
-| onboarding `ConfirmClose` | **UPSTREAM** | `AlertDialog` + `Button`; product owns cancellation flow and copy. |
-| onboarding `SubmitButton` | **UPSTREAM** | `Button` + status copy/icon; product owns checking/success/error state. |
-| onboarding workflow remainder | **PRODUCT** | Validation, avatar manifests, prefetch, connection events, telemetry, timers, and submission remain product-side. |
-| onboarding `OnboardingIcons.tsx#HubzzLogo` / `onboardingBrandSvg.ts` | **PRODUCT** | This is a 119×36 wordmark, not the square `HubzzLogo`. Current evidence is onboarding-only, so do not create `HubzzWordmark` yet. |
-| Notifications connection-loss state machine | **PRODUCT** | Connection events and retry history remain application state. |
-| Notifications/WebGL shared technical overlay | **PRODUCT** | The two recovery flows already share product-local CSS. A registry abstraction would add indirection without deleting enough code. |
-| `WebGLCrashOverlay.tsx` recovery state machine | **PRODUCT** | Session storage, countdown, reload and world events remain product-side. |
-| world `ScreenContent.tsx` | **PRODUCT** | Three.js/CSS3D bridge, playback state, platform handling and auto-hide behavior are application concerns. |
-| `NotFound`, `ErrorBoundary`, `Landing` | **PRODUCT** | Route/runtime assemblies, not design-system contracts. |
-| dev editor feature shell and tool workflows | **PRODUCT** | Editor-specific orchestration stays in product. |
-| editor publish/save/upload modals | **UPSTREAM** | Compose `Dialog`, `Form`, `Input`, `Item`, and `Button`. |
-| editor `InputNumber` | **UPSTREAM** | Native/shadcn numeric input unless a future requirement exceeds it. |
-| editor `SettingsMenu` | **UPSTREAM** | `DropdownMenu` / `Popover`. |
-| editor icon bundle and HAIcon line/solid trees | **UPSTREAM** | Lucide. Never bulk-port HAIcon. |
-| profile-panel standard `ui/*` primitives | **UPSTREAM** | Use shadcn registry primitives directly. Only the Hubzz custom entries listed above are covered by Hubzz analogs. |
-| profile-panel `ScreenHeader` | **PRODUCT** | Reused inside one panel system but carries panel/mobile-close layout assumptions. Compose `Button` + heading in product. |
-| profile-panel `EmptyState` | **UPSTREAM** | Simple empty-state composition; no durable Hubzz-specific contract. |
-| profile-panel small `space-card.tsx` | **UPSTREAM** | `Item` + `AvatarGroup` + `Button` composition. |
-| profile-panel `spaces/SpaceCard.tsx` | **PRODUCT** | Space preview framing, attendance, elapsed time, construction/join state and navigation are feature behavior. |
-| profile-panel `ProfileCard.tsx` / `GuestDetailScreen.tsx` | **PRODUCT** | Feature assemblies. Reuse their leaf contracts instead of porting the cards wholesale. |
-| profile-panel screens: avatar, badges, friends, news, selfies, settings, spaces, wallets | **PRODUCT** | Screen/workflow assemblies. Extract a leaf only after independent reuse is proven. |
-| profile-panel `app-sidebar*`, `profile-panel`, `top-bar`, `nav-user`, `theme-provider` | **PRODUCT** | Application shell/panel composition and state. |
-| profile-panel `MetaChip`-style affordance in space-card chat | **COVERED** | The generic toggle-chip contract is `Capsule`; feature code owns icon/label reveal state. |
-| `shell/ShellLayout.tsx` | **PRODUCT** | Correctly composes upstream Sidebar but carries portal and world/sidebar event wiring. |
-| `routes/*` | **PRODUCT** | Route assemblies. |
-| space-card `SpaceHUD`, `SpaceCardsOverlay`, chat display/input, modals and voice settings | **PRODUCT** | Feature UI and orchestration, not registry atoms. |
-| space-card generic image fallback | **PRODUCT** | Utility behavior, no Hubzz visual identity. |
-| RTC/audio/network subsystem | **PRODUCT** | Non-visual runtime, outside this ledger. |
+| Pre-alpha source                                                                          | Status       | Owner / decision                                                                                                                   |
+| ----------------------------------------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `components/common/Buttons.module.css`                                                    | **COVERED**  | Hubzz `Button` visual override.                                                                                                    |
+| `components/common/Modal.module.css`                                                      | **UPSTREAM** | shadcn `Dialog` / `AlertDialog`.                                                                                                   |
+| `components/common/Spinner.tsx`                                                           | **UPSTREAM** | `Skeleton` for layout loading, Lucide `LoaderCircle` for operation loading.                                                        |
+| onboarding `CloseButton`                                                                  | **UPSTREAM** | `Button` + Lucide `X`.                                                                                                             |
+| onboarding `ConfirmClose`                                                                 | **UPSTREAM** | `AlertDialog` + `Button`; product owns cancellation flow and copy.                                                                 |
+| onboarding `SubmitButton`                                                                 | **UPSTREAM** | `Button` + status copy/icon; product owns checking/success/error state.                                                            |
+| onboarding workflow remainder                                                             | **PRODUCT**  | Validation, avatar manifests, prefetch, connection events, telemetry, timers, and submission remain product-side.                  |
+| onboarding `OnboardingIcons.tsx#HubzzLogo` / `onboardingBrandSvg.ts`                      | **PRODUCT**  | This is a 119×36 wordmark, not the square `HubzzLogo`. Current evidence is onboarding-only, so do not create `HubzzWordmark` yet.  |
+| Notifications connection-loss state machine                                               | **PRODUCT**  | Connection events and retry history remain application state.                                                                      |
+| Notifications/WebGL shared technical overlay                                              | **PRODUCT**  | The two recovery flows already share product-local CSS. A registry abstraction would add indirection without deleting enough code. |
+| `WebGLCrashOverlay.tsx` recovery state machine                                            | **PRODUCT**  | Session storage, countdown, reload and world events remain product-side.                                                           |
+| world `ScreenContent.tsx`                                                                 | **PRODUCT**  | Three.js/CSS3D bridge, playback state, platform handling and auto-hide behavior are application concerns.                          |
+| `NotFound`, `ErrorBoundary`, `Landing`                                                    | **PRODUCT**  | Route/runtime assemblies, not design-system contracts.                                                                             |
+| dev editor feature shell and tool workflows                                               | **PRODUCT**  | Editor-specific orchestration stays in product.                                                                                    |
+| editor publish/save/upload modals                                                         | **UPSTREAM** | Compose `Dialog`, `Form`, `Input`, `Item`, and `Button`.                                                                           |
+| editor `InputNumber`                                                                      | **UPSTREAM** | Native/shadcn numeric input unless a future requirement exceeds it.                                                                |
+| editor `SettingsMenu`                                                                     | **UPSTREAM** | `DropdownMenu` / `Popover`.                                                                                                        |
+| editor icon bundle and HAIcon line/solid trees                                            | **UPSTREAM** | Lucide. Never bulk-port HAIcon.                                                                                                    |
+| profile-panel standard `ui/*` primitives                                                  | **UPSTREAM** | Use shadcn registry primitives directly. Only the Hubzz custom entries listed above are covered by Hubzz analogs.                  |
+| profile-panel `ScreenHeader`                                                              | **PRODUCT**  | Reused inside one panel system but carries panel/mobile-close layout assumptions. Compose `Button` + heading in product.           |
+| profile-panel `EmptyState`                                                                | **UPSTREAM** | Simple empty-state composition; no durable Hubzz-specific contract.                                                                |
+| profile-panel small `space-card.tsx`                                                      | **UPSTREAM** | `Item` + `AvatarGroup` + `Button` composition.                                                                                     |
+| profile-panel `spaces/SpaceCard.tsx`                                                      | **PRODUCT**  | Space preview framing, attendance, elapsed time, construction/join state and navigation are feature behavior.                      |
+| profile-panel `ProfileCard.tsx` / `GuestDetailScreen.tsx`                                 | **PRODUCT**  | Feature assemblies. Reuse their leaf contracts instead of porting the cards wholesale.                                             |
+| profile-panel screens: avatar, badges, friends, news, selfies, settings, spaces, wallets  | **PRODUCT**  | Screen/workflow assemblies. Extract a leaf only after independent reuse is proven.                                                 |
+| profile-panel `app-sidebar*`, `profile-panel`, `top-bar`, `nav-user`, `theme-provider`    | **PRODUCT**  | Application shell/panel composition and state.                                                                                     |
+| profile-panel `MetaChip`-style affordance in space-card chat                              | **COVERED**  | The generic toggle-chip contract is `Capsule`; feature code owns icon/label reveal state.                                          |
+| `shell/ShellLayout.tsx`                                                                   | **PRODUCT**  | Correctly composes upstream Sidebar but carries portal and world/sidebar event wiring.                                             |
+| `routes/*`                                                                                | **PRODUCT**  | Route assemblies.                                                                                                                  |
+| space-card `SpaceHUD`, `SpaceCardsOverlay`, chat display/input, modals and voice settings | **PRODUCT**  | Feature UI and orchestration, not registry atoms.                                                                                  |
+| space-card generic image fallback                                                         | **PRODUCT**  | Utility behavior, no Hubzz visual identity.                                                                                        |
+| RTC/audio/network subsystem                                                               | **PRODUCT**  | Non-visual runtime, outside this ledger.                                                                                           |
 
 ## Approved next analog
 
