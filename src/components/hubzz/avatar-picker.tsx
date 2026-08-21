@@ -54,6 +54,7 @@ export function AvatarPicker({
   ...props
 }: AvatarPickerProps) {
   const resolvedDensity = resolveDensity(density, items.length)
+  const groupName = React.useId()
 
   return (
     <div
@@ -99,22 +100,27 @@ export function AvatarPicker({
             const selected = item.id === value
 
             return (
-              <button
+              <label
                 key={item.id}
-                type="button"
-                role="radio"
-                aria-checked={selected}
-                disabled={item.disabled}
                 data-slot="avatar-picker-option"
                 data-state={selected ? "checked" : "unchecked"}
                 className={cn(
-                  "relative shrink-0 overflow-hidden rounded-md border border-border bg-muted text-left transition-[border-color,box-shadow,opacity,transform] outline-none focus-visible:ring-4 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-40",
-                  "hover:border-foreground/40 hover:-translate-y-0.5",
+                  "relative shrink-0 cursor-pointer overflow-hidden rounded-md border border-border bg-muted text-left transition-[border-color,box-shadow,opacity] select-none hover:border-foreground/40",
                   selected && "border-primary ring-2 ring-primary/60",
+                  item.disabled && "cursor-not-allowed opacity-40",
                   densityClasses[resolvedDensity]
                 )}
-                onClick={() => onValueChange?.(item.id, item)}
               >
+                <input
+                  type="radio"
+                  name={groupName}
+                  value={item.id}
+                  checked={selected}
+                  disabled={item.disabled}
+                  className="peer sr-only"
+                  onChange={() => onValueChange?.(item.id, item)}
+                />
+                <span className="pointer-events-none absolute inset-0 rounded-md peer-focus-visible:ring-4 peer-focus-visible:ring-ring/30" />
                 <img
                   src={item.imageSrc}
                   alt={item.imageAlt ?? ""}
@@ -124,7 +130,7 @@ export function AvatarPicker({
                 <span className="absolute inset-x-0 bottom-0 truncate bg-black/60 px-2 py-1 text-center text-xs font-medium text-white">
                   {item.name}
                 </span>
-              </button>
+              </label>
             )
           })}
         </div>
