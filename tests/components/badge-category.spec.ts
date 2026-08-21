@@ -11,6 +11,7 @@ import { hexToRgb, normalizeCssColor } from "../helpers/colors"
 const BG_DEFAULT = hexToRgb("#181B1F") // rgb(24, 27, 31)
 const BG_HOVER = hexToRgb("#24262B") // rgb(36, 38, 43)
 const BG_ACTIVE = hexToRgb("#392F7D") // rgb(57, 47, 125)
+const TEXT_DARK = hexToRgb("#FCFDFE") // rgb(252, 253, 254)
 
 test.describe("BadgeCategory", () => {
   let page: Page
@@ -67,17 +68,19 @@ test.describe("BadgeCategory", () => {
 
   // ── Text styling ─────────────────────────────────────────────────────────
 
-  test("badge text is white, 14px, weight 500", async () => {
+  test("badge text uses dark foreground, 14px, weight 500", async () => {
     const badge = page.locator("#badge-category [data-state]").first()
-    const styles = await badge.evaluate((el) => {
-      const cs = getComputedStyle(el)
-      return {
-        color: cs.color,
-        fontSize: cs.fontSize,
-        fontWeight: cs.fontWeight,
-      }
-    })
-    expect(styles.color).toMatch(/^rgb\(25[0-5], 25[0-5], 25[0-5]\)$/)
+    const [color, styles] = await Promise.all([
+      normalizeCssColor(badge, "color"),
+      badge.evaluate((el) => {
+        const cs = getComputedStyle(el)
+        return {
+          fontSize: cs.fontSize,
+          fontWeight: cs.fontWeight,
+        }
+      }),
+    ])
+    expect(color).toBe(TEXT_DARK)
     expect(styles.fontSize).toBe("14px")
     expect(styles.fontWeight).toBe("500")
   })
