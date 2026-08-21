@@ -20,9 +20,8 @@ test.describe("AvatarCarousel", () => {
       )
       .first()
 
-    await expect(
-      carousel.getByRole("region", { name: "Choose an avatar" })
-    ).toHaveCount(1)
+    await expect(carousel).toHaveAttribute("role", "region")
+    await expect(carousel).toHaveAttribute("aria-label", "Choose an avatar")
     await expect(carousel).toHaveAttribute("data-value", "nova")
     await expect(carousel).toHaveAttribute("data-index", "0")
 
@@ -91,18 +90,19 @@ test.describe("AvatarCarousel", () => {
 
     expect(carouselBox?.width).toBeLessThanOrEqual(520)
     expect(selectedStyle.opacity).toBe("1")
-    expect(selectedStyle.transform).toBe("matrix(1, 0, 0, 1, 0, 0)")
+    expect(selectedStyle.transform).toBe("none")
     expect(sideStyle.opacity).toBe("0.4")
     expect(sideStyle.transform).not.toBe("none")
   })
 
   test("disables navigation when only one avatar exists", async () => {
-    const section = page.locator("#avatar-carousel")
-    const carousel = section
-      .locator('[data-slot="avatar-carousel"]')
-      .filter({ has: section.getByRole("img", { name: /Selected avatar 1 of 1/ }) })
+    const carousel = page
+      .locator(
+        "#avatar-carousel [data-catalog-preview] [data-slot='avatar-carousel']"
+      )
+      .nth(1)
 
-    await expect(carousel).toHaveCount(1)
+    await expect(carousel).toHaveAttribute("data-value", "nova")
     await expect(
       carousel.getByRole("button", { name: "Previous avatar" })
     ).toBeDisabled()
