@@ -39,9 +39,7 @@ export function loadRegistryGraph(rootPath = ROOT_REGISTRY): {
     if (seenFiles.has(path)) return
     seenFiles.add(path)
 
-    const document = JSON.parse(
-      readFileSync(path, "utf8")
-    ) as RegistryDocument
+    const document = JSON.parse(readFileSync(path, "utf8")) as RegistryDocument
     files.push({ path, document })
 
     for (const item of document.items ?? []) {
