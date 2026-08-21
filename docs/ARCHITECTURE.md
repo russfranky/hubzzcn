@@ -7,38 +7,13 @@ primitive simply to give it a Hubzz name.
 
 ### 1. Upstream primitives
 
-`src/components/ui/` is the shadcn/Radix substrate.
+`src/components/ui/` is the checked-in shadcn/Radix substrate and is the source
+of truth for which upstream primitives are present. Do not maintain a parallel
+primitive inventory in documentation.
 
 These components should stay structurally close to upstream. Hubzz-specific
 changes belong in semantic tokens, supported variants, or a narrowly scoped
 override when the product requires different behavior.
-
-Current upstream-first primitives include:
-
-- Alert
-- Avatar
-- Badge
-- Breadcrumb
-- Card
-- Checkbox
-- Collapsible
-- Dialog
-- Dropdown Menu
-- Form
-- Input
-- Item
-- Label
-- Select
-- Separator
-- Sheet
-- Sidebar
-- Skeleton
-- Sonner
-- Switch
-- Tabs
-- Textarea
-- Toggle
-- Tooltip
 
 `Button` is the primary intentional Hubzz override. It keeps the standard
 shadcn API while applying Hubzz sizing, geometry, color, focus, and pressed
@@ -68,6 +43,10 @@ of the public component API.
 ## Distribution
 
 The public GitHub registry is the canonical distribution surface.
+
+`registry.json` and its included registry files are the source of truth for the
+public registry graph. CI, release verification, and clean-consumer tests derive
+the item set from that graph rather than maintaining separate component lists.
 
 - `registry:base` installs the Hubzz shadcn base.
 - `registry:theme` applies Hubzz tokens to an existing shadcn project.
