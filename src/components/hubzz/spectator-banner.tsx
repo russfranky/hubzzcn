@@ -32,7 +32,7 @@ export function SpectatorBanner({
       data-slot="spectator-banner"
       data-placement={placement}
       className={cn(
-        "z-50 flex w-full items-center gap-4 rounded-xl bg-card p-4 pl-6 text-card-foreground shadow-2xl",
+        "z-50 flex w-full items-center gap-4 rounded-[12px] bg-card p-4 pl-6 text-card-foreground shadow-2xl",
         "max-sm:flex-col max-sm:items-end sm:w-auto sm:max-w-fit sm:rounded-full",
         placement === "inline"
           ? "relative"
