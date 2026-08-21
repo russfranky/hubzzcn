@@ -25,9 +25,7 @@ test.describe("AvatarCarousel", () => {
     await expect(carousel).toHaveAttribute("data-value", "nova")
     await expect(carousel).toHaveAttribute("data-index", "0")
 
-    const selected = carousel.locator(
-      '[data-slot="avatar-carousel-selected"]'
-    )
+    const selected = carousel.locator('[data-slot="avatar-carousel-selected"]')
     await expect(selected).toHaveAttribute("aria-label", "1 of 5")
     await expect(
       selected.getByRole("img", { name: "Selected avatar 1 of 5: Nova" })
@@ -71,9 +69,7 @@ test.describe("AvatarCarousel", () => {
         "#avatar-carousel [data-catalog-preview] [data-slot='avatar-carousel']"
       )
       .first()
-    const selected = carousel.locator(
-      '[data-slot="avatar-carousel-selected"]'
-    )
+    const selected = carousel.locator('[data-slot="avatar-carousel-selected"]')
     const side = carousel.locator('[data-slot="avatar-carousel-side"]').first()
 
     const [carouselBox, selectedStyle, sideStyle] = await Promise.all([
