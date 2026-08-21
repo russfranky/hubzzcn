@@ -1,5 +1,6 @@
-import { mkdirSync, writeFileSync } from "node:fs"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import type { ElementType } from "react"
+import { format } from "prettier"
 
 import { allExamples } from "../src/examples"
 import type { Example, Meta } from "../src/examples/types"
@@ -32,9 +33,6 @@ function normalizeModule(module: unknown) {
   return { meta: record.meta, examples }
 }
 
-mkdirSync("dist", { recursive: true })
-mkdirSync("docs", { recursive: true })
-
 const manifest = {
   version: process.env.npm_package_version ?? "0.0.0",
   components: Object.fromEntries(
@@ -60,9 +58,6 @@ const manifest = {
   ),
 }
 
-writeFileSync("dist/components.json", JSON.stringify(manifest, null, 2))
-console.log(`✓ dist/components.json — ${allExamples.length} components`)
-
 const NOISE_KEYS = new Set([
   "title",
   "date",
@@ -75,15 +70,19 @@ const NOISE_KEYS = new Set([
   "testId",
 ])
 
+function formatArg(key: string, value: unknown): string | null {
+  if (NOISE_KEYS.has(key) || typeof value === "function") return null
+  if (Array.isArray(value)) {
+    return `\`${key}=[${value.length} ${value.length === 1 ? "item" : "items"}]\``
+  }
+  return `\`${key}=${JSON.stringify(value)}\``
+}
+
 const sections = allExamples.map((module) => {
   const { meta, examples } = normalizeModule(module)
   const rows = examples.map((example) => {
     const keyArgs = Object.entries(example.args)
-      .filter(([key]) => !NOISE_KEYS.has(key))
-      .map(([key, value]) => {
-        if (typeof value === "function") return null
-        return `\`${key}=${JSON.stringify(value)}\``
-      })
+      .map(([key, value]) => formatArg(key, value))
       .filter((value): value is string => value !== null)
       .join(" ")
 
@@ -113,10 +112,29 @@ const sections = allExamples.map((module) => {
   return parts.filter((part): part is string => part !== null).join("\n")
 })
 
-const markdown =
+const rawMarkdown =
   "# @hubzz/ui Component Reference\n\n" +
   "> Auto-generated from `src/examples/`. Do not edit manually. Run `pnpm generate:manifest`.\n\n" +
   sections.join("\n\n---\n\n")
 
-writeFileSync("docs/COMPONENTS.md", markdown)
-console.log("✓ docs/COMPONENTS.md")
+const markdown = await format(rawMarkdown, { parser: "markdown" })
+const checkOnly = process.argv.includes("--check")
+
+if (checkOnly) {
+  const current = readFileSync("docs/COMPONENTS.md", "utf8")
+  if (current !== markdown) {
+    console.error(
+      "docs/COMPONENTS.md is out of date. Run `pnpm generate:manifest` and commit the result."
+    )
+    process.exitCode = 1
+  } else {
+    console.log(`✓ docs/COMPONENTS.md — ${allExamples.length} components`)
+  }
+} else {
+  mkdirSync("dist", { recursive: true })
+  mkdirSync("docs", { recursive: true })
+  writeFileSync("dist/components.json", JSON.stringify(manifest, null, 2))
+  writeFileSync("docs/COMPONENTS.md", markdown)
+  console.log(`✓ dist/components.json — ${allExamples.length} components`)
+  console.log("✓ docs/COMPONENTS.md")
+}
