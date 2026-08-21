@@ -3,6 +3,12 @@ import "./index.css"
 export { Button, buttonVariants } from "./components/ui/button"
 
 export {
+  AvatarPicker,
+  type AvatarPickerDensity,
+  type AvatarPickerItem,
+  type AvatarPickerProps,
+} from "./components/hubzz/avatar-picker"
+export {
   BadgeCategory,
   type BadgeCategoryProps,
   type BadgeCategoryState,
@@ -27,6 +33,11 @@ export {
   type ProfileHeaderAvatar,
   type ProfileHeaderProps,
 } from "./components/hubzz/profile-header"
+export {
+  SpectatorBanner,
+  type SpectatorBannerPlacement,
+  type SpectatorBannerProps,
+} from "./components/hubzz/spectator-banner"
 export {
   ToastBanner,
   type ToastBannerProps,

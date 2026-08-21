@@ -55,6 +55,8 @@ jobs:
             event-ticket
             profile-header
             drone-photo
+            avatar-picker
+            spectator-banner
           )
 
           for item in "${items[@]}"; do

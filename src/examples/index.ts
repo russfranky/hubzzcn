@@ -5,6 +5,8 @@ import * as Capsule from "./capsule.examples"
 import * as ToastBanner from "./toast-banner.examples"
 import * as ProfileHeader from "./profile-header.examples"
 import * as DronePhoto from "./drone-photo.examples"
+import * as AvatarPicker from "./avatar-picker.examples"
+import * as SpectatorBanner from "./spectator-banner.examples"
 
 export const allExamples = [
   Button,
@@ -14,4 +16,6 @@ export const allExamples = [
   ToastBanner,
   ProfileHeader,
   DronePhoto,
+  AvatarPicker,
+  SpectatorBanner,
 ]
