@@ -3,6 +3,11 @@ import "./index.css"
 export { Button, buttonVariants } from "./components/ui/button"
 
 export {
+  AvatarCarousel,
+  type AvatarCarouselItem,
+  type AvatarCarouselProps,
+} from "./components/hubzz/avatar-carousel"
+export {
   AvatarPicker,
   type AvatarPickerDensity,
   type AvatarPickerItem,
