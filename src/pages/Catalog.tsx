@@ -1,6 +1,9 @@
 import * as React from "react"
+import { ExternalLink } from "lucide-react"
 
+import { CopyCommand } from "@/catalog/copy-command"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { allExamples } from "@/examples"
 import type { ComponentLayer, Example, Meta } from "@/examples/types"
 
@@ -24,17 +27,17 @@ const GROUPS: Array<{
     id: "overrides",
     layer: "override",
     eyebrow: "Overrides",
-    title: "Change the visual layer, keep the upstream contract.",
+    title: "Keep the contract. Change the layer.",
     description:
-      "Overrides are rare. They preserve an upstream shadcn API and change only the Hubzz-specific layer that cannot live in theme tokens alone.",
+      "Overrides stay API-compatible with upstream shadcn and exist only when semantic tokens cannot express the Hubzz treatment.",
   },
   {
     id: "components",
     layer: "component",
     eyebrow: "Hubzz components",
-    title: "Own only the UI that is actually Hubzz-specific.",
+    title: "Own only product-specific interface structure.",
     description:
-      "These components add reusable product structure while delegating commodity behavior to upstream primitives wherever possible.",
+      "These components add reusable Hubzz structure while delegating commodity behavior to upstream primitives wherever possible.",
   },
   {
     id: "patterns",
@@ -42,7 +45,7 @@ const GROUPS: Array<{
     eyebrow: "Patterns",
     title: "Compose primitives into repeatable product patterns.",
     description:
-      "Patterns are larger reusable arrangements. They receive data and callbacks from the application and do not own product services or state.",
+      "Patterns are larger arrangements that receive data and callbacks from the application without owning product services or state.",
   },
 ]
 
@@ -70,6 +73,7 @@ function normalizeModule(module: unknown): {
 }
 
 const CATALOG = allExamples.map(normalizeModule)
+const SOURCE_REF = import.meta.env.VITE_SOURCE_REF || "main"
 
 export function Catalog() {
   return (
@@ -82,16 +86,9 @@ export function Catalog() {
         if (modules.length === 0) return null
 
         return (
-          <section key={group.id} id={group.id} className="scroll-mt-24">
-            <div className="mb-10 max-w-2xl">
-              <Badge variant="outline">{group.eyebrow}</Badge>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
-                {group.title}
-              </h2>
-              <p className="mt-3 text-muted-foreground">{group.description}</p>
-            </div>
-
-            <div className="space-y-10">
+          <section key={group.id} id={group.id} className="scroll-mt-20">
+            <SectionIntro {...group} />
+            <div className="space-y-8">
               {modules.map(({ meta, examples }) => (
                 <ComponentSection
                   key={meta.title}
@@ -107,6 +104,32 @@ export function Catalog() {
   )
 }
 
+function SectionIntro({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string
+  title: string
+  description: string
+}) {
+  return (
+    <div className="mb-8 grid gap-3 border-b border-border pb-7 md:grid-cols-[180px_1fr]">
+      <p className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+        {eyebrow}
+      </p>
+      <div className="max-w-2xl">
+        <h2 className="text-2xl font-semibold tracking-[-0.025em] text-foreground">
+          {title}
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          {description}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function ComponentSection({
   meta,
   examples,
@@ -114,41 +137,68 @@ function ComponentSection({
   meta: CatalogMeta
   examples: CatalogExample[]
 }) {
+  const slug = meta.slug ?? meta.title.toLowerCase()
+  const command = `pnpm dlx shadcn@latest add russfranky/hubzzcn/${slug}`
+  const sourceDirectory = meta.category === "shadcn" ? "ui" : "hubzz"
+  const sourceUrl = `https://github.com/russfranky/hubzzcn/blob/${SOURCE_REF}/src/components/${sourceDirectory}/${slug}.tsx`
+
   return (
     <article
-      id={meta.slug ?? meta.title.toLowerCase()}
-      className="scroll-mt-24 rounded-2xl border border-border bg-card/30 p-5 sm:p-6"
+      id={slug}
+      className="scroll-mt-20 overflow-hidden rounded-xl border border-border bg-card/20"
     >
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div className="max-w-2xl">
-          <div className="flex items-center gap-2">
-            <h3 className="text-xl font-semibold tracking-tight text-foreground">
-              {meta.title}
-            </h3>
-            <Badge variant="secondary">
-              {meta.category === "shadcn" ? "shadcn override" : "Hubzz"}
-            </Badge>
+      <div className="border-b border-border p-5 sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-5">
+          <div className="max-w-2xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-lg font-semibold tracking-[-0.015em] text-foreground">
+                {meta.title}
+              </h3>
+              <Badge variant="secondary" className="text-[9px]">
+                beta
+              </Badge>
+              <Badge variant="outline" className="text-[9px]">
+                {meta.category === "shadcn" ? "shadcn override" : "Hubzz-owned"}
+              </Badge>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {meta.description}
+            </p>
           </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {meta.description}
-          </p>
+
+          <Button variant="ghost" size="sm" asChild>
+            <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
+              Source
+              <ExternalLink className="size-3.5" aria-hidden="true" />
+            </a>
+          </Button>
         </div>
+
+        <CopyCommand command={command} className="mt-5 max-w-2xl" />
       </div>
 
-      <div className="flex flex-wrap items-start gap-6 rounded-xl border border-border/60 bg-background/40 p-5">
+      <div className="grid gap-px bg-border sm:grid-cols-2">
         {examples.map((example) => (
           <ExamplePreview key={example.name} meta={meta} example={example} />
         ))}
       </div>
 
       {meta.notes?.length ? (
-        <ul className="mt-5 space-y-1.5 border-t border-border/50 pt-4">
-          {meta.notes.map((note) => (
-            <li key={note} className="text-xs leading-5 text-muted-foreground">
-              {note}
-            </li>
-          ))}
-        </ul>
+        <div className="border-t border-border bg-muted/25 px-5 py-4 sm:px-6">
+          <p className="mb-2 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+            Contract
+          </p>
+          <ul className="space-y-1.5">
+            {meta.notes.map((note) => (
+              <li
+                key={note}
+                className="text-xs leading-5 text-secondary-foreground"
+              >
+                {note}
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
     </article>
   )
@@ -166,9 +216,17 @@ function ExamplePreview({
     : React.createElement(meta.component, example.args)
 
   return (
-    <div className="flex max-w-full flex-col gap-2">
-      {rendered}
-      <p className="text-xs font-medium text-muted-foreground">
+    <div
+      data-catalog-example={example.name}
+      className="flex min-h-40 min-w-0 flex-col bg-background p-4 sm:p-5"
+    >
+      <div
+        data-catalog-preview={example.name}
+        className="flex min-h-28 flex-1 items-center justify-center overflow-x-auto rounded-lg border border-dashed border-border bg-card/20 p-4"
+      >
+        {rendered}
+      </div>
+      <p className="mt-3 text-[11px] font-medium text-muted-foreground">
         {example.name}
       </p>
     </div>

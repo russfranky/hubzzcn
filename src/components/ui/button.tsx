@@ -7,26 +7,23 @@ import { cn } from "@/lib/utils"
 /**
  * Hubzz keeps the shadcn Button contract and changes only the visual layer.
  *
- * - `default`, `secondary`, `outline`, `ghost`, `destructive`, and `link`
- *   remain semantic variants rather than separate components.
- * - `disabled` is the native button state, not a visual variant.
- * - `default` size maps to the Hubzz medium control size.
+ * The variants stay semantic and source their color treatment from theme
+ * roles so registry consumers inherit the same behavior as the catalog.
  */
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-transparent font-semibold whitespace-nowrap transition-[background,border-color,box-shadow,color,opacity,transform] outline-none select-none disabled:pointer-events-none disabled:opacity-[0.32] aria-invalid:border-destructive aria-invalid:ring-4 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "group/button inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-transparent font-semibold whitespace-nowrap transition-[background,border-color,box-shadow,color,opacity,transform] outline-none select-none focus-visible:ring-4 focus-visible:ring-ring/20 disabled:pointer-events-none disabled:opacity-[0.32] aria-invalid:border-destructive aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "text-primary-foreground [background:var(--primary-gradient)] hover:[background:var(--primary)] focus-visible:ring-4 focus-visible:ring-[rgba(227,223,254,0.24)] active:ring-4 active:ring-[rgba(227,223,254,0.24)] active:[background:var(--primary)]",
+          "text-primary-foreground [background:var(--primary-gradient)] hover:[background:var(--primary)] active:[background:var(--primary)]",
         secondary:
-          "bg-background text-foreground hover:bg-[#393E44] focus-visible:ring-4 focus-visible:ring-[rgba(122,123,125,0.4)] active:bg-background active:ring-4 active:ring-[rgba(122,123,125,0.4)]",
+          "bg-secondary text-secondary-foreground hover:bg-accent hover:text-foreground active:bg-secondary",
         outline:
-          "border-border bg-transparent text-foreground hover:border-foreground hover:bg-transparent focus-visible:ring-4 focus-visible:ring-ring/20 active:border-[#7C878E] active:ring-4 active:ring-[rgba(122,123,125,0.4)]",
-        ghost:
-          "bg-transparent text-foreground hover:bg-[#393E44] focus-visible:ring-4 focus-visible:ring-ring/20 active:bg-card",
+          "border-border bg-transparent text-foreground hover:border-foreground hover:bg-transparent active:border-muted-foreground",
+        ghost: "bg-transparent text-foreground hover:bg-accent active:bg-muted",
         destructive:
-          "bg-[#D92D20] text-white hover:bg-[#B42318] focus-visible:ring-4 focus-visible:ring-[rgba(254,228,226,0.24)] active:bg-[#D92D20] active:ring-4 active:ring-[rgba(254,228,226,0.24)]",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/85 active:bg-destructive",
         link: "h-auto rounded-none border-0 p-0 text-primary underline-offset-4 hover:underline",
       },
       size: {

@@ -1,30 +1,44 @@
 import AxeBuilder from "@axe-core/playwright"
 import { expect, test } from "@playwright/test"
 
-test.describe("Accessibility", () => {
-  test("catalog has no serious or critical WCAG violations", async ({
-    page,
-  }) => {
-    await page.goto("/")
-    await page.waitForLoadState("networkidle")
+import { THEME_STORAGE_KEY } from "../src/catalog/theme-provider"
 
-    const results = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
-      .analyze()
+const THEMES = ["dark", "light"] as const
 
-    const violations = results.violations.filter(
-      (violation) =>
-        violation.impact === "critical" || violation.impact === "serious"
-    )
+for (const theme of THEMES) {
+  test.describe(`Accessibility — ${theme}`, () => {
+    test("catalog has no WCAG A or AA violations", async ({ page }) => {
+      await page.addInitScript(
+        ({ key, selectedTheme }) => {
+          localStorage.setItem(key, selectedTheme)
+        },
+        { key: THEME_STORAGE_KEY, selectedTheme: theme }
+      )
 
-    expect(
-      violations,
-      violations
-        .map(
-          (violation) =>
-            `${violation.id}: ${violation.help} (${violation.nodes.length} nodes)`
+      await page.goto("/")
+      await page.waitForLoadState("networkidle")
+      await expect(page.locator("html")).toHaveClass(
+        new RegExp(`\\b${theme}\\b`)
+      )
+      await expect
+        .poll(() =>
+          page.evaluate((key) => localStorage.getItem(key), THEME_STORAGE_KEY)
         )
-        .join("\n")
-    ).toEqual([])
+        .toBe(theme)
+
+      const results = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+        .analyze()
+
+      expect(
+        results.violations,
+        results.violations
+          .map(
+            (violation) =>
+              `${violation.id}: ${violation.help} (${violation.nodes.length} nodes)`
+          )
+          .join("\n")
+      ).toEqual([])
+    })
   })
-})
+}

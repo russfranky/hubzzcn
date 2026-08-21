@@ -82,9 +82,9 @@ test.describe("ToastBanner", () => {
   // ── Dismiss button ────────────────────────────────────────────────────────
 
   test("all banners with onDismiss have a dismiss button", async () => {
-    const section = page.locator("#toast-banner")
-    const dismissBtns = section.locator("button")
-    // All 5 demo banners have onDismiss
+    const dismissBtns = page
+      .locator("#toast-banner")
+      .getByRole("button", { name: "Dismiss notification" })
     await expect(dismissBtns).toHaveCount(5)
   })
 })

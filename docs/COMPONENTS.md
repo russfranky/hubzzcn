@@ -1,6 +1,6 @@
 # @hubzz/ui Component Reference
 
-> Auto-generated from `src/examples/`. Do not edit manually. Run `npm run generate:manifest`.
+> Auto-generated from `src/examples/`. Do not edit manually. Run `pnpm generate:manifest`.
 
 ## Button
 
