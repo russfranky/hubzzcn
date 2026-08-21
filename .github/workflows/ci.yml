@@ -37,6 +37,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Print canonical avatar picker formatting
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm exec prettier --write src/components/hubzz/avatar-picker.tsx
+          git diff -- src/components/hubzz/avatar-picker.tsx
+          exit 1
+
       - name: Run repository checks
         run: pnpm check
 
