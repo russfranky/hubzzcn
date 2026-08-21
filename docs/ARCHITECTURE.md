@@ -49,17 +49,10 @@ states.
 `src/components/hubzz/` contains reusable UI that has a product-specific
 shape or interaction that upstream shadcn does not provide directly.
 
-Current public Hubzz components:
-
-| Component     | Strategy            | Upstream dependencies |
-| ------------- | ------------------- | --------------------- |
-| HubzzLogo     | Custom brand asset  | None                  |
-| BadgeCategory | Thin composition    | Button                |
-| Capsule       | Thin composition    | Toggle                |
-| ToastBanner   | Thin composition    | Button                |
-| EventTicket   | Custom component    | Button, Skeleton      |
-| ProfileHeader | Product composition | Avatar, Button        |
-| DronePhoto    | Product component   | None                  |
+The current public Hubzz-owned inventory is not duplicated here. It is generated
+from `src/examples/` into [`COMPONENTS.md`](./COMPONENTS.md), and CI verifies
+that generated reference with `pnpm manifest:check`. Install metadata lives in
+`src/components/hubzz/registry.json`.
 
 A new file belongs here only when composing or theming existing primitives is
 not enough.

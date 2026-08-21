@@ -60,16 +60,18 @@ See:
 
 ## Public Hubzz components
 
-| Item             | Strategy                | Install                             |
-| ---------------- | ----------------------- | ----------------------------------- |
-| `button`         | shadcn API override     | `russfranky/hubzzcn/button`         |
-| `hubzz-logo`     | brand asset             | `russfranky/hubzzcn/hubzz-logo`     |
-| `badge-category` | Button composition      | `russfranky/hubzzcn/badge-category` |
-| `capsule`        | Toggle composition      | `russfranky/hubzzcn/capsule`        |
-| `toast-banner`   | Button composition      | `russfranky/hubzzcn/toast-banner`   |
-| `event-ticket`   | custom event UI         | `russfranky/hubzzcn/event-ticket`   |
-| `profile-header` | Avatar + Button pattern | `russfranky/hubzzcn/profile-header` |
-| `drone-photo`    | media component         | `russfranky/hubzzcn/drone-photo`    |
+The current Hubzz-owned surface is generated from `src/examples/` into
+[`docs/COMPONENTS.md`](./docs/COMPONENTS.md). CI verifies that reference with
+`pnpm manifest:check`, so it is the human-readable component inventory rather
+than a second hand-maintained list here.
+
+Install metadata for those components lives in
+[`src/components/hubzz/registry.json`](./src/components/hubzz/registry.json).
+To inspect the public registry through the locked toolchain, run:
+
+```bash
+pnpm registry:list
+```
 
 Ordinary primitives such as Dialog, Select, Sheet, Tabs, Checkbox, Input, and
 Tooltip remain upstream-first rather than receiving Hubzz copies in the
@@ -78,8 +80,8 @@ registry.
 ## Package build
 
 The repository also builds a compiled `@hubzz/ui` package artifact. Its public
-surface is intentionally limited to the Hubzz-owned components and the Button
-override above. It does not re-export ordinary upstream shadcn primitives.
+surface is intentionally limited to that same Hubzz-owned component layer plus
+the Button override. It does not re-export ordinary upstream shadcn primitives.
 Release tags produce a package tarball on GitHub Releases. The GitHub source
 registry is the canonical public distribution path unless a package registry
 is explicitly configured later.
@@ -100,10 +102,10 @@ pnpm test:ui
 pnpm build:preview
 ```
 
-`pnpm check` enforces formatting, zero-warning lint, TypeScript, the package
-build, registry schema validation, and package-surface validation with
-publint. Playwright covers browser behavior and automated accessibility
-checks.
+`pnpm check` enforces formatting, zero-warning lint, TypeScript, generated
+component-reference parity, the package build, registry schema validation, and
+package-surface validation with publint. Playwright covers browser behavior and
+automated accessibility checks.
 
 ## Releases
 

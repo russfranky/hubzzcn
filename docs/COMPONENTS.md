@@ -148,10 +148,10 @@ Profile appearance pattern composed from upstream Avatar and the Hubzz Button ov
 
 ### Examples
 
-| Name       | Description | Key Props                                                                                                                                                                                                                                                                 |
-| ---------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Default    |             | `heroImage="/favicon.svg"` `heroImageAlt="Hubzz profile preview"` `avatars=[{"id":"a","selected":true,"fallback":"A","alt":"Avatar A"},{"id":"b","fallback":"B","alt":"Avatar B"},{"id":"c","fallback":"C","alt":"Avatar C"},{"id":"d","fallback":"D","alt":"Avatar D"}]` |
-| No preview |             | `avatars=[{"id":"a","selected":true,"fallback":"A","alt":"Avatar A"},{"id":"b","fallback":"B","alt":"Avatar B"}]`                                                                                                                                                         |
+| Name       | Description | Key Props                                                                             |
+| ---------- | ----------- | ------------------------------------------------------------------------------------- |
+| Default    |             | `heroImage="/favicon.svg"` `heroImageAlt="Hubzz profile preview"` `avatars=[4 items]` |
+| No preview |             | `avatars=[2 items]`                                                                   |
 
 ### Notes
 
@@ -180,3 +180,99 @@ Responsive media treatment for in-world captures with optional timestamp and loc
 - Pass meaningful alt text when the image communicates content.
 - Metadata is rendered as a figure caption rather than a decorative overlay only.
 - The component owns presentation only; capture and upload behavior stays in the product.
+
+---
+
+## AvatarPicker
+
+Hubzz avatar selection surface derived from the pre-alpha wallet avatar picker.
+
+**Layer:** component
+
+**Import:** `import { AvatarPicker } from "@hubzz/ui"`
+
+### Examples
+
+| Name             | Description | Key Props                                                                 |
+| ---------------- | ----------- | ------------------------------------------------------------------------- |
+| Wallet selection |             | `items=[3 items]` `value="nova"`                                          |
+| Large collection |             | `items=[12 items]` `value="avatar-3"`                                     |
+| Loading          |             | `items=[0 items]` `loading=true` `density="medium"`                       |
+| Empty            |             | `items=[0 items]` `emptyMessage="No avatars found in connected wallets."` |
+
+### Notes
+
+- Pass avatar data and selection callbacks; wallet and session orchestration stay in product code.
+- Auto density follows the pre-alpha collection thresholds: large through 3 items, medium through 10, then small.
+- Selection is exposed with radiogroup semantics for keyboard and assistive-technology compatibility.
+
+---
+
+## AvatarCarousel
+
+Controlled three-up Hubzz avatar carousel derived from the pre-alpha onboarding chooser.
+
+**Layer:** component
+
+**Import:** `import { AvatarCarousel } from "@hubzz/ui"`
+
+### Examples
+
+| Name          | Description | Key Props                        |
+| ------------- | ----------- | -------------------------------- |
+| Default       |             | `items=[5 items]` `value="nova"` |
+| Single avatar |             | `items=[1 item]` `value="nova"`  |
+
+### Notes
+
+- Product code owns avatar loading, prefetching, validation, and onboarding state.
+- The component owns only cyclic previous/current/next navigation and the three-up Hubzz geometry.
+- The selected avatar is announced as a carousel slide; side avatars are decorative context.
+
+---
+
+## PresenceIndicator
+
+Stateless Hubzz presence dot that centralizes online, away, and offline semantics across product surfaces.
+
+**Layer:** component
+
+**Import:** `import { PresenceIndicator } from "@hubzz/ui"`
+
+### Examples
+
+| Name         | Description | Key Props                                                              |
+| ------------ | ----------- | ---------------------------------------------------------------------- |
+| Online       |             | `status="online"`                                                      |
+| All statuses |             | `status="online"`                                                      |
+| Host sized   |             | `status="idle"` `className="size-3"` `aria-label="Away from keyboard"` |
+
+### Notes
+
+- Host code owns positioning, halo, border, and presence state.
+- Use className to size the dot for the local surface instead of adding size variants.
+- The component supplies the canonical accessible label unless aria-label is overridden.
+
+---
+
+## SpectatorBanner
+
+Responsive Hubzz spectator-mode notice derived from the pre-alpha world overlay.
+
+**Layer:** pattern
+
+**Import:** `import { SpectatorBanner } from "@hubzz/ui"`
+
+### Examples
+
+| Name          | Description | Key Props                                                                                                                                                                     |
+| ------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Default       |             | —                                                                                                                                                                             |
+| Long message  |             | `message="You are exploring this space as a spectator. Log in or sign up to customize your avatar, interact with people, and save your progress."` `actionLabel="Join Hubzz"` |
+| Informational |             | `message="Spectator mode is active for this session."`                                                                                                                        |
+
+### Notes
+
+- The inline placement is catalog-friendly; use placement=overlay for the pre-alpha world positioning behavior.
+- Authentication and world-readiness timing stay in product code; the banner owns only the visual/action surface.
+- The action composes the Hubzz Button override and the default mark composes HubzzLogo.
