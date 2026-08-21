@@ -129,6 +129,48 @@
       ],
       "categories": ["media"],
       "meta": { "stability": "beta", "strategy": "custom" }
+    },
+    {
+      "name": "avatar-picker",
+      "type": "registry:component",
+      "title": "Avatar Picker",
+      "description": "Accessible Hubzz avatar selection surface derived from the pre-alpha wallet picker.",
+      "author": "Hubzz",
+      "registryDependencies": [
+        "utils",
+        "skeleton",
+        "russfranky/hubzzcn/hubzz-theme"
+      ],
+      "files": [
+        {
+          "path": "avatar-picker.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/avatar-picker.tsx"
+        }
+      ],
+      "categories": ["avatars", "onboarding", "selection"],
+      "meta": { "stability": "alpha", "strategy": "composition" }
+    },
+    {
+      "name": "spectator-banner",
+      "type": "registry:component",
+      "title": "Spectator Banner",
+      "description": "Responsive spectator-mode notice and action surface derived from the pre-alpha world UI.",
+      "author": "Hubzz",
+      "registryDependencies": [
+        "utils",
+        "russfranky/hubzzcn/button",
+        "russfranky/hubzzcn/hubzz-logo"
+      ],
+      "files": [
+        {
+          "path": "spectator-banner.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/spectator-banner.tsx"
+        }
+      ],
+      "categories": ["world", "feedback", "patterns"],
+      "meta": { "stability": "alpha", "strategy": "composition" }
     }
   ]
 }

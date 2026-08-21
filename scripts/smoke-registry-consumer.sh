@@ -35,6 +35,8 @@ items=(
   event-ticket
   profile-header
   drone-photo
+  avatar-picker
+  spectator-banner
 )
 
 for item in "${items[@]}"; do
@@ -46,7 +48,7 @@ done
 # release ref in source. Reapply those shared entries at the exact candidate ref
 # so the final consumer cannot silently mix the candidate with default-branch
 # source during a PR smoke test.
-for foundation in hubzz-theme button; do
+for foundation in hubzz-theme button hubzz-logo; do
   echo "Reapplying ${foundation} at exact ref ${REF}"
   "$SHADCN" add \
     "russfranky/hubzzcn/${foundation}#${REF}" \
@@ -62,6 +64,8 @@ test -f src/components/hubzz/toast-banner.tsx
 test -f src/components/hubzz/event-ticket.tsx
 test -f src/components/hubzz/profile-header.tsx
 test -f src/components/hubzz/drone-photo.tsx
+test -f src/components/hubzz/avatar-picker.tsx
+test -f src/components/hubzz/spectator-banner.tsx
 grep -q -- "--primary:" src/index.css
 grep -q -- "--muted-foreground:" src/index.css
 
