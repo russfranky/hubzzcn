@@ -13,8 +13,10 @@ export interface AvatarPickerItem {
   disabled?: boolean
 }
 
-export interface AvatarPickerProps
-  extends Omit<React.ComponentProps<"div">, "onChange"> {
+export interface AvatarPickerProps extends Omit<
+  React.ComponentProps<"div">,
+  "onChange"
+> {
   items: AvatarPickerItem[]
   value?: string
   onValueChange?: (value: string, item: AvatarPickerItem) => void
