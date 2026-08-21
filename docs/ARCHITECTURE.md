@@ -34,11 +34,11 @@ not enough.
 
 ### 3. Catalog-only code
 
-The demo application, pages, and examples are not part of `@hubzz/ui` and are
-not installable registry surfaces.
+The demo application, pages, examples, and bundled catalog font assets are not
+part of `@hubzz/ui` and are not installable registry surfaces.
 
-This separation keeps example data, demo navigation, and catalog providers out
-of the public component API.
+This separation keeps example data, demo navigation, catalog providers, and
+catalog-owned asset loading out of the public component API.
 
 ## Distribution
 
@@ -50,13 +50,16 @@ the item set from that graph rather than maintaining separate component lists.
 
 - `registry:base` installs the Hubzz shadcn base.
 - `registry:theme` applies Hubzz tokens to an existing shadcn project.
+- The source registry installs Inter through `font-inter`.
 - Upstream primitives are referenced by their shadcn item names instead of
   copied into the Hubzz registry.
 - Hubzz-owned components are installable individually from this repository.
 
 The package build exists for release artifacts and consumers that prefer a
 compiled library, but registry source remains the clearest representation of
-component ownership.
+component ownership. Package declarations are rooted at `src/index.ts`, runtime
+dependencies are verified against that public import closure, and package CSS
+does not bundle font binaries. The consuming application owns font loading.
 
 ## Ownership test
 
