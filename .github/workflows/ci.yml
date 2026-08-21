@@ -21,9 +21,13 @@ jobs:
     name: Quality and registry
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    permissions:
+      contents: write
     steps:
-      - name: Checkout
+      - name: Checkout PR head
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -37,34 +41,32 @@ jobs:
       - name: Refresh package boundary state
         run: pnpm install --no-frozen-lockfile
 
-      - name: Print canonical package boundary diff
+      - name: Verify generated package boundary state
         shell: bash
         run: |
           set -euo pipefail
-          pnpm exec prettier --write \
-            package.json \
-            scripts/check-package-boundary.ts \
-            src/main.tsx \
-            tsconfig.lib.json \
-            vite.config.ts
           pnpm package:deps:check
-          git diff -- \
+          pnpm exec prettier --check \
             package.json \
-            pnpm-lock.yaml \
             scripts/check-package-boundary.ts \
-            src/index.css \
             src/main.tsx \
             tsconfig.lib.json \
             vite.config.ts
-          exit 1
 
-      - name: Upload generated lockfile
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: package-boundary-lockfile
-          path: pnpm-lock.yaml
-          retention-days: 1
+      - name: Commit generated lockfile
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- pnpm-lock.yaml
+          if git diff --cached --quiet; then
+            echo "Expected pnpm to update pnpm-lock.yaml." >&2
+            exit 1
+          fi
+          git -c user.name="Russfranky" \
+              -c user.email="90220424+russfranky@users.noreply.github.com" \
+              commit -m "Update package boundary lockfile"
+          git push origin "HEAD:${GITHUB_HEAD_REF}"
+          exit 1
 
   ui:
     name: Browser and accessibility
