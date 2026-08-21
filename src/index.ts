@@ -34,6 +34,11 @@ export {
   type HubzzLogoVariant,
 } from "./components/hubzz/hubzz-logo"
 export {
+  PresenceIndicator,
+  type PresenceIndicatorProps,
+  type PresenceStatus,
+} from "./components/hubzz/presence-indicator"
+export {
   ProfileHeader,
   type ProfileHeaderAvatar,
   type ProfileHeaderProps,

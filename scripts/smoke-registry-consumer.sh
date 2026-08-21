@@ -37,6 +37,7 @@ items=(
   drone-photo
   avatar-picker
   avatar-carousel
+  presence-indicator
   spectator-banner
 )
 
@@ -67,6 +68,7 @@ test -f src/components/hubzz/profile-header.tsx
 test -f src/components/hubzz/drone-photo.tsx
 test -f src/components/hubzz/avatar-picker.tsx
 test -f src/components/hubzz/avatar-carousel.tsx
+test -f src/components/hubzz/presence-indicator.tsx
 test -f src/components/hubzz/spectator-banner.tsx
 grep -q -- "--primary:" src/index.css
 grep -q -- "--muted-foreground:" src/index.css

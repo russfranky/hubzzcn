@@ -71,18 +71,19 @@ HubzzCN follows an upstream-first, Unix-style component model:
 
 ## Implemented Hubzz analogs
 
-| Source contract                            | HubzzCN owner     | Status      | Boundary                                                                                                           |
-| ------------------------------------------ | ----------------- | ----------- | ------------------------------------------------------------------------------------------------------------------ |
-| profile-panel `hubzz-logo.tsx` square mark | `HubzzLogo`       | **COVERED** | Square Hubzz icon mark only.                                                                                       |
-| profile-panel `ui/badge-category.tsx`      | `BadgeCategory`   | **COVERED** | Category/filter tag.                                                                                               |
-| profile-panel `ui/capsule.tsx`             | `Capsule`         | **COVERED** | Hubzz toggle/filter pill.                                                                                          |
-| profile-panel `ui/toast-banner.tsx`        | `ToastBanner`     | **COVERED** | Semantic compact feedback banner.                                                                                  |
-| profile-panel `ui/event-ticket.tsx`        | `EventTicket`     | **COVERED** | Event ticket geometry and states.                                                                                  |
-| profile-panel `profile-header.tsx`         | `ProfileHeader`   | **COVERED** | Profile appearance chooser, upstream-composed.                                                                     |
-| profile-panel `drone-photo.tsx`            | `DronePhoto`      | **COVERED** | Hubzz in-world capture treatment.                                                                                  |
-| onboarding `SelectAvatar.tsx`              | `AvatarPicker`    | **DONE**    | Native radio selection, adaptive density, loading/empty states. Product owns wallet discovery and avatar mutation. |
-| onboarding `OnboardingAvatarCarousel`      | `AvatarCarousel`  | **DONE**    | Controlled three-up cyclic avatar chooser. Product owns loading/prefetch and onboarding flow.                      |
-| world `SpectatorPanel.tsx`                 | `SpectatorBanner` | **DONE**    | Responsive spectator notice/action surface. Product owns auth/world readiness and reveal timing.                   |
+| Source contract                            | HubzzCN owner       | Status      | Boundary                                                                                                           |
+| ------------------------------------------ | ------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------ |
+| profile-panel `hubzz-logo.tsx` square mark | `HubzzLogo`         | **COVERED** | Square Hubzz icon mark only.                                                                                       |
+| profile-panel `ui/badge-category.tsx`      | `BadgeCategory`     | **COVERED** | Category/filter tag.                                                                                               |
+| profile-panel `ui/capsule.tsx`             | `Capsule`           | **COVERED** | Hubzz toggle/filter pill.                                                                                          |
+| profile-panel `ui/toast-banner.tsx`        | `ToastBanner`       | **COVERED** | Semantic compact feedback banner.                                                                                  |
+| profile-panel `ui/event-ticket.tsx`        | `EventTicket`       | **COVERED** | Event ticket geometry and states.                                                                                  |
+| profile-panel `profile-header.tsx`         | `ProfileHeader`     | **COVERED** | Profile appearance chooser, upstream-composed.                                                                     |
+| profile-panel `drone-photo.tsx`            | `DronePhoto`        | **COVERED** | Hubzz in-world capture treatment.                                                                                  |
+| onboarding `SelectAvatar.tsx`              | `AvatarPicker`      | **DONE**    | Native radio selection, adaptive density, loading/empty states. Product owns wallet discovery and avatar mutation. |
+| onboarding `OnboardingAvatarCarousel`      | `AvatarCarousel`    | **DONE**    | Controlled three-up cyclic avatar chooser. Product owns loading/prefetch and onboarding flow.                      |
+| profile/chat presence dots                 | `PresenceIndicator` | **DONE**    | Stateless semantic dot only. Product owns size, halo, border, placement, and presence state.                       |
+| world `SpectatorPanel.tsx`                 | `SpectatorBanner`   | **DONE**    | Responsive spectator notice/action surface. Product owns auth/world readiness and reveal timing.                   |
 
 ## Upstream and product mappings
 
@@ -121,42 +122,33 @@ HubzzCN follows an upstream-first, Unix-style component model:
 | space-card generic image fallback                                                         | **PRODUCT**  | Utility behavior, no Hubzz visual identity.                                                                                        |
 | RTC/audio/network subsystem                                                               | **PRODUCT**  | Non-visual runtime, outside this ledger.                                                                                           |
 
-## Approved next analog
+## Completed from current census
 
 ### PresenceIndicator
 
-**Status: NEXT**
+**Status: DONE**
 
 Sources:
 
 - `profile-panel/components/StatusPip.tsx`
 - `space-cards/components/chat/StatusIndicator.tsx`
 
-Why it passes the reduction test:
-
-- two independent product areas separately encode the same status vocabulary;
-- both use `online`, `idle`, and `offline` with the same labels and core colors;
-- shadcn does not own Hubzz presence semantics;
-- the common contract can be unpositioned and stateless, so product layout stays
-  product-side.
-
-The analog should own only:
+The verified contract owns only:
 
 - `PresenceStatus = "online" | "idle" | "offline"`;
 - canonical accessible labels `Online`, `Away`, `Offline`;
 - canonical status color treatment;
-- the smallest geometry options needed to replace both current call sites.
+- a compact 8px default dot with host-controlled `className` geometry.
 
-It must not own:
+Product code continues to own:
 
 - absolute positioning;
+- profile halo and chat border treatments;
 - presence fetching or timers;
-- user/profile state;
-- chat state;
+- user/profile and chat state;
 - panel/card layout.
 
-Avoid a variant matrix. If the two source geometries cannot be expressed with a
-small, obvious API, keep them product-local instead of forcing an abstraction.
+No size, halo, border, or placement variant API was added.
 
 ## Candidates, not approved
 
@@ -198,6 +190,7 @@ a small visual-only contract can be separated from badge business logic.
 - `DronePhoto`
 - `AvatarPicker`
 - `AvatarCarousel`
+- `PresenceIndicator`
 - `SpectatorBanner`
 
 A new name is added only after this ledger first records why upstream
@@ -205,11 +198,12 @@ composition is insufficient.
 
 ## Work order
 
-1. Implement and verify `PresenceIndicator`.
-2. Re-evaluate the full-body avatar treatment against all avatar-media surfaces.
-3. Re-evaluate the badge visual contract only if it can shed XP/data/workflow
+1. Re-evaluate the full-body avatar treatment against all avatar-media surfaces.
+2. Re-evaluate the badge visual contract only if it can shed XP/data/workflow
    concerns.
-4. Stop and re-census. Do not port feature assemblies by momentum.
+3. Stop and re-census. Do not port feature assemblies by momentum.
+
+There is no approved NEXT component after `PresenceIndicator`.
 
 The desired end state is not parity by component count. It is the smallest
 stable Hubzz-owned layer that lets product code express the current experience

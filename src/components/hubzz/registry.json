@@ -174,6 +174,23 @@
       "meta": { "stability": "alpha", "strategy": "composition" }
     },
     {
+      "name": "presence-indicator",
+      "type": "registry:component",
+      "title": "Presence Indicator",
+      "description": "Stateless Hubzz presence dot with canonical online, away, and offline semantics.",
+      "author": "Hubzz",
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "presence-indicator.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/presence-indicator.tsx"
+        }
+      ],
+      "categories": ["presence", "status", "data-display"],
+      "meta": { "stability": "alpha", "strategy": "custom" }
+    },
+    {
       "name": "spectator-banner",
       "type": "registry:component",
       "title": "Spectator Banner",
