@@ -37,6 +37,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Print canonical registry graph formatting
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm exec prettier --write \
+            scripts/registry-graph.ts \
+            scripts/release-registry-refs.ts
+          git diff -- \
+            scripts/registry-graph.ts \
+            scripts/release-registry-refs.ts
+          exit 1
+
       - name: Run repository checks
         run: pnpm check
 
