@@ -21,13 +21,9 @@ jobs:
     name: Quality and registry
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    permissions:
-      contents: write
     steps:
-      - name: Checkout PR head
+      - name: Checkout
         uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -38,35 +34,42 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
 
-      - name: Refresh package boundary state
-        run: pnpm install --no-frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Verify generated package boundary state
+      - name: Run repository checks
+        run: pnpm check
+
+      - name: Exercise release registry ref pinning
         shell: bash
         run: |
           set -euo pipefail
-          pnpm package:deps:check
-          pnpm exec prettier --check \
-            package.json \
-            scripts/check-package-boundary.ts \
-            src/main.tsx \
-            tsconfig.lib.json \
-            vite.config.ts
+          test_ref="ci-${GITHUB_SHA}"
+          pnpm release:pin-registry "$test_ref"
+          pnpm release:verify-registry "$test_ref"
 
-      - name: Commit generated lockfile
-        shell: bash
-        run: |
-          set -euo pipefail
-          git add -- pnpm-lock.yaml
-          if git diff --cached --quiet; then
-            echo "Expected pnpm to update pnpm-lock.yaml." >&2
+          if git diff --quiet; then
+            echo "Expected release pinning to change internal registry dependency refs." >&2
             exit 1
           fi
-          git -c user.name="Russfranky" \
-              -c user.email="90220424+russfranky@users.noreply.github.com" \
-              commit -m "Update package boundary lockfile"
-          git push origin "HEAD:${GITHUB_HEAD_REF}"
-          exit 1
+
+          git reset --hard HEAD
+          git diff --exit-code
+
+      - name: Resolve every public registry item at this commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          items_file="${RUNNER_TEMP}/hubzz-registry-items"
+          pnpm exec tsx scripts/list-registry-items.ts > "$items_file"
+
+          while IFS= read -r item; do
+            echo "Resolving ${item}"
+            pnpm exec shadcn view "russfranky/hubzzcn/${item}#${GITHUB_SHA}" >/dev/null
+          done < "$items_file"
+
+      - name: Install registry into a clean Vite consumer
+        run: pnpm registry:smoke "$GITHUB_SHA"
 
   ui:
     name: Browser and accessibility
