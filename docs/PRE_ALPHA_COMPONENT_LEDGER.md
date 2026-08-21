@@ -87,40 +87,43 @@ HubzzCN follows an upstream-first, Unix-style component model:
 
 ## Upstream and product mappings
 
-| Pre-alpha source                                                                          | Status       | Owner / decision                                                                                                                   |
-| ----------------------------------------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `components/common/Buttons.module.css`                                                    | **COVERED**  | Hubzz `Button` visual override.                                                                                                    |
-| `components/common/Modal.module.css`                                                      | **UPSTREAM** | shadcn `Dialog` / `AlertDialog`.                                                                                                   |
-| `components/common/Spinner.tsx`                                                           | **UPSTREAM** | `Skeleton` for layout loading, Lucide `LoaderCircle` for operation loading.                                                        |
-| onboarding `CloseButton`                                                                  | **UPSTREAM** | `Button` + Lucide `X`.                                                                                                             |
-| onboarding `ConfirmClose`                                                                 | **UPSTREAM** | `AlertDialog` + `Button`; product owns cancellation flow and copy.                                                                 |
-| onboarding `SubmitButton`                                                                 | **UPSTREAM** | `Button` + status copy/icon; product owns checking/success/error state.                                                            |
-| onboarding workflow remainder                                                             | **PRODUCT**  | Validation, avatar manifests, prefetch, connection events, telemetry, timers, and submission remain product-side.                  |
-| onboarding `OnboardingIcons.tsx#HubzzLogo` / `onboardingBrandSvg.ts`                      | **PRODUCT**  | This is a 119×36 wordmark, not the square `HubzzLogo`. Current evidence is onboarding-only, so do not create `HubzzWordmark` yet.  |
-| Notifications connection-loss state machine                                               | **PRODUCT**  | Connection events and retry history remain application state.                                                                      |
-| Notifications/WebGL shared technical overlay                                              | **PRODUCT**  | The two recovery flows already share product-local CSS. A registry abstraction would add indirection without deleting enough code. |
-| `WebGLCrashOverlay.tsx` recovery state machine                                            | **PRODUCT**  | Session storage, countdown, reload and world events remain product-side.                                                           |
-| world `ScreenContent.tsx`                                                                 | **PRODUCT**  | Three.js/CSS3D bridge, playback state, platform handling and auto-hide behavior are application concerns.                          |
-| `NotFound`, `ErrorBoundary`, `Landing`                                                    | **PRODUCT**  | Route/runtime assemblies, not design-system contracts.                                                                             |
-| dev editor feature shell and tool workflows                                               | **PRODUCT**  | Editor-specific orchestration stays in product.                                                                                    |
-| editor publish/save/upload modals                                                         | **UPSTREAM** | Compose `Dialog`, `Form`, `Input`, `Item`, and `Button`.                                                                           |
-| editor `InputNumber`                                                                      | **UPSTREAM** | Native/shadcn numeric input unless a future requirement exceeds it.                                                                |
-| editor `SettingsMenu`                                                                     | **UPSTREAM** | `DropdownMenu` / `Popover`.                                                                                                        |
-| editor icon bundle and HAIcon line/solid trees                                            | **UPSTREAM** | Lucide. Never bulk-port HAIcon.                                                                                                    |
-| profile-panel standard `ui/*` primitives                                                  | **UPSTREAM** | Use shadcn registry primitives directly. Only the Hubzz custom entries listed above are covered by Hubzz analogs.                  |
-| profile-panel `ScreenHeader`                                                              | **PRODUCT**  | Reused inside one panel system but carries panel/mobile-close layout assumptions. Compose `Button` + heading in product.           |
-| profile-panel `EmptyState`                                                                | **UPSTREAM** | Simple empty-state composition; no durable Hubzz-specific contract.                                                                |
-| profile-panel small `space-card.tsx`                                                      | **UPSTREAM** | `Item` + `AvatarGroup` + `Button` composition.                                                                                     |
-| profile-panel `spaces/SpaceCard.tsx`                                                      | **PRODUCT**  | Space preview framing, attendance, elapsed time, construction/join state and navigation are feature behavior.                      |
-| profile-panel `ProfileCard.tsx` / `GuestDetailScreen.tsx`                                 | **PRODUCT**  | Feature assemblies. Reuse their leaf contracts instead of porting the cards wholesale.                                             |
-| profile-panel screens: avatar, badges, friends, news, selfies, settings, spaces, wallets  | **PRODUCT**  | Screen/workflow assemblies. Extract a leaf only after independent reuse is proven.                                                 |
-| profile-panel `app-sidebar*`, `profile-panel`, `top-bar`, `nav-user`, `theme-provider`    | **PRODUCT**  | Application shell/panel composition and state.                                                                                     |
-| profile-panel `MetaChip`-style affordance in space-card chat                              | **COVERED**  | The generic toggle-chip contract is `Capsule`; feature code owns icon/label reveal state.                                          |
-| `shell/ShellLayout.tsx`                                                                   | **PRODUCT**  | Correctly composes upstream Sidebar but carries portal and world/sidebar event wiring.                                             |
-| `routes/*`                                                                                | **PRODUCT**  | Route assemblies.                                                                                                                  |
-| space-card `SpaceHUD`, `SpaceCardsOverlay`, chat display/input, modals and voice settings | **PRODUCT**  | Feature UI and orchestration, not registry atoms.                                                                                  |
-| space-card generic image fallback                                                         | **PRODUCT**  | Utility behavior, no Hubzz visual identity.                                                                                        |
-| RTC/audio/network subsystem                                                               | **PRODUCT**  | Non-visual runtime, outside this ledger.                                                                                           |
+| Pre-alpha source                                                                          | Status       | Owner / decision                                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `components/common/Buttons.module.css`                                                    | **COVERED**  | Hubzz `Button` visual override.                                                                                                                                                                                                                                                  |
+| `components/common/Modal.module.css`                                                      | **UPSTREAM** | shadcn `Dialog` / `AlertDialog`.                                                                                                                                                                                                                                                 |
+| `components/common/Spinner.tsx`                                                           | **UPSTREAM** | `Skeleton` for layout loading, Lucide `LoaderCircle` for operation loading.                                                                                                                                                                                                      |
+| onboarding `CloseButton`                                                                  | **UPSTREAM** | `Button` + Lucide `X`.                                                                                                                                                                                                                                                           |
+| onboarding `ConfirmClose`                                                                 | **UPSTREAM** | `AlertDialog` + `Button`; product owns cancellation flow and copy.                                                                                                                                                                                                               |
+| onboarding `SubmitButton`                                                                 | **UPSTREAM** | `Button` + status copy/icon; product owns checking/success/error state.                                                                                                                                                                                                          |
+| onboarding workflow remainder                                                             | **PRODUCT**  | Validation, avatar manifests, prefetch, connection events, telemetry, timers, and submission remain product-side.                                                                                                                                                                |
+| onboarding `OnboardingIcons.tsx#HubzzLogo` / `onboardingBrandSvg.ts`                      | **PRODUCT**  | This is a 119×36 wordmark, not the square `HubzzLogo`. Current evidence is onboarding-only, so do not create `HubzzWordmark` yet.                                                                                                                                                |
+| Notifications connection-loss state machine                                               | **PRODUCT**  | Connection events and retry history remain application state.                                                                                                                                                                                                                    |
+| Notifications/WebGL shared technical overlay                                              | **PRODUCT**  | The two recovery flows already share product-local CSS. A registry abstraction would add indirection without deleting enough code.                                                                                                                                               |
+| `WebGLCrashOverlay.tsx` recovery state machine                                            | **PRODUCT**  | Session storage, countdown, reload and world events remain product-side.                                                                                                                                                                                                         |
+| world `ScreenContent.tsx`                                                                 | **PRODUCT**  | Three.js/CSS3D bridge, playback state, platform handling and auto-hide behavior are application concerns.                                                                                                                                                                        |
+| `NotFound`, `ErrorBoundary`, `Landing`                                                    | **PRODUCT**  | Route/runtime assemblies, not design-system contracts.                                                                                                                                                                                                                           |
+| dev editor feature shell and tool workflows                                               | **PRODUCT**  | Editor-specific orchestration stays in product.                                                                                                                                                                                                                                  |
+| editor publish/save/upload modals                                                         | **UPSTREAM** | Compose `Dialog`, `Form`, `Input`, `Item`, and `Button`.                                                                                                                                                                                                                         |
+| editor `InputNumber`                                                                      | **UPSTREAM** | Native/shadcn numeric input unless a future requirement exceeds it.                                                                                                                                                                                                              |
+| editor `SettingsMenu`                                                                     | **UPSTREAM** | `DropdownMenu` / `Popover`.                                                                                                                                                                                                                                                      |
+| editor icon bundle and HAIcon line/solid trees                                            | **UPSTREAM** | Lucide. Never bulk-port HAIcon.                                                                                                                                                                                                                                                  |
+| profile-panel standard `ui/*` primitives                                                  | **UPSTREAM** | Use shadcn registry primitives directly. Only the Hubzz custom entries listed above are covered by Hubzz analogs.                                                                                                                                                                |
+| profile-panel `ScreenHeader`                                                              | **PRODUCT**  | Reused inside one panel system but carries panel/mobile-close layout assumptions. Compose `Button` + heading in product.                                                                                                                                                         |
+| profile-panel `EmptyState`                                                                | **UPSTREAM** | Simple empty-state composition; no durable Hubzz-specific contract.                                                                                                                                                                                                              |
+| profile-panel small `space-card.tsx`                                                      | **UPSTREAM** | `Item` + `AvatarGroup` + `Button` composition.                                                                                                                                                                                                                                   |
+| profile-panel `spaces/SpaceCard.tsx`                                                      | **PRODUCT**  | Space preview framing, attendance, elapsed time, construction/join state and navigation are feature behavior.                                                                                                                                                                    |
+| profile-panel `ProfileCard.tsx` / `GuestDetailScreen.tsx`                                 | **PRODUCT**  | Feature assemblies. Reuse their leaf contracts instead of porting the cards wholesale.                                                                                                                                                                                           |
+| profile-panel `full-body-img.tsx`                                                         | **PRODUCT**  | The alpha-shadow figure treatment has one implementation used only inside the profile-card family. Public avatar cards/viewers intentionally use ordinary image treatment, so a registry extraction would add a cross-repo abstraction without deleting independent duplication. |
+| profile-panel screens: avatar, badges, friends, news, selfies, settings, spaces, wallets  | **PRODUCT**  | Screen/workflow assemblies. Extract a leaf only after independent reuse is proven.                                                                                                                                                                                               |
+| profile-panel `app-sidebar*`, `profile-panel`, `top-bar`, `nav-user`, `theme-provider`    | **PRODUCT**  | Application shell/panel composition and state.                                                                                                                                                                                                                                   |
+| badge image/fallback rendering across profile and chat                                    | **UPSTREAM** | Compose image + `Skeleton` + local fallback text. The shared seam is generic presentation, not a Hubzz registry contract.                                                                                                                                                        |
+| `space-cards/components/chat/HubzzLevelBadge.tsx`                                         | **PRODUCT**  | XP-domain component: canonical XP math, level palettes, metadata, selection and detail behavior belong with the product/xp subsystem.                                                                                                                                            |
+| profile-panel `MetaChip`-style affordance in space-card chat                              | **COVERED**  | The generic toggle-chip contract is `Capsule`; feature code owns icon/label reveal state.                                                                                                                                                                                        |
+| `shell/ShellLayout.tsx`                                                                   | **PRODUCT**  | Correctly composes upstream Sidebar but carries portal and world/sidebar event wiring.                                                                                                                                                                                           |
+| `routes/*`                                                                                | **PRODUCT**  | Route assemblies.                                                                                                                                                                                                                                                                |
+| space-card `SpaceHUD`, `SpaceCardsOverlay`, chat display/input, modals and voice settings | **PRODUCT**  | Feature UI and orchestration, not registry atoms.                                                                                                                                                                                                                                |
+| space-card generic image fallback                                                         | **PRODUCT**  | Utility behavior, no Hubzz visual identity.                                                                                                                                                                                                                                      |
+| RTC/audio/network subsystem                                                               | **PRODUCT**  | Non-visual runtime, outside this ledger.                                                                                                                                                                                                                                         |
 
 ## Completed from current census
 
@@ -150,34 +153,42 @@ Product code continues to own:
 
 No size, halo, border, or placement variant API was added.
 
-## Candidates, not approved
+## Candidate review closure
 
 ### FullBodyAvatar treatment
 
-Source:
+**Decision: PRODUCT**
 
-- `profile-panel/components/full-body-img.tsx`
+Evidence:
 
-**Status: CANDIDATE**
+- `full-body-img.tsx` is the only implementation of the `--fb-src` alpha-shadow
+  technique;
+- its consumers are `ProfileCard` and `GuestDetailScreen`, two views in the
+  same profile-card visual family;
+- the public avatar viewer and avatar cards intentionally use ordinary
+  `object-contain` / `object-cover` image treatment instead;
+- the imagery reference documents the shadow as profile-panel behavior and does
+  not identify another product area that duplicates it.
 
-It is reused by self and guest profile views and encapsulates a nontrivial Hubzz
-silhouette/ground-shadow treatment that follows arbitrary full-body avatar
-renders. Review it only after `PresenceIndicator` is settled, and first check
-whether other avatar media surfaces imply a more general single owner.
+Keep the treatment beside the profile-card family. Revisit only if another
+independent product surface adopts the same alpha-shadow figure contract.
 
 ### Badge visual contract
 
-Sources include:
+**Decision: no HubzzCN component**
 
-- `profile-panel/components/badges/BadgeArt.tsx`
-- `space-cards/components/chat/HubzzLevelBadge.tsx`
-- badge placeholders/detail surfaces
+Evidence:
 
-**Status: CANDIDATE**
+- the common image-or-fallback seam is generic enough to compose from an image,
+  `Skeleton`, and local fallback text;
+- `BadgeArt` additionally special-cases the synthetic Hubzz level badge;
+- `HubzzLevelBadge` owns XP math from `@hubzz/xp`, level-dependent palettes,
+  metadata, selection behavior, and detail/modal presentation;
+- collapsing these paths into one registry API would either produce a trivial
+  image wrapper or import XP/business behavior into the design system.
 
-There is real reuse, but the current code mixes image loading, synthetic level
-badges, XP data, fallback monograms, and product badge models. Do not port until
-a small visual-only contract can be separated from badge business logic.
+Keep the generic art fallback local/upstream-composed and keep Hubzz level
+behavior with the XP/product subsystem.
 
 ## Current Hubzz-owned analog set
 
@@ -198,12 +209,13 @@ composition is insufficient.
 
 ## Work order
 
-1. Re-evaluate the full-body avatar treatment against all avatar-media surfaces.
-2. Re-evaluate the badge visual contract only if it can shed XP/data/workflow
-   concerns.
-3. Stop and re-census. Do not port feature assemblies by momentum.
+There is no approved NEXT or CANDIDATE component at the pinned census revision.
 
-There is no approved NEXT component after `PresenceIndicator`.
+1. Stop extraction work at this boundary.
+2. Update the pinned pre-alpha SHA when the product UI moves materially.
+3. Re-census new or changed UI for independent duplication before approving any
+   additional HubzzCN analog.
+4. Prefer deleting or composing product-local wrappers over growing the registry.
 
 The desired end state is not parity by component count. It is the smallest
 stable Hubzz-owned layer that lets product code express the current experience
