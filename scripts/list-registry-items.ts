@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
+import { fileURLToPath } from "node:url"
 
 interface RegistryItem {
   name: string
@@ -11,7 +12,8 @@ interface RegistryFile {
   items?: RegistryItem[]
 }
 
-const ROOT_REGISTRY = resolve("registry.json")
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..")
+const ROOT_REGISTRY = resolve(REPO_ROOT, "registry.json")
 const internalPrefixIndex = process.argv.indexOf("--internal-dependencies")
 const internalPrefix =
   internalPrefixIndex >= 0 ? process.argv[internalPrefixIndex + 1] : undefined
@@ -24,8 +26,8 @@ const seenFiles = new Set<string>()
 const seenItems = new Set<string>()
 const items: RegistryItem[] = []
 
-function readRegistry(path: string): RegistryFile {
-  if (seenFiles.has(path)) return {}
+function readRegistry(path: string): void {
+  if (seenFiles.has(path)) return
   seenFiles.add(path)
 
   const registry = JSON.parse(readFileSync(path, "utf8")) as RegistryFile
@@ -44,8 +46,6 @@ function readRegistry(path: string): RegistryFile {
   for (const include of registry.include ?? []) {
     readRegistry(resolve(dirname(path), include))
   }
-
-  return registry
 }
 
 readRegistry(ROOT_REGISTRY)
