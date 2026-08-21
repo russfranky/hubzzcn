@@ -58,7 +58,8 @@ function visit(file: string): void {
 
   for (const statement of sourceFile.statements) {
     const moduleSpecifier =
-      (ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement)) &&
+      (ts.isImportDeclaration(statement) ||
+        ts.isExportDeclaration(statement)) &&
       statement.moduleSpecifier &&
       ts.isStringLiteral(statement.moduleSpecifier)
         ? statement.moduleSpecifier.text
@@ -86,7 +87,9 @@ function visit(file: string): void {
 
 visit(ENTRY)
 
-const peerDependencies = new Set(Object.keys(packageJson.peerDependencies ?? {}))
+const peerDependencies = new Set(
+  Object.keys(packageJson.peerDependencies ?? {})
+)
 const requiredDependencies = [...externalPackages]
   .filter((dependency) => !peerDependencies.has(dependency))
   .sort()
@@ -100,7 +103,9 @@ const extra = declaredDependencies.filter(
 )
 
 if (missing.length || extra.length) {
-  console.error("Package runtime dependencies do not match the src/index.ts import closure.")
+  console.error(
+    "Package runtime dependencies do not match the src/index.ts import closure."
+  )
   if (missing.length) {
     console.error(`Missing dependencies: ${missing.join(", ")}`)
   }
