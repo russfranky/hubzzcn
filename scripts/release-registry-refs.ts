@@ -13,10 +13,7 @@ const REPOSITORY_ADDRESS = "russfranky/hubzzcn"
 const REPOSITORY_PREFIX = `${REPOSITORY_ADDRESS}/`
 
 function pinDependency(dependency: string, ref: string): string {
-  const parsed = parseInternalRegistryDependency(
-    dependency,
-    REPOSITORY_ADDRESS
-  )
+  const parsed = parseInternalRegistryDependency(dependency, REPOSITORY_ADDRESS)
   if (!parsed) return dependency
   return `${REPOSITORY_PREFIX}${parsed.name}#${ref}`
 }
