@@ -1,4 +1,7 @@
-import { loadRegistryGraph } from "./registry-graph"
+import {
+  internalRegistryDependencyNames,
+  loadRegistryGraph,
+} from "./registry-graph"
 
 const internalPrefixIndex = process.argv.indexOf("--internal-dependencies")
 const internalPrefix =
@@ -15,17 +18,6 @@ if (!internalPrefix) {
   process.exit(0)
 }
 
-const prefix = `${internalPrefix.replace(/\/$/, "")}/`
-const dependencies = new Set<string>()
-
-for (const item of items) {
-  for (const dependency of item.registryDependencies ?? []) {
-    if (!dependency.startsWith(prefix)) continue
-    const name = dependency.slice(prefix.length).split("#", 1)[0]
-    if (name) dependencies.add(name)
-  }
-}
-
-for (const item of items) {
-  if (dependencies.has(item.name)) console.log(item.name)
+for (const name of internalRegistryDependencyNames(items, internalPrefix)) {
+  console.log(name)
 }
