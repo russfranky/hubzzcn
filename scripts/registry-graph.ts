@@ -244,7 +244,9 @@ export function parseInternalRegistryDependency(
     ref !== undefined &&
     (ref.length === 0 || ref.trim() !== ref || ref.includes("#"))
   ) {
-    throw new Error(`Internal registry dependency has an invalid ref: ${dependency}`)
+    throw new Error(
+      `Internal registry dependency has an invalid ref: ${dependency}`
+    )
   }
 
   return ref === undefined ? { name } : { name, ref }
