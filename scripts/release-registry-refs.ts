@@ -2,16 +2,23 @@ import { writeFileSync } from "node:fs"
 import { format } from "prettier"
 
 import {
+  internalRegistryDependencyNames,
   loadRegistryGraph,
+  parseInternalRegistryDependency,
   repoRelative,
   type RegistryFile,
 } from "./registry-graph"
 
-const REPOSITORY_PREFIX = "russfranky/hubzzcn/"
+const REPOSITORY_ADDRESS = "russfranky/hubzzcn"
+const REPOSITORY_PREFIX = `${REPOSITORY_ADDRESS}/`
 
-function normalizeRef(address: string, ref: string): string {
-  const [item] = address.split("#", 1)
-  return `${item}#${ref}`
+function pinDependency(dependency: string, ref: string): string {
+  const parsed = parseInternalRegistryDependency(
+    dependency,
+    REPOSITORY_ADDRESS
+  )
+  if (!parsed) return dependency
+  return `${REPOSITORY_PREFIX}${parsed.name}#${ref}`
 }
 
 async function updateRegistryFile(file: RegistryFile, ref: string) {
@@ -20,8 +27,7 @@ async function updateRegistryFile(file: RegistryFile, ref: string) {
   for (const item of file.document.items ?? []) {
     if (!item.registryDependencies) continue
     item.registryDependencies = item.registryDependencies.map((dependency) => {
-      if (!dependency.startsWith(REPOSITORY_PREFIX)) return dependency
-      const pinned = normalizeRef(dependency, ref)
+      const pinned = pinDependency(dependency, ref)
       if (pinned !== dependency) changed = true
       return pinned
     })
@@ -39,10 +45,11 @@ function verifyRegistryFile(file: RegistryFile, ref: string): string[] {
 
   for (const item of file.document.items ?? []) {
     for (const dependency of item.registryDependencies ?? []) {
-      if (
-        dependency.startsWith(REPOSITORY_PREFIX) &&
-        !dependency.endsWith(`#${ref}`)
-      ) {
+      const parsed = parseInternalRegistryDependency(
+        dependency,
+        REPOSITORY_ADDRESS
+      )
+      if (parsed && parsed.ref !== ref) {
         failures.push(`${repoRelative(file.path)}:${item.name}: ${dependency}`)
       }
     }
@@ -54,14 +61,20 @@ function verifyRegistryFile(file: RegistryFile, ref: string): string[] {
 const mode = process.argv[2]
 const ref = process.argv[3]
 
-if (!ref || !["pin", "verify"].includes(mode ?? "")) {
+if (
+  !ref ||
+  ref.trim() !== ref ||
+  ref.includes("#") ||
+  !["pin", "verify"].includes(mode ?? "")
+) {
   console.error(
     "Usage: tsx scripts/release-registry-refs.ts <pin|verify> <ref>"
   )
   process.exit(1)
 }
 
-const { files } = loadRegistryGraph()
+const { files, items } = loadRegistryGraph()
+internalRegistryDependencyNames(items, REPOSITORY_ADDRESS)
 
 if (mode === "pin") {
   let changedFiles = 0
