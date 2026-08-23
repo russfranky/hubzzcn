@@ -77,9 +77,10 @@ test("loads a shared include once without treating a DAG as a cycle", () => {
     ["base", "shared", "leaf"]
   )
   assert.equal(graph.files.length, 4)
-  assert.deepEqual(internalRegistryDependencyNames(graph.items, REGISTRY_ADDRESS), [
-    "shared",
-  ])
+  assert.deepEqual(
+    internalRegistryDependencyNames(graph.items, REGISTRY_ADDRESS),
+    ["shared"]
+  )
 })
 
 test("rejects duplicate item names across registry files", () => {
@@ -89,7 +90,10 @@ test("rejects duplicate item names across registry files", () => {
     "b.json": { items: [{ name: "duplicate" }] },
   })
 
-  assert.throws(() => loadRegistryGraph(root), /Duplicate registry item: duplicate/)
+  assert.throws(
+    () => loadRegistryGraph(root),
+    /Duplicate registry item: duplicate/
+  )
 })
 
 test("rejects include cycles with the cycle path", () => {
@@ -128,7 +132,10 @@ test("rejects malformed registry document arrays", () => {
   const invalidInclude = createFixture({
     "registry.json": { include: "a.json" },
   })
-  assert.throws(() => loadRegistryGraph(invalidInclude), /include must be an array/)
+  assert.throws(
+    () => loadRegistryGraph(invalidInclude),
+    /include must be an array/
+  )
 
   const invalidItems = createFixture({
     "registry.json": { items: { name: "a" } },
@@ -150,7 +157,10 @@ test("rejects invalid item names and an empty public graph", () => {
   const invalidName = createFixture({
     "registry.json": { items: [{ name: "bad/name" }] },
   })
-  assert.throws(() => loadRegistryGraph(invalidName), /invalid registry item name/)
+  assert.throws(
+    () => loadRegistryGraph(invalidName),
+    /invalid registry item name/
+  )
 
   const empty = createFixture({ "registry.json": { items: [] } })
   assert.throws(() => loadRegistryGraph(empty), /contains no public items/)
@@ -171,19 +181,13 @@ test("parses unpinned and pinned internal registry dependencies", () => {
     ),
     { name: "button", ref: "feature/foo" }
   )
-  assert.equal(
-    parseInternalRegistryDependency("utils", REGISTRY_ADDRESS),
-    null
-  )
+  assert.equal(parseInternalRegistryDependency("utils", REGISTRY_ADDRESS), null)
 })
 
 test("rejects malformed internal registry dependency addresses", () => {
   assert.throws(
     () =>
-      parseInternalRegistryDependency(
-        `${REGISTRY_ADDRESS}/`,
-        REGISTRY_ADDRESS
-      ),
+      parseInternalRegistryDependency(`${REGISTRY_ADDRESS}/`, REGISTRY_ADDRESS),
     /invalid registry item name/
   )
   assert.throws(
