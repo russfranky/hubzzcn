@@ -37,20 +37,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Print canonical registry edge formatting
-        shell: bash
-        run: |
-          set -euo pipefail
-          pnpm exec prettier --write \
-            scripts/registry-graph.ts \
-            scripts/registry-graph.test.ts \
-            scripts/release-registry-refs.ts
-          git diff -- \
-            scripts/registry-graph.ts \
-            scripts/registry-graph.test.ts \
-            scripts/release-registry-refs.ts
-          exit 1
-
       - name: Run repository checks
         run: pnpm check
 
