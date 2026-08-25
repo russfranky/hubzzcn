@@ -44,15 +44,15 @@ function normalizeModule(module: unknown) {
 }
 
 const catalogEntries = allExamples.map(normalizeModule)
-const catalogHubzzSlugs = new Set(
-  catalogEntries
-    .filter(({ meta }) => meta.category === "hubzz")
-    .map(({ meta }) => meta.slug ?? meta.title.toLowerCase())
+const catalogSlugs = new Set(
+  catalogEntries.map(
+    ({ meta }) => meta.slug ?? meta.title.toLowerCase()
+  )
 )
 const uncataloguedPublicComponents = loadRegistryGraph().items
   .filter((item) => item.type === "registry:component")
   .map((item) => item.name)
-  .filter((name) => !catalogHubzzSlugs.has(name))
+  .filter((name) => !catalogSlugs.has(name))
 
 if (uncataloguedPublicComponents.length > 0) {
   throw new Error(
