@@ -5,10 +5,7 @@
  */
 
 import { expect, test, type Page } from "@playwright/test"
-import {
-  normalizeCssColor,
-  normalizeCssVariableColor,
-} from "../helpers/colors"
+import { normalizeCssColor, normalizeCssVariableColor } from "../helpers/colors"
 
 test.describe("BadgeCategory", () => {
   let page: Page
@@ -64,16 +61,21 @@ test.describe("BadgeCategory", () => {
     expect(background).toBe(expected)
   })
 
-  test("default badge transitions to the card role on mouse hover", async () => {
-    const badge = page.locator('#badge-category [data-state="default"]').first()
-    await badge.hover()
-    await page.waitForTimeout(300)
-    const [background, expected] = await Promise.all([
-      normalizeCssColor(badge, "backgroundColor"),
-      normalizeCssVariableColor(page, "--card"),
-    ])
-    expect(background).toBe(expected)
-  })
+  test(
+    "default badge transitions to the card role on mouse hover",
+    async () => {
+      const badge = page
+        .locator('#badge-category [data-state="default"]')
+        .first()
+      await badge.hover()
+      await page.waitForTimeout(300)
+      const [background, expected] = await Promise.all([
+        normalizeCssColor(badge, "backgroundColor"),
+        normalizeCssVariableColor(page, "--card"),
+      ])
+      expect(background).toBe(expected)
+    }
+  )
 
   test("default badge uses foreground typography", async () => {
     const badge = page.locator("#badge-category [data-state]").first()
