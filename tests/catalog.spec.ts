@@ -40,7 +40,9 @@ test.describe("Component catalog", () => {
         name: "Commodity UI stays upstream.",
       })
     ).toBeVisible()
-    await expect(upstream.getByText("src/components/ui/", { exact: true })).toBeVisible()
+    await expect(
+      upstream.getByText("src/components/ui/", { exact: true })
+    ).toBeVisible()
     await expect(
       upstream.getByText("Upstream → tokens → composition", { exact: true })
     ).toBeVisible()
