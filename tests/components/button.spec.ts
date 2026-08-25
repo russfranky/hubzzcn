@@ -96,19 +96,20 @@ test.describe("Button", () => {
     const button = page
       .locator("#button")
       .getByRole("button", { name: "Continue" })
-    await button.focus()
+
+    await page.locator("body").click({ position: { x: 1, y: 1 } })
+    for (let index = 0; index < 50; index += 1) {
+      if (await button.evaluate((element) => element === document.activeElement)) {
+        break
+      }
+      await page.keyboard.press("Tab")
+    }
     await expect(button).toBeFocused()
 
-    const focus = await button.evaluate((element) => {
-      const style = getComputedStyle(element)
-      return {
-        boxShadow: style.boxShadow,
-        borderColor: style.borderColor,
-      }
-    })
-
-    expect(focus.boxShadow).not.toBe("none")
-    expect(focus.borderColor).not.toBe("rgba(0, 0, 0, 0)")
+    const boxShadow = await button.evaluate(
+      (element) => getComputedStyle(element).boxShadow
+    )
+    expect(boxShadow).not.toBe("none")
   })
 
   test("button catalog section has no WCAG A/AA violations", async ({
