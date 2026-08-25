@@ -28,17 +28,87 @@ test.describe("Button", () => {
     ).toHaveAttribute("data-size", "icon")
   })
 
-  test("enabled controls can receive keyboard focus", async ({ page }) => {
+  test("matches canonical shadcn geometry and neutral theme roles", async ({
+    page,
+  }) => {
+    const button = page
+      .locator("#button")
+      .getByRole("button", { name: "Continue" })
+
+    await page.evaluate(() => {
+      document.documentElement.classList.remove("dark")
+      document.documentElement.classList.add("light")
+    })
+
+    const light = await button.evaluate((element) => {
+      const buttonStyle = getComputedStyle(element)
+      const rootStyle = getComputedStyle(document.documentElement)
+      return {
+        height: buttonStyle.height,
+        borderRadius: buttonStyle.borderRadius,
+        fontWeight: buttonStyle.fontWeight,
+        backgroundImage: buttonStyle.backgroundImage,
+        primary: rootStyle.getPropertyValue("--primary").trim(),
+        ring: rootStyle.getPropertyValue("--ring").trim(),
+        radius: rootStyle.getPropertyValue("--radius").trim(),
+      }
+    })
+
+    expect(light).toEqual({
+      height: "36px",
+      borderRadius: "8px",
+      fontWeight: "500",
+      backgroundImage: "none",
+      primary: "#030213",
+      ring: "oklch(0.708 0 0)",
+      radius: "0.625rem",
+    })
+
+    await page.evaluate(() => {
+      document.documentElement.classList.remove("light")
+      document.documentElement.classList.add("dark")
+    })
+
+    const dark = await button.evaluate((element) => {
+      const buttonStyle = getComputedStyle(element)
+      const rootStyle = getComputedStyle(document.documentElement)
+      return {
+        height: buttonStyle.height,
+        borderRadius: buttonStyle.borderRadius,
+        fontWeight: buttonStyle.fontWeight,
+        backgroundImage: buttonStyle.backgroundImage,
+        primary: rootStyle.getPropertyValue("--primary").trim(),
+        ring: rootStyle.getPropertyValue("--ring").trim(),
+      }
+    })
+
+    expect(dark).toEqual({
+      height: "36px",
+      borderRadius: "8px",
+      fontWeight: "500",
+      backgroundImage: "none",
+      primary: "oklch(0.985 0 0)",
+      ring: "oklch(0.439 0 0)",
+    })
+  })
+
+  test("enabled controls expose the canonical focus ring", async ({ page }) => {
     const button = page
       .locator("#button")
       .getByRole("button", { name: "Continue" })
     await button.focus()
     await expect(button).toBeFocused()
 
-    const outline = await button.evaluate(
-      (element) => getComputedStyle(element).outlineStyle
-    )
-    expect(outline).toBeTruthy()
+    const focus = await button.evaluate((element) => {
+      const style = getComputedStyle(element)
+      return {
+        boxShadow: style.boxShadow,
+        borderColor: style.borderColor,
+      }
+    })
+
+    expect(focus.boxShadow).not.toBe("none")
+    expect(focus.borderColor).not.toBe("rgba(0, 0, 0, 0)")
   })
 
   test("button catalog section has no WCAG A/AA violations", async ({
