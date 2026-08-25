@@ -51,12 +51,10 @@ const catalogEntries = allExamples.map(normalizeModule)
 const catalogComponentIdentities = new Set(
   catalogEntries.map(({ meta }) => componentIdentity(meta.title))
 )
-const uncataloguedPublicComponents = loadRegistryGraph().items
-  .filter((item) => item.type === "registry:component")
+const uncataloguedPublicComponents = loadRegistryGraph()
+  .items.filter((item) => item.type === "registry:component")
   .map((item) => item.name)
-  .filter(
-    (name) => !catalogComponentIdentities.has(componentIdentity(name))
-  )
+  .filter((name) => !catalogComponentIdentities.has(componentIdentity(name)))
 
 if (uncataloguedPublicComponents.length > 0) {
   throw new Error(
