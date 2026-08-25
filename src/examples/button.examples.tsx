@@ -11,7 +11,7 @@ export const meta: Meta<typeof Button> = {
   slug: "button",
   component: Button,
   description:
-    "Upstream shadcn Button contract with Hubzz geometry, color, focus, and pressed-state treatment.",
+    "Canonical shadcn Button contract using the shared Hubzz semantic theme roles.",
   category: "shadcn",
   layer: "override",
   notes: [
