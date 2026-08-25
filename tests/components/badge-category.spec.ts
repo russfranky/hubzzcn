@@ -5,7 +5,10 @@
  */
 
 import { expect, test, type Page } from "@playwright/test"
-import { normalizeCssColor, normalizeCssVariableColor } from "../helpers/colors"
+import {
+  normalizeCssColor,
+  normalizeCssVariableColor,
+} from "../helpers/colors"
 
 test.describe("BadgeCategory", () => {
   let page: Page
@@ -30,7 +33,9 @@ test.describe("BadgeCategory", () => {
   })
 
   test("default state uses the background role", async () => {
-    const badge = page.locator('#badge-category [data-state="default"]').first()
+    const badge = page
+      .locator('#badge-category [data-state="default"]')
+      .first()
     const [background, expected] = await Promise.all([
       normalizeCssColor(badge, "backgroundColor"),
       normalizeCssVariableColor(page, "--background"),
