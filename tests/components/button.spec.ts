@@ -41,16 +41,14 @@ test.describe("Button", () => {
     })
 
     const light = await button.evaluate((element) => {
-      const buttonStyle = getComputedStyle(element)
-      const rootStyle = getComputedStyle(document.documentElement)
+      const style = getComputedStyle(element)
       return {
-        height: buttonStyle.height,
-        borderRadius: buttonStyle.borderRadius,
-        fontWeight: buttonStyle.fontWeight,
-        backgroundImage: buttonStyle.backgroundImage,
-        primary: rootStyle.getPropertyValue("--primary").trim(),
-        ring: rootStyle.getPropertyValue("--ring").trim(),
-        radius: rootStyle.getPropertyValue("--radius").trim(),
+        height: style.height,
+        borderRadius: style.borderRadius,
+        fontWeight: style.fontWeight,
+        backgroundImage: style.backgroundImage,
+        backgroundColor: style.backgroundColor,
+        color: style.color,
       }
     })
 
@@ -59,9 +57,8 @@ test.describe("Button", () => {
       borderRadius: "8px",
       fontWeight: "500",
       backgroundImage: "none",
-      primary: "#030213",
-      ring: "oklch(0.708 0 0)",
-      radius: "0.625rem",
+      backgroundColor: "rgb(3, 2, 19)",
+      color: "rgb(255, 255, 255)",
     })
 
     await page.evaluate(() => {
@@ -70,15 +67,14 @@ test.describe("Button", () => {
     })
 
     const dark = await button.evaluate((element) => {
-      const buttonStyle = getComputedStyle(element)
-      const rootStyle = getComputedStyle(document.documentElement)
+      const style = getComputedStyle(element)
       return {
-        height: buttonStyle.height,
-        borderRadius: buttonStyle.borderRadius,
-        fontWeight: buttonStyle.fontWeight,
-        backgroundImage: buttonStyle.backgroundImage,
-        primary: rootStyle.getPropertyValue("--primary").trim(),
-        ring: rootStyle.getPropertyValue("--ring").trim(),
+        height: style.height,
+        borderRadius: style.borderRadius,
+        fontWeight: style.fontWeight,
+        backgroundImage: style.backgroundImage,
+        backgroundColor: style.backgroundColor,
+        color: style.color,
       }
     })
 
@@ -87,8 +83,8 @@ test.describe("Button", () => {
       borderRadius: "8px",
       fontWeight: "500",
       backgroundImage: "none",
-      primary: "oklch(0.985 0 0)",
-      ring: "oklch(0.439 0 0)",
+      backgroundColor: "rgb(250, 250, 250)",
+      color: "rgb(23, 23, 23)",
     })
   })
 
