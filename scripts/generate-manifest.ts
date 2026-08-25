@@ -43,16 +43,20 @@ function normalizeModule(module: unknown) {
   return { meta: record.meta, examples }
 }
 
+function componentIdentity(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "")
+}
+
 const catalogEntries = allExamples.map(normalizeModule)
-const catalogSlugs = new Set(
-  catalogEntries.map(
-    ({ meta }) => meta.slug ?? meta.title.toLowerCase()
-  )
+const catalogComponentIdentities = new Set(
+  catalogEntries.map(({ meta }) => componentIdentity(meta.title))
 )
 const uncataloguedPublicComponents = loadRegistryGraph().items
   .filter((item) => item.type === "registry:component")
   .map((item) => item.name)
-  .filter((name) => !catalogSlugs.has(name))
+  .filter(
+    (name) => !catalogComponentIdentities.has(componentIdentity(name))
+  )
 
 if (uncataloguedPublicComponents.length > 0) {
   throw new Error(
