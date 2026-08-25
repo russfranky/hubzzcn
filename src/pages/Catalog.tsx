@@ -27,25 +27,22 @@ const GROUPS: Array<{
     id: "overrides",
     layer: "override",
     eyebrow: "Overrides",
-    title: "Keep the contract. Change the layer.",
-    description:
-      "Overrides stay API-compatible with upstream shadcn and exist only when semantic tokens cannot express the Hubzz treatment.",
+    title: "API-compatible overrides",
+    description: "shadcn contracts with Hubzz visual or interaction treatment.",
   },
   {
     id: "components",
     layer: "component",
     eyebrow: "Hubzz components",
-    title: "Own only product-specific interface structure.",
-    description:
-      "These components add reusable Hubzz structure while delegating commodity behavior to upstream primitives wherever possible.",
+    title: "Product components",
+    description: "Hubzz-specific interface structure built on upstream primitives.",
   },
   {
     id: "patterns",
     layer: "pattern",
     eyebrow: "Patterns",
-    title: "Compose primitives into repeatable product patterns.",
-    description:
-      "Patterns are larger arrangements that receive data and callbacks from the application without owning product services or state.",
+    title: "Product patterns",
+    description: "Reusable arrangements of primitives and Hubzz components.",
   },
 ]
 
@@ -161,9 +158,6 @@ function ComponentSection({
                 {meta.category === "shadcn" ? "shadcn override" : "Hubzz-owned"}
               </Badge>
             </div>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              {meta.description}
-            </p>
           </div>
 
           <Button variant="ghost" size="sm" asChild>
@@ -182,24 +176,6 @@ function ComponentSection({
           <ExamplePreview key={example.name} meta={meta} example={example} />
         ))}
       </div>
-
-      {meta.notes?.length ? (
-        <div className="border-t border-border bg-muted/25 px-5 py-4 sm:px-6">
-          <p className="mb-2 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
-            Contract
-          </p>
-          <ul className="space-y-1.5">
-            {meta.notes.map((note) => (
-              <li
-                key={note}
-                className="text-xs leading-5 text-secondary-foreground"
-              >
-                {note}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
     </article>
   )
 }
