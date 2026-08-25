@@ -1,18 +1,17 @@
 /**
  * Color assertion helpers for Playwright DOM tests.
  *
- * Tailwind v4 may output some colors in oklch format in generated CSS.
- * Chrome's getComputedStyle then returns oklch strings for those colors.
- * Use `normalizeCssColor` to resolve any CSS color string to sRGB rgb()
- * via the Canvas 2D API, so assertions work regardless of color format.
+ * Tailwind v4 may output colors as hex, rgb, oklch, or oklab. Normalize both
+ * rendered properties and semantic custom properties through Canvas 2D so
+ * assertions compare pixels rather than serialization formats.
  */
 
-import type { Locator } from "@playwright/test"
+import type { Locator, Page } from "@playwright/test"
 
 /**
  * Parse a CSS hex color (#RRGGBB or #RGB) into an rgb() string.
  * Use only when you are confident the computed style returns rgb() format.
- * Prefer `assertColorMatch` for general color comparisons.
+ * Prefer the normalization helpers for general color comparisons.
  *
  * @example hexToRgb("#181B1F") === "rgb(24, 27, 31)"
  */
@@ -31,12 +30,7 @@ export function hexToRgb(hex: string): string {
   return `rgb(${r}, ${g}, ${b})`
 }
 
-/**
- * Resolve any CSS color string (rgb, oklch, hex, named) to sRGB rgb() by
- * drawing it on a 1×1 canvas and reading back the pixel.
- *
- * Use this when Tailwind v4 may have generated the CSS color in oklch format.
- */
+/** Resolve a rendered color property to sRGB rgb(). */
 export async function normalizeCssColor(
   locator: Locator,
   property: "backgroundColor" | "color" | "borderColor"
@@ -51,4 +45,26 @@ export async function normalizeCssColor(
     const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data
     return `rgb(${r}, ${g}, ${b})`
   }, property)
+}
+
+/** Resolve a semantic CSS custom property to the same sRGB representation. */
+export async function normalizeCssVariableColor(
+  page: Page,
+  variable: string
+): Promise<string> {
+  return page.evaluate((name) => {
+    const probe = document.createElement("span")
+    probe.style.color = `var(${name})`
+    document.body.append(probe)
+
+    const canvas = document.createElement("canvas")
+    canvas.width = canvas.height = 1
+    const ctx = canvas.getContext("2d")!
+    ctx.fillStyle = getComputedStyle(probe).color
+    ctx.fillRect(0, 0, 1, 1)
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data
+
+    probe.remove()
+    return `rgb(${r}, ${g}, ${b})`
+  }, variable)
 }

@@ -1,5 +1,3 @@
-import { Badge } from "@/components/ui/badge"
-
 const TOKENS = [
   {
     label: "Background",
@@ -16,7 +14,7 @@ const TOKENS = [
   {
     label: "Primary",
     token: "--primary",
-    description: "Brand and primary action",
+    description: "Primary actions and selected emphasis",
     style: { backgroundColor: "var(--primary)" },
   },
   {
@@ -49,33 +47,6 @@ const TOKENS = [
     description: "Destructive actions and errors",
     style: { backgroundColor: "var(--destructive)" },
   },
-]
-
-const UPSTREAM = [
-  "Alert",
-  "Avatar",
-  "Badge",
-  "Breadcrumb",
-  "Card",
-  "Checkbox",
-  "Collapsible",
-  "Dialog",
-  "Dropdown Menu",
-  "Form",
-  "Input",
-  "Item",
-  "Label",
-  "Select",
-  "Separator",
-  "Sheet",
-  "Sidebar",
-  "Skeleton",
-  "Sonner",
-  "Switch",
-  "Tabs",
-  "Textarea",
-  "Toggle",
-  "Tooltip",
 ]
 
 export function Foundations() {
@@ -126,8 +97,8 @@ export function Foundations() {
           />
           <FoundationDatum
             label="Radius"
-            value="12px base"
-            detail="Pills are reserved for actions and compact filters."
+            value="10px base"
+            detail="Primitives derive their shadcn radius from one semantic token."
           />
           <FoundationDatum
             label="Theme"
@@ -147,23 +118,52 @@ export function Foundations() {
               Commodity UI stays upstream.
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              These are shadcn/Radix building blocks, not parallel Hubzz-owned
-              components. Prefer upstream behavior, then tokens, then
-              composition.
+              Treat checked-in shadcn/Radix primitives as infrastructure, not a
+              second Hubzz component catalog. Preserve upstream behavior first,
+              then theme with tokens, then compose product UI.
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {UPSTREAM.map((name) => (
-            <Badge
-              key={name}
-              variant="secondary"
-              className="px-3 py-1.5 text-[11px]"
-            >
-              {name}
-            </Badge>
-          ))}
+        <div className="grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-3">
+          <FoundationDatum
+            label="Source of truth"
+            value="src/components/ui/"
+            detail="This checked-in substrate defines which upstream primitives are present. No parallel inventory lives in the catalog."
+          />
+          <FoundationDatum
+            label="Default path"
+            value="Upstream → tokens → composition"
+            detail="Keep the standard API and behavior unless the Hubzz product contract genuinely requires more."
+          />
+          <FoundationDatum
+            label="Distribution"
+            value="shadcn registry"
+            detail="Reference upstream item names through the registry instead of repackaging commodity primitives as Hubzz components."
+          />
+        </div>
+
+        <div className="mt-4 flex flex-col gap-4 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+              Override threshold
+            </p>
+            <p className="mt-2 text-sm font-medium text-foreground">
+              Override only when the product contract diverges from upstream.
+            </p>
+            <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
+              Button is the reference case: the shadcn API stays intact while
+              Hubzz owns its geometry, color, focus, and pressed-state
+              treatment.
+            </p>
+          </div>
+          <a
+            href="#button"
+            className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-foreground underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:outline-none"
+          >
+            See Button override
+            <span aria-hidden="true">→</span>
+          </a>
         </div>
       </section>
     </div>

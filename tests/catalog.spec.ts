@@ -30,6 +30,29 @@ test.describe("Component catalog", () => {
     await expect(page.locator("#patterns")).toBeVisible()
   })
 
+  test("upstream section explains the ownership boundary", async ({ page }) => {
+    const upstream = page.locator("#upstream")
+    await upstream.scrollIntoViewIfNeeded()
+
+    await expect(
+      upstream.getByRole("heading", {
+        level: 2,
+        name: "Commodity UI stays upstream.",
+      })
+    ).toBeVisible()
+    await expect(
+      upstream.getByText("src/components/ui/", { exact: true })
+    ).toBeVisible()
+    await expect(
+      upstream.getByText("Upstream → tokens → composition", { exact: true })
+    ).toBeVisible()
+
+    const buttonOverride = upstream.getByRole("link", {
+      name: "See Button override",
+    })
+    await expect(buttonOverride).toHaveAttribute("href", "#button")
+  })
+
   test("command search is keyboard accessible", async ({ page }) => {
     await page.keyboard.press("Control+K")
     const search = page.getByRole("textbox", { name: "Search Hubzz UI" })
