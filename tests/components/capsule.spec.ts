@@ -5,7 +5,10 @@
  */
 
 import { expect, test, type Page } from "@playwright/test"
-import { normalizeCssColor } from "../helpers/colors"
+import {
+  normalizeCssColor,
+  normalizeCssVariableColor,
+} from "../helpers/colors"
 
 function capsules(page: Page) {
   return page.locator('#capsule [data-catalog-preview] [data-slot="toggle"]')
@@ -15,17 +18,6 @@ function capsulesByState(page: Page, pressed: boolean) {
   return page.locator(
     `#capsule [data-catalog-preview] [data-slot="toggle"][aria-pressed="${pressed}"]`
   )
-}
-
-async function tokenColor(page: Page, token: string) {
-  return page.evaluate((name) => {
-    const probe = document.createElement("span")
-    probe.style.color = `var(${name})`
-    document.body.append(probe)
-    const color = getComputedStyle(probe).color
-    probe.remove()
-    return color
-  }, token)
 }
 
 test.describe("Capsule", () => {
@@ -51,7 +43,7 @@ test.describe("Capsule", () => {
   })
 
   test("all capsules use the card background role", async () => {
-    const expected = await tokenColor(page, "--card")
+    const expected = await normalizeCssVariableColor(page, "--card")
     for (const capsule of await capsules(page).all()) {
       const background = await normalizeCssColor(capsule, "backgroundColor")
       expect(background, "capsule background").toBe(expected)
@@ -64,7 +56,7 @@ test.describe("Capsule", () => {
     await page.waitForTimeout(300)
     const [background, expected] = await Promise.all([
       normalizeCssColor(capsule, "backgroundColor"),
-      tokenColor(page, "--accent"),
+      normalizeCssVariableColor(page, "--accent"),
     ])
     expect(background).toBe(expected)
   })
@@ -72,7 +64,7 @@ test.describe("Capsule", () => {
   test("active capsules use the foreground role", async () => {
     const activeCapsules = capsulesByState(page, true)
     await expect(activeCapsules).toHaveCount(2)
-    const expected = await tokenColor(page, "--foreground")
+    const expected = await normalizeCssVariableColor(page, "--foreground")
     for (const capsule of await activeCapsules.all()) {
       const color = await normalizeCssColor(capsule, "color")
       expect(color, "active text color").toBe(expected)
@@ -82,7 +74,10 @@ test.describe("Capsule", () => {
   test("inactive capsules use the secondary foreground role", async () => {
     const inactiveCapsules = capsulesByState(page, false)
     await expect(inactiveCapsules).toHaveCount(3)
-    const expected = await tokenColor(page, "--secondary-foreground")
+    const expected = await normalizeCssVariableColor(
+      page,
+      "--secondary-foreground"
+    )
     for (const capsule of await inactiveCapsules.all()) {
       const color = await normalizeCssColor(capsule, "color")
       expect(color, "inactive text color").toBe(expected)
