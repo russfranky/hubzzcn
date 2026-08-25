@@ -16,7 +16,7 @@ const TOKENS = [
   {
     label: "Primary",
     token: "--primary",
-    description: "Brand and primary action",
+    description: "Primary actions and selected emphasis",
     style: { backgroundColor: "var(--primary)" },
   },
   {
@@ -126,8 +126,8 @@ export function Foundations() {
           />
           <FoundationDatum
             label="Radius"
-            value="12px base"
-            detail="Pills are reserved for actions and compact filters."
+            value="10px base"
+            detail="Primitives derive their shadcn radius from one semantic token."
           />
           <FoundationDatum
             label="Theme"
