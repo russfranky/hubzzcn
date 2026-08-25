@@ -1,17 +1,22 @@
 /**
- * BadgeCategory component tests — DOM measurement + color verification.
+ * BadgeCategory component tests — DOM measurement + semantic theme roles.
  *
- * Run: npm run test:ui
+ * Run: pnpm test:ui
  */
 
-import { test, expect, type Page } from "@playwright/test"
-import { hexToRgb, normalizeCssColor } from "../helpers/colors"
+import { expect, test, type Page } from "@playwright/test"
+import { normalizeCssColor } from "../helpers/colors"
 
-// spec colors
-const BG_DEFAULT = hexToRgb("#181B1F") // rgb(24, 27, 31)
-const BG_HOVER = hexToRgb("#24262B") // rgb(36, 38, 43)
-const BG_ACTIVE = hexToRgb("#392F7D") // rgb(57, 47, 125)
-const TEXT_DARK = hexToRgb("#FCFDFE") // rgb(252, 253, 254)
+async function tokenColor(page: Page, token: string) {
+  return page.evaluate((name) => {
+    const probe = document.createElement("span")
+    probe.style.color = `var(${name})`
+    document.body.append(probe)
+    const color = getComputedStyle(probe).color
+    probe.remove()
+    return color
+  }, token)
+}
 
 test.describe("BadgeCategory", () => {
   let page: Page
@@ -27,10 +32,7 @@ test.describe("BadgeCategory", () => {
     await page.close()
   })
 
-  // ── Dimensions ───────────────────────────────────────────────────────────
-
   test("all badges are 36px tall", async () => {
-    // Use data-state to select only top-level badge containers, not inner elements
     const badges = page.locator("#badge-category [data-state]")
     for (const badge of await badges.all()) {
       const box = await badge.boundingBox()
@@ -38,66 +40,77 @@ test.describe("BadgeCategory", () => {
     }
   })
 
-  // ── Background colors by state ───────────────────────────────────────────
-
-  test("default state has bg #181B1F", async () => {
+  test("default state uses the background role", async () => {
     const badge = page.locator('#badge-category [data-state="default"]').first()
-    const bg = await normalizeCssColor(badge, "backgroundColor")
-    expect(bg).toBe(BG_DEFAULT)
+    const [background, expected] = await Promise.all([
+      normalizeCssColor(badge, "backgroundColor"),
+      tokenColor(page, "--background"),
+    ])
+    expect(background).toBe(expected)
   })
 
-  test("active state has bg #392F7D", async () => {
+  test("active state uses primary roles", async () => {
     const badge = page.locator('#badge-category [data-state="active"]').first()
-    const bg = await normalizeCssColor(badge, "backgroundColor")
-    expect(bg).toBe(BG_ACTIVE)
+    const [background, color, expectedBackground, expectedColor] =
+      await Promise.all([
+        normalizeCssColor(badge, "backgroundColor"),
+        normalizeCssColor(badge, "color"),
+        tokenColor(page, "--primary"),
+        tokenColor(page, "--primary-foreground"),
+      ])
+
+    expect(background).toBe(expectedBackground)
+    expect(color).toBe(expectedColor)
   })
 
-  test("hover state prop has bg #24262B", async () => {
+  test("controlled hover state uses the card role", async () => {
     const badge = page.locator('#badge-category [data-state="hover"]').first()
-    const bg = await normalizeCssColor(badge, "backgroundColor")
-    expect(bg).toBe(BG_HOVER)
+    const [background, expected] = await Promise.all([
+      normalizeCssColor(badge, "backgroundColor"),
+      tokenColor(page, "--card"),
+    ])
+    expect(background).toBe(expected)
   })
 
-  test("default badge transitions to #24262B on mouse hover", async () => {
+  test("default badge transitions to the card role on mouse hover", async () => {
     const badge = page.locator('#badge-category [data-state="default"]').first()
     await badge.hover()
     await page.waitForTimeout(300)
-    const bg = await normalizeCssColor(badge, "backgroundColor")
-    expect(bg, "hover bg should be #24262B").toBe(BG_HOVER)
+    const [background, expected] = await Promise.all([
+      normalizeCssColor(badge, "backgroundColor"),
+      tokenColor(page, "--card"),
+    ])
+    expect(background).toBe(expected)
   })
 
-  // ── Text styling ─────────────────────────────────────────────────────────
-
-  test("badge text uses dark foreground, 14px, weight 500", async () => {
+  test("default badge uses foreground typography", async () => {
     const badge = page.locator("#badge-category [data-state]").first()
-    const [color, styles] = await Promise.all([
+    const [color, expectedColor, styles] = await Promise.all([
       normalizeCssColor(badge, "color"),
-      badge.evaluate((el) => {
-        const cs = getComputedStyle(el)
+      tokenColor(page, "--foreground"),
+      badge.evaluate((element) => {
+        const style = getComputedStyle(element)
         return {
-          fontSize: cs.fontSize,
-          fontWeight: cs.fontWeight,
+          fontSize: style.fontSize,
+          fontWeight: style.fontWeight,
         }
       }),
     ])
-    expect(color).toBe(TEXT_DARK)
+
+    expect(color).toBe(expectedColor)
     expect(styles.fontSize).toBe("14px")
     expect(styles.fontWeight).toBe("500")
   })
 
-  // ── Remove button ─────────────────────────────────────────────────────────
-
   test("remove button is present when onRemove is provided", async () => {
-    // First 4 badges have onRemove; last one (Technology) does not
     const section = page.locator("#badge-category")
-    const removeBtns = section.locator("button[aria-label='Remove']")
-    await expect(removeBtns).toHaveCount(4)
+    const removeButtons = section.locator("button[aria-label='Remove']")
+    await expect(removeButtons).toHaveCount(4)
   })
 
   test("remove button is absent without onRemove prop", async () => {
-    // Technology badge (last one) has no onRemove prop
     const lastBadge = page.locator("#badge-category [data-state]").last()
-    const removeBtn = lastBadge.locator("button")
-    await expect(removeBtn).toHaveCount(0)
+    const removeButton = lastBadge.locator("button")
+    await expect(removeButton).toHaveCount(0)
   })
 })
