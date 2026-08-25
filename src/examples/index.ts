@@ -1,4 +1,5 @@
 import * as Button from "./button.examples"
+import * as HubzzLogo from "./hubzz-logo.examples"
 import * as EventTicket from "./event-ticket.examples"
 import * as BadgeCategory from "./badge-category.examples"
 import * as Capsule from "./capsule.examples"
@@ -12,6 +13,7 @@ import * as SpectatorBanner from "./spectator-banner.examples"
 
 export const allExamples = [
   Button,
+  HubzzLogo,
   EventTicket,
   BadgeCategory,
   Capsule,
