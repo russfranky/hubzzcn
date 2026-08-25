@@ -99,7 +99,9 @@ test.describe("Button", () => {
 
     await page.locator("body").click({ position: { x: 1, y: 1 } })
     for (let index = 0; index < 50; index += 1) {
-      if (await button.evaluate((element) => element === document.activeElement)) {
+      if (
+        await button.evaluate((element) => element === document.activeElement)
+      ) {
         break
       }
       await page.keyboard.press("Tab")
