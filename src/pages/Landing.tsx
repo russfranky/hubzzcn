@@ -142,7 +142,7 @@ export function Landing() {
           >
             <Search className="size-3.5" aria-hidden="true" />
             <span className="flex-1">Search</span>
-            <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[9px] text-muted-foreground">
+            <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[9px] text-foreground">
               ⌘K
             </kbd>
           </button>
