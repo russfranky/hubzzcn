@@ -153,7 +153,8 @@ export function Foundations() {
             </p>
             <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
               Button is the reference case: the shadcn API stays intact while
-              Hubzz owns its geometry, color, focus, and pressed-state treatment.
+              Hubzz owns its geometry, color, focus, and pressed-state
+              treatment.
             </p>
           </div>
           <a
