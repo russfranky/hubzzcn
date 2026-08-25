@@ -59,12 +59,11 @@ export function Foundations() {
           </p>
           <div className="max-w-2xl">
             <h2 className="text-2xl font-semibold tracking-[-0.025em] text-foreground">
-              Theme the system before changing components.
+              Semantic theme
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Hubzz uses the standard shadcn semantic roles as the customization
-              boundary. The catalog and public registry are generated from the
-              same CSS token source.
+              Standard shadcn semantic roles with Hubzz values. The catalog and
+              public registry share the same CSS token source.
             </p>
           </div>
         </div>
@@ -93,17 +92,17 @@ export function Foundations() {
           <FoundationDatum
             label="Type"
             value="Inter Variable"
-            detail="One sans family across UI and documentation."
+            detail="Sans type family for interface and catalog text."
           />
           <FoundationDatum
             label="Radius"
             value="10px base"
-            detail="Primitives derive their shadcn radius from one semantic token."
+            detail="Shared shadcn radius token."
           />
           <FoundationDatum
             label="Theme"
             value="Light + dark"
-            detail="The catalog defaults dark; registry semantics stay shadcn-standard."
+            detail="Dark catalog default with standard registry semantics."
           />
         </div>
       </section>
@@ -115,12 +114,12 @@ export function Foundations() {
           </p>
           <div className="max-w-2xl">
             <h2 className="text-2xl font-semibold tracking-[-0.025em] text-foreground">
-              Commodity UI stays upstream.
+              Upstream primitives
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Treat checked-in shadcn/Radix primitives as infrastructure, not a
-              second Hubzz component catalog. Preserve upstream behavior first,
-              then theme with tokens, then compose product UI.
+              Checked-in shadcn/Radix primitives form the UI substrate.
+              Hubzz-specific source is limited to product contracts that differ
+              from upstream.
             </p>
           </div>
         </div>
@@ -129,31 +128,28 @@ export function Foundations() {
           <FoundationDatum
             label="Source of truth"
             value="src/components/ui/"
-            detail="This checked-in substrate defines which upstream primitives are present. No parallel inventory lives in the catalog."
+            detail="Checked-in upstream primitive set."
           />
           <FoundationDatum
-            label="Default path"
-            value="Upstream → tokens → composition"
-            detail="Keep the standard API and behavior unless the Hubzz product contract genuinely requires more."
+            label="Composition model"
+            value="Upstream → tokens → Hubzz"
+            detail="Standard primitive contracts with Hubzz semantic theming and product composition."
           />
           <FoundationDatum
             label="Distribution"
             value="shadcn registry"
-            detail="Reference upstream item names through the registry instead of repackaging commodity primitives as Hubzz components."
+            detail="Public registry references upstream items and Hubzz-owned source."
           />
         </div>
 
         <div className="mt-4 flex flex-col gap-4 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="max-w-2xl">
             <p className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
-              Override threshold
+              Hubzz override
             </p>
-            <p className="mt-2 text-sm font-medium text-foreground">
-              Override only when the product contract diverges from upstream.
-            </p>
+            <p className="mt-2 text-sm font-medium text-foreground">Button</p>
             <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
-              Button is the reference case: the shadcn API stays intact while
-              Hubzz owns its geometry, color, focus, and pressed-state
+              shadcn API with Hubzz geometry, color, focus, and pressed-state
               treatment.
             </p>
           </div>
@@ -161,7 +157,7 @@ export function Foundations() {
             href="#button"
             className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-foreground underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:outline-none"
           >
-            See Button override
+            Button reference
             <span aria-hidden="true">→</span>
           </a>
         </div>
