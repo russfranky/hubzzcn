@@ -68,7 +68,7 @@ const SEARCH_ENTRIES: SearchEntry[] = [
     href: "#upstream",
     label: "Upstream primitives",
     group: "system",
-    description: "Commodity UI that stays with shadcn.",
+    description: "Ownership rules for checked-in shadcn/Radix primitives.",
   },
   ...COMPONENT_ENTRIES,
 ]
@@ -254,7 +254,7 @@ export function Landing() {
                 <p className="mt-4 max-w-2xl text-[15px] leading-7 text-secondary-foreground sm:text-base">
                   A shadcn-first interface system. Keep upstream behavior,
                   define the brand with semantic tokens, and own custom source
-                  only when Hubzz owns the interaction.
+                  only when Hubzz owns the product contract.
                 </p>
               </div>
 
