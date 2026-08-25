@@ -34,4 +34,6 @@ if (violations.length > 0) {
   process.exit(1)
 }
 
-console.log(`✓ ${workflowFiles.length} workflow files use immutable action refs`)
+console.log(
+  `✓ ${workflowFiles.length} workflow files use immutable action refs`
+)
