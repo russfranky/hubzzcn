@@ -159,7 +159,7 @@ export function Foundations() {
           </div>
           <a
             href="#button"
-            className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2"
+            className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-foreground underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:outline-none"
           >
             See Button override
             <span aria-hidden="true">→</span>
