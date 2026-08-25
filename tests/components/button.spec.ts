@@ -1,5 +1,20 @@
 import AxeBuilder from "@axe-core/playwright"
-import { expect, test } from "@playwright/test"
+import { expect, test, type Page } from "@playwright/test"
+
+import { THEME_STORAGE_KEY } from "../../src/catalog/theme-provider"
+import { normalizeCssColor } from "../helpers/colors"
+
+async function setTheme(page: Page, theme: "light" | "dark") {
+  await page.evaluate(
+    ([storageKey, nextTheme]) => {
+      localStorage.setItem(storageKey, nextTheme)
+    },
+    [THEME_STORAGE_KEY, theme]
+  )
+  await page.reload()
+  await page.waitForLoadState("networkidle")
+  await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${theme}\\b`))
+}
 
 test.describe("Button", () => {
   test.beforeEach(async ({ page }) => {
@@ -35,24 +50,26 @@ test.describe("Button", () => {
       .locator("#button")
       .getByRole("button", { name: "Continue" })
 
-    await page.evaluate(() => {
-      document.documentElement.classList.remove("dark")
-      document.documentElement.classList.add("light")
-    })
+    const readVisualContract = async () => {
+      await button.scrollIntoViewIfNeeded()
+      const [geometry, backgroundColor, color] = await Promise.all([
+        button.evaluate((element) => {
+          const style = getComputedStyle(element)
+          return {
+            height: style.height,
+            borderRadius: style.borderRadius,
+            fontWeight: style.fontWeight,
+            backgroundImage: style.backgroundImage,
+          }
+        }),
+        normalizeCssColor(button, "backgroundColor"),
+        normalizeCssColor(button, "color"),
+      ])
+      return { ...geometry, backgroundColor, color }
+    }
 
-    const light = await button.evaluate((element) => {
-      const style = getComputedStyle(element)
-      return {
-        height: style.height,
-        borderRadius: style.borderRadius,
-        fontWeight: style.fontWeight,
-        backgroundImage: style.backgroundImage,
-        backgroundColor: style.backgroundColor,
-        color: style.color,
-      }
-    })
-
-    expect(light).toEqual({
+    await setTheme(page, "light")
+    await expect(readVisualContract()).resolves.toEqual({
       height: "36px",
       borderRadius: "8px",
       fontWeight: "500",
@@ -61,24 +78,8 @@ test.describe("Button", () => {
       color: "rgb(255, 255, 255)",
     })
 
-    await page.evaluate(() => {
-      document.documentElement.classList.remove("light")
-      document.documentElement.classList.add("dark")
-    })
-
-    const dark = await button.evaluate((element) => {
-      const style = getComputedStyle(element)
-      return {
-        height: style.height,
-        borderRadius: style.borderRadius,
-        fontWeight: style.fontWeight,
-        backgroundImage: style.backgroundImage,
-        backgroundColor: style.backgroundColor,
-        color: style.color,
-      }
-    })
-
-    expect(dark).toEqual({
+    await setTheme(page, "dark")
+    await expect(readVisualContract()).resolves.toEqual({
       height: "36px",
       borderRadius: "8px",
       fontWeight: "500",
