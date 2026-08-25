@@ -1,0 +1,50 @@
+name: Logo probe
+
+on:
+  push:
+    branches:
+      - probe/logo-manifest
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Print canonical diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm exec prettier --write \
+            src/components/hubzz/hubzz-logo.tsx \
+            src/examples/hubzz-logo.examples.tsx \
+            src/examples/index.ts \
+            scripts/generate-manifest.ts \
+            tests/components/hubzz-logo.spec.ts
+          pnpm generate:manifest
+          git diff -- \
+            src/components/hubzz/hubzz-logo.tsx \
+            src/examples/hubzz-logo.examples.tsx \
+            src/examples/index.ts \
+            scripts/generate-manifest.ts \
+            tests/components/hubzz-logo.spec.ts \
+            docs/COMPONENTS.md
