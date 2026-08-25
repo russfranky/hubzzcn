@@ -13,6 +13,7 @@ import { format } from "prettier"
 
 import { allExamples } from "../src/examples"
 import type { Example, Meta } from "../src/examples/types"
+import { loadRegistryGraph } from "./registry-graph"
 
 type ManifestArgs = Record<string, unknown>
 type ManifestExample = Example<ManifestArgs>
@@ -42,28 +43,44 @@ function normalizeModule(module: unknown) {
   return { meta: record.meta, examples }
 }
 
+function componentIdentity(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "")
+}
+
+const catalogEntries = allExamples.map(normalizeModule)
+const catalogComponentIdentities = new Set(
+  catalogEntries.map(({ meta }) => componentIdentity(meta.title))
+)
+const uncataloguedPublicComponents = loadRegistryGraph()
+  .items.filter((item) => item.type === "registry:component")
+  .map((item) => item.name)
+  .filter((name) => !catalogComponentIdentities.has(componentIdentity(name)))
+
+if (uncataloguedPublicComponents.length > 0) {
+  throw new Error(
+    `Public Hubzz registry items missing catalog examples: ${uncataloguedPublicComponents.join(", ")}`
+  )
+}
+
 const manifest = {
   version: process.env.npm_package_version ?? "0.0.0",
   components: Object.fromEntries(
-    allExamples.map((module) => {
-      const { meta, examples } = normalizeModule(module)
-      return [
-        meta.title,
-        {
-          title: meta.title,
-          slug: meta.slug ?? meta.title.toLowerCase(),
-          description: meta.description,
-          category: meta.category,
-          layer: meta.layer ?? "component",
-          notes: meta.notes ?? [],
-          examples: examples.map((example) => ({
-            key: example.name.toLowerCase().replace(/\s+/g, "_"),
-            name: example.name,
-            args: example.args,
-          })),
-        },
-      ]
-    })
+    catalogEntries.map(({ meta, examples }) => [
+      meta.title,
+      {
+        title: meta.title,
+        slug: meta.slug ?? meta.title.toLowerCase(),
+        description: meta.description,
+        category: meta.category,
+        layer: meta.layer ?? "component",
+        notes: meta.notes ?? [],
+        examples: examples.map((example) => ({
+          key: example.name.toLowerCase().replace(/\s+/g, "_"),
+          name: example.name,
+          args: example.args,
+        })),
+      },
+    ])
   ),
 }
 
@@ -87,8 +104,7 @@ function formatArg(key: string, value: unknown): string | null {
   return `\`${key}=${JSON.stringify(value)}\``
 }
 
-const sections = allExamples.map((module) => {
-  const { meta, examples } = normalizeModule(module)
+const sections = catalogEntries.map(({ meta, examples }) => {
   const rows = examples.map((example) => {
     const keyArgs = Object.entries(example.args)
       .map(([key, value]) => formatArg(key, value))

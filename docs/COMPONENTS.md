@@ -32,6 +32,30 @@ Upstream shadcn Button contract with Hubzz geometry, color, focus, and pressed-s
 
 ---
 
+## HubzzLogo
+
+Hubzz mark that inherits the surrounding semantic text color by default.
+
+**Layer:** component
+
+**Import:** `import { HubzzLogo } from "@hubzz/ui"`
+
+### Examples
+
+| Name            | Description | Key Props                   |
+| --------------- | ----------- | --------------------------- |
+| Current color   |             | `variant="light"` `size=40` |
+| Decorative icon |             | `variant="icon"` `size=32`  |
+| White mark      |             | `variant="dark"` `size=40`  |
+
+### Notes
+
+- Prefer the default icon variant so host surfaces own color through currentColor.
+- Provide title when the mark conveys identity; omit it when the mark is decorative.
+- The legacy purple and dark variants remain white-mark compatibility modes and do not define a brand color.
+
+---
+
 ## EventTicket
 
 Fixed-size Hubzz event artifact with ready, upcoming, joined, past, and loading states.
