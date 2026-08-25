@@ -5,10 +5,7 @@
  */
 
 import { expect, test, type Page } from "@playwright/test"
-import {
-  normalizeCssColor,
-  normalizeCssVariableColor,
-} from "../helpers/colors"
+import { normalizeCssColor, normalizeCssVariableColor } from "../helpers/colors"
 
 function capsules(page: Page) {
   return page.locator('#capsule [data-catalog-preview] [data-slot="toggle"]')
