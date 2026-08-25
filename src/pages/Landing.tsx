@@ -38,16 +38,25 @@ const COMPONENT_ENTRIES: SearchEntry[] = allExamples.map((module) => {
         title: string
         slug?: string
         layer?: string
-        description: string
+        category?: string
       }
     }
   ).meta
+
+  const description =
+    meta.layer === "override"
+      ? "Hubzz override"
+      : meta.layer === "pattern"
+        ? "Hubzz pattern"
+        : meta.category === "shadcn"
+          ? "shadcn primitive"
+          : "Hubzz component"
 
   return {
     href: `#${meta.slug ?? meta.title.toLowerCase()}`,
     label: meta.title,
     group: meta.layer ?? "component",
-    description: meta.description,
+    description,
   }
 })
 
@@ -56,19 +65,19 @@ const SEARCH_ENTRIES: SearchEntry[] = [
     href: "#overview",
     label: "Overview",
     group: "system",
-    description: "Principles, install path, and system status.",
+    description: "Registry status and system metadata.",
   },
   {
     href: "#foundations",
     label: "Foundations",
     group: "system",
-    description: "Semantic tokens and theming contract.",
+    description: "Semantic tokens and theme values.",
   },
   {
     href: "#upstream",
     label: "Upstream primitives",
     group: "system",
-    description: "Ownership rules for checked-in shadcn/Radix primitives.",
+    description: "Checked-in shadcn/Radix primitive ownership.",
   },
   ...COMPONENT_ENTRIES,
 ]
@@ -76,23 +85,23 @@ const SEARCH_ENTRIES: SearchEntry[] = [
 const PRINCIPLES = [
   {
     icon: Layers3,
-    title: "Upstream first",
-    description: "Keep commodity interaction contracts with shadcn and Radix.",
+    title: "Upstream base",
+    description: "Commodity interaction contracts remain with shadcn and Radix.",
   },
   {
     icon: Box,
     title: "Source registry",
     description:
-      "Install public source directly from GitHub with the shadcn CLI.",
+      "Public source is distributed through GitHub and the shadcn CLI.",
   },
   {
     icon: ShieldCheck,
-    title: "Accessible by default",
-    description: "WCAG A/AA checks run across dark and light catalog themes.",
+    title: "Accessibility",
+    description: "WCAG A/AA checks cover light and dark catalog themes.",
   },
   {
     icon: CheckCircle2,
-    title: "Consumer verified",
+    title: "Consumer verification",
     description:
       "Registry items are installed and built in a clean Vite project in CI.",
   },
@@ -252,9 +261,8 @@ export function Landing() {
                   Hubzz UI
                 </h1>
                 <p className="mt-4 max-w-2xl text-[15px] leading-7 text-secondary-foreground sm:text-base">
-                  A shadcn-first interface system. Keep upstream behavior,
-                  define the brand with semantic tokens, and own custom source
-                  only when Hubzz owns the product contract.
+                  A shadcn-first interface system with semantic Hubzz tokens,
+                  public source registry items, and product-specific components.
                 </p>
               </div>
 
@@ -296,7 +304,7 @@ export function Landing() {
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-8 text-[11px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-8">
             <p>Hubzz UI · MIT · public shadcn source registry</p>
-            <p>Upstream first · semantic theme · composable source</p>
+            <p>Upstream base · semantic theme · composable source</p>
           </div>
         </footer>
       </div>
