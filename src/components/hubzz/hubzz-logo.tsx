@@ -16,7 +16,7 @@ export interface HubzzLogoProps extends Omit<
 
 const variantFill: Record<HubzzLogoVariant, string> = {
   purple: "white",
-  light: "#735FFA",
+  light: "currentColor",
   dark: "white",
   icon: "currentColor",
 }
@@ -36,6 +36,8 @@ export function HubzzLogo({
       xmlns="http://www.w3.org/2000/svg"
       role={title ? "img" : undefined}
       aria-hidden={title ? undefined : true}
+      data-slot="hubzz-logo"
+      data-variant={variant}
       {...props}
     >
       {title ? <title>{title}</title> : null}
