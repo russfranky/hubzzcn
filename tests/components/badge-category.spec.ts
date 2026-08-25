@@ -5,18 +5,10 @@
  */
 
 import { expect, test, type Page } from "@playwright/test"
-import { normalizeCssColor } from "../helpers/colors"
-
-async function tokenColor(page: Page, token: string) {
-  return page.evaluate((name) => {
-    const probe = document.createElement("span")
-    probe.style.color = `var(${name})`
-    document.body.append(probe)
-    const color = getComputedStyle(probe).color
-    probe.remove()
-    return color
-  }, token)
-}
+import {
+  normalizeCssColor,
+  normalizeCssVariableColor,
+} from "../helpers/colors"
 
 test.describe("BadgeCategory", () => {
   let page: Page
@@ -44,7 +36,7 @@ test.describe("BadgeCategory", () => {
     const badge = page.locator('#badge-category [data-state="default"]').first()
     const [background, expected] = await Promise.all([
       normalizeCssColor(badge, "backgroundColor"),
-      tokenColor(page, "--background"),
+      normalizeCssVariableColor(page, "--background"),
     ])
     expect(background).toBe(expected)
   })
@@ -55,8 +47,8 @@ test.describe("BadgeCategory", () => {
       await Promise.all([
         normalizeCssColor(badge, "backgroundColor"),
         normalizeCssColor(badge, "color"),
-        tokenColor(page, "--primary"),
-        tokenColor(page, "--primary-foreground"),
+        normalizeCssVariableColor(page, "--primary"),
+        normalizeCssVariableColor(page, "--primary-foreground"),
       ])
 
     expect(background).toBe(expectedBackground)
@@ -67,7 +59,7 @@ test.describe("BadgeCategory", () => {
     const badge = page.locator('#badge-category [data-state="hover"]').first()
     const [background, expected] = await Promise.all([
       normalizeCssColor(badge, "backgroundColor"),
-      tokenColor(page, "--card"),
+      normalizeCssVariableColor(page, "--card"),
     ])
     expect(background).toBe(expected)
   })
@@ -78,7 +70,7 @@ test.describe("BadgeCategory", () => {
     await page.waitForTimeout(300)
     const [background, expected] = await Promise.all([
       normalizeCssColor(badge, "backgroundColor"),
-      tokenColor(page, "--card"),
+      normalizeCssVariableColor(page, "--card"),
     ])
     expect(background).toBe(expected)
   })
@@ -87,7 +79,7 @@ test.describe("BadgeCategory", () => {
     const badge = page.locator("#badge-category [data-state]").first()
     const [color, expectedColor, styles] = await Promise.all([
       normalizeCssColor(badge, "color"),
-      tokenColor(page, "--foreground"),
+      normalizeCssVariableColor(page, "--foreground"),
       badge.evaluate((element) => {
         const style = getComputedStyle(element)
         return {
