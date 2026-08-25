@@ -30,9 +30,19 @@ The default target is:
 
 Set `HUBZZ_CN_ROOT` to override it.
 
-The deployment mirrors `dist/` into the target. When `rsync` is available it
-uses `--delete` so removed build files do not remain publicly reachable. The
-fallback clears the target before copying the new build.
+`deploy-production.sh` builds the site, then delegates static publishing to
+`scripts/publish-static.sh`. The publisher copies assets and other static files
+first and atomically replaces `index.html` last. A newly served HTML document
+therefore never references a release asset that has not been copied yet.
+
+Old content-addressed assets are intentionally retained during deployment. An
+already-open page may still request a previous hashed asset after a new index
+has become current, so deleting old assets in the same release operation would
+create an avoidable race. Asset cleanup is a separate maintenance concern and
+must not be coupled to publishing the new entry document.
+
+The dependency-first publisher is exercised by `pnpm deployment:smoke`, which
+runs as part of the normal repository `pnpm check` gate.
 
 All runtime assets used by the catalog should be versioned in this repository.
 Production-only files are not part of the component contract.
