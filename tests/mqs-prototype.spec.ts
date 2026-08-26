@@ -107,6 +107,39 @@ test.describe("MQS final-layout prototype", () => {
     ).toBeVisible()
   })
 
+  test("previews the exact queue insertion point while dragging", async ({
+    page,
+  }) => {
+    const rows = page.getByTestId("upcoming-row")
+    const sourceRow = rows.nth(0)
+    const targetRow = rows.nth(2)
+    const targetBox = await targetRow.boundingBox()
+    if (!targetBox) throw new Error("Target queue row has no bounding box")
+
+    const dataTransfer = await page.evaluateHandle(() => new DataTransfer())
+    await sourceRow.dispatchEvent("dragstart", { dataTransfer })
+    await targetRow.dispatchEvent("dragover", {
+      dataTransfer,
+      clientX: targetBox.x + targetBox.width / 2,
+      clientY: targetBox.y + targetBox.height - 2,
+    })
+
+    const indicator = targetRow.getByTestId("queue-drop-indicator")
+    await expect(indicator).toBeVisible()
+    await expect(indicator).toHaveAttribute("data-position", "after")
+
+    await targetRow.dispatchEvent("drop", {
+      dataTransfer,
+      clientX: targetBox.x + targetBox.width / 2,
+      clientY: targetBox.y + targetBox.height - 2,
+    })
+
+    await expect(rows.nth(0)).toContainText("Calvin Harris")
+    await expect(rows.nth(1)).toContainText("Anjunadeep Open Air 2025")
+    await expect(rows.nth(2)).toContainText("Afterlife Tulum 2025")
+    await expect(page.getByTestId("queue-drop-indicator")).toHaveCount(0)
+  })
+
   test("turns the media input into a full-width drag-to-remove target", async ({
     page,
   }) => {
