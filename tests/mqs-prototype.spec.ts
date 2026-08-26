@@ -33,7 +33,7 @@ test.describe("MQS final-layout prototype", () => {
     )
   })
 
-  test("keeps play and pause on the playhead with vertical skip controls", async ({
+  test("keeps play and pause between the vertical skip controls", async ({
     page,
   }) => {
     await expect(page.getByRole("button", { name: "Previous" })).toHaveCount(0)
