@@ -53,7 +53,7 @@ jobs:
               ) : null}
             </div>
 
-'''
+          '''
           source = source[:start] + rail + source[end:]
 
           old_controls = '''        <div className="flex flex-col items-center justify-center gap-3 border-l border-border/70 px-4">
