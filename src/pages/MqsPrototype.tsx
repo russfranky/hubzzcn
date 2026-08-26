@@ -1,18 +1,21 @@
 import * as React from "react"
 import {
+  ChevronDown,
+  ChevronUp,
   GripVertical,
-  MoreHorizontal,
+  Link2,
+  Maximize2,
+  Minimize2,
+  MoreVertical,
   Pause,
   Play,
   Shuffle,
   Trash2,
   Upload,
-  Volume2,
-  VolumeX,
-  X,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -31,14 +34,13 @@ import {
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 
-type PrototypeQueueItem = {
+type QueueItem = {
   id: string
   title: string
   url: string
   platform: string
   addedBy: string
   durationSeconds?: number
-  thumbnail?: string
 }
 
 type SetlistSegment = {
@@ -49,106 +51,105 @@ type SetlistSegment = {
 }
 
 type PendingSetlist = {
-  name: string
-  items: PrototypeQueueItem[]
+  items: QueueItem[]
   dropped: number
 }
 
 const HISTORY_LIMIT = 3
 const SETLIST_LIMIT = 500
 
-const INITIAL_PLAYED: PrototypeQueueItem[] = [
+const INITIAL_PLAYED: QueueItem[] = [
   {
-    id: "played-wake-me-up",
-    title: "Wake Me Up When September Ends",
-    url: "https://www.youtube.com/watch?v=NU9JoFKlaZ0",
+    id: "played-sunset-drive",
+    title: "Sunset Drive 2025 – Live Set",
+    url: "https://www.youtube.com/watch?v=sunset-drive",
     platform: "YouTube",
-    addedBy: "@Vic",
-    durationSeconds: 286,
-    thumbnail: "https://i.ytimg.com/vi/NU9JoFKlaZ0/mqdefault.jpg",
+    addedBy: "@john",
+    durationSeconds: 3504,
   },
   {
-    id: "played-smells-like-teen-spirit",
-    title: "Smells Like Teen Spirit",
-    url: "https://www.youtube.com/watch?v=hTWKbfoikeg",
+    id: "played-chillhop",
+    title: "Chillhop Essentials – Spring 2025",
+    url: "https://www.youtube.com/watch?v=chillhop-spring",
     platform: "YouTube",
-    addedBy: "@Mira",
-    durationSeconds: 301,
-    thumbnail: "https://i.ytimg.com/vi/hTWKbfoikeg/mqdefault.jpg",
+    addedBy: "@john",
+    durationSeconds: 3731,
   },
   {
-    id: "played-numb",
-    title: "Numb",
-    url: "https://www.youtube.com/watch?v=kXYiU_JCYtU",
+    id: "played-tokyo",
+    title: "Tokyo Nights – LoFi Mix",
+    url: "https://www.youtube.com/watch?v=tokyo-lofi",
     platform: "YouTube",
-    addedBy: "@DJ Kai",
-    durationSeconds: 187,
-    thumbnail: "https://i.ytimg.com/vi/kXYiU_JCYtU/mqdefault.jpg",
+    addedBy: "@john",
+    durationSeconds: 2707,
   },
 ]
 
-const INITIAL_CURRENT: PrototypeQueueItem = {
-  id: "current-everlong",
-  title: "Everlong (Live at the Fuji Rock Festival)",
-  url: "https://www.youtube.com/watch?v=eBG7P-K-r1Y",
+const INITIAL_CURRENT: QueueItem = {
+  id: "current-tomorrowland",
+  title: "Tomorrowland 2026 Mainstage W1",
+  url: "https://www.youtube.com/watch?v=tomorrowland-2026",
   platform: "YouTube",
-  addedBy: "@DJ Kai",
-  durationSeconds: 250,
-  thumbnail: "https://i.ytimg.com/vi/eBG7P-K-r1Y/mqdefault.jpg",
+  addedBy: "@dan",
+  durationSeconds: 4542,
 }
 
-const INITIAL_UPCOMING: PrototypeQueueItem[] = [
+const INITIAL_UPCOMING: QueueItem[] = [
   {
-    id: "upcoming-pretender",
-    title: "The Pretender",
-    url: "https://www.youtube.com/watch?v=SBjQ9tuuTJQ",
+    id: "upcoming-afterlife",
+    title: "Afterlife Tulum 2025",
+    url: "https://www.youtube.com/watch?v=afterlife-tulum",
     platform: "YouTube",
-    addedBy: "@DJ Kai",
-    durationSeconds: 269,
-    thumbnail: "https://i.ytimg.com/vi/SBjQ9tuuTJQ/mqdefault.jpg",
+    addedBy: "@john",
+    durationSeconds: 4353,
   },
   {
-    id: "upcoming-sabotage",
-    title: "Sabotage",
-    url: "https://www.youtube.com/watch?v=z5rRZdiu1UE",
+    id: "upcoming-calvin",
+    title: "Calvin Harris – Live at Ushuaïa",
+    url: "https://www.youtube.com/watch?v=calvin-ushuaia",
     platform: "YouTube",
-    addedBy: "@Mira",
-    durationSeconds: 178,
-    thumbnail: "https://i.ytimg.com/vi/z5rRZdiu1UE/mqdefault.jpg",
+    addedBy: "@john",
+    durationSeconds: 3550,
   },
   {
-    id: "upcoming-byob",
-    title: "B.Y.O.B.",
-    url: "https://www.youtube.com/watch?v=zUzd9KyIDrM",
+    id: "upcoming-anjuna",
+    title: "Anjunadeep Open Air 2025",
+    url: "https://www.youtube.com/watch?v=anjunadeep-open-air",
     platform: "YouTube",
-    addedBy: "@Vic",
-    durationSeconds: 255,
-    thumbnail: "https://i.ytimg.com/vi/zUzd9KyIDrM/mqdefault.jpg",
+    addedBy: "@john",
+    durationSeconds: 3942,
   },
   {
-    id: "upcoming-killing",
-    title: "Killing In The Name",
-    url: "https://www.youtube.com/watch?v=bWXazVhlyxQ",
+    id: "upcoming-keinemusik",
+    title: "Keinemusik Radio Show",
+    url: "https://www.youtube.com/watch?v=keinemusik-radio",
     platform: "YouTube",
-    addedBy: "@DJ Kai",
-    durationSeconds: 313,
-    thumbnail: "https://i.ytimg.com/vi/bWXazVhlyxQ/mqdefault.jpg",
+    addedBy: "@john",
+    durationSeconds: 3618,
   },
   {
-    id: "upcoming-uprising",
-    title: "Uprising",
-    url: "https://www.youtube.com/watch?v=w8KQmps-Sog",
+    id: "upcoming-rufus",
+    title: "Rüfüs Du Sol – Live from LA",
+    url: "https://www.youtube.com/watch?v=rufus-live-la",
     platform: "YouTube",
-    addedBy: "@Mira",
-    durationSeconds: 303,
-    thumbnail: "https://i.ytimg.com/vi/w8KQmps-Sog/mqdefault.jpg",
+    addedBy: "@john",
+    durationSeconds: 4075,
   },
 ]
 
 function formatTime(seconds?: number) {
   if (!Number.isFinite(seconds) || seconds === undefined) return "LIVE"
+
   const safe = Math.max(0, Math.floor(seconds))
-  return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, "0")}`
+  const hours = Math.floor(safe / 3600)
+  const minutes = Math.floor((safe % 3600) / 60)
+  const secs = safe % 60
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
+  }
+
+  return `${minutes}:${String(secs).padStart(2, "0")}`
 }
 
 function providerFromUrl(value: string) {
@@ -156,7 +157,6 @@ function providerFromUrl(value: string) {
     const host = new URL(value).hostname.replace(/^www\./, "")
     if (host.includes("youtube") || host === "youtu.be") return "YouTube"
     if (host.includes("twitch")) return "Twitch"
-    if (host.includes("kick")) return "Kick"
     return host
   } catch {
     return "Web"
@@ -172,154 +172,76 @@ function isSafeHttpUrl(value: string) {
   }
 }
 
-function Thumbnail({
-  item,
-  size = "row",
-  dimmed = false,
-}: {
-  item: PrototypeQueueItem
-  size?: "row" | "current"
-  dimmed?: boolean
-}) {
-  const [failed, setFailed] = React.useState(false)
-  const dimensions = size === "current" ? "size-12" : "size-9"
-
-  if (!item.thumbnail || failed) {
-    return (
-      <div
-        className={cn(
-          dimensions,
-          "grid shrink-0 place-items-center rounded-md border border-border bg-muted text-[10px] font-semibold text-muted-foreground",
-          dimmed && "opacity-50"
-        )}
-        aria-hidden="true"
-      >
-        {item.platform.slice(0, 2).toUpperCase()}
-      </div>
-    )
-  }
-
+function Contributor({ name }: { name: string }) {
   return (
-    <img
-      src={item.thumbnail}
-      alt=""
-      loading="lazy"
-      onError={() => setFailed(true)}
-      className={cn(
-        dimensions,
-        "shrink-0 rounded-md border border-border object-cover",
-        dimmed && "opacity-45 grayscale"
-      )}
-    />
+    <a
+      href={`#user-${encodeURIComponent(name.replace(/^@/, ""))}`}
+      className="font-medium text-indigo-400 underline-offset-2 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+    >
+      {name}
+    </a>
   )
 }
 
-function HistoryRow({ item }: { item: PrototypeQueueItem }) {
+function DragHandle({
+  title,
+  onKeyDown,
+}: {
+  title: string
+  onKeyDown?: React.KeyboardEventHandler<HTMLButtonElement>
+}) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon-xs"
+      className="cursor-grab text-muted-foreground/70 hover:bg-transparent hover:text-foreground active:cursor-grabbing"
+      aria-label={`Reorder ${title}`}
+      title={`Reorder ${title}`}
+      onKeyDown={onKeyDown}
+    >
+      <GripVertical />
+    </Button>
+  )
+}
+
+function QueueMeta({ item, dimmed }: { item: QueueItem; dimmed?: boolean }) {
   return (
     <div
-      data-testid="history-row"
-      className="flex min-h-12 items-center gap-2 border-b border-border/50 px-2.5 py-1.5 opacity-45"
+      className={cn(
+        "flex min-w-0 items-center gap-2 text-sm text-muted-foreground",
+        dimmed && "opacity-70"
+      )}
     >
-      <div className="w-4 shrink-0" aria-hidden="true" />
-      <Thumbnail item={item} dimmed />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-xs font-medium">{item.title}</div>
-        <div className="mt-0.5 truncate text-[10px] leading-3.5 text-muted-foreground">
-          {item.platform} · added by {item.addedBy}
-        </div>
-      </div>
-      <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
-        {formatTime(item.durationSeconds)}
-      </span>
+      <span>{item.platform}</span>
+      <span aria-hidden="true">•</span>
+      <Contributor name={item.addedBy} />
     </div>
   )
 }
 
-function CurrentRow({
+function HistoryRow({
   item,
-  elapsed,
-  isPlaying,
-  isMuted,
-  onTogglePlaying,
-  onToggleMute,
-  currentRef,
+  index,
+  onDragStart,
 }: {
-  item: PrototypeQueueItem
-  elapsed: number
-  isPlaying: boolean
-  isMuted: boolean
-  onTogglePlaying: () => void
-  onToggleMute: () => void
-  currentRef: React.RefObject<HTMLDivElement | null>
+  item: QueueItem
+  index: number
+  onDragStart: (event: React.DragEvent, source: string) => void
 }) {
-  const hasDuration = Boolean(item.durationSeconds && item.durationSeconds > 0)
-  const duration = item.durationSeconds ?? 0
-  const progress = hasDuration
-    ? Math.min(100, Math.max(0, (elapsed / duration) * 100))
-    : 0
-
   return (
     <div
-      ref={currentRef}
-      data-testid="current-row"
-      className="mx-2 my-1.5 rounded-lg border border-primary/55 bg-primary/[0.07] p-2 shadow-[0_0_0_1px_hsl(var(--primary)/0.06)]"
+      data-testid="history-row"
+      draggable
+      onDragStart={(event) => onDragStart(event, `history:${index}`)}
+      className="grid min-h-16 grid-cols-[32px_minmax(0,1fr)_minmax(180px,280px)_96px] items-center gap-3 border-b border-border/60 px-3 py-2 opacity-55 last:border-b-0"
     >
-      <div className="flex min-w-0 items-center gap-2">
-        <Thumbnail item={item} size="current" />
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-xs font-semibold">{item.title}</div>
-          <div className="mt-0.5 truncate text-[10px] leading-3.5 text-muted-foreground">
-            {item.platform} · added by {item.addedBy}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-2 flex items-center gap-2">
-        <span className="w-7 shrink-0 text-right text-[9px] tabular-nums text-muted-foreground">
-          {hasDuration ? formatTime(elapsed) : "LIVE"}
-        </span>
-        <div
-          className="relative h-7 min-w-0 flex-1"
-          aria-label={
-            hasDuration
-              ? `${formatTime(elapsed)} elapsed of ${formatTime(duration)}`
-              : "Live playback"
-          }
-        >
-          <div className="absolute top-1/2 right-0 left-0 h-0.5 -translate-y-1/2 overflow-hidden rounded-full bg-muted">
-            {hasDuration ? (
-              <div
-                className="h-full rounded-full bg-primary"
-                style={{ width: `${progress}%` }}
-              />
-            ) : null}
-          </div>
-          <Button
-            type="button"
-            size="icon-xs"
-            className="absolute top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full shadow-sm"
-            style={{ left: hasDuration ? `${progress}%` : "50%" }}
-            aria-label={isPlaying ? "Pause" : "Play"}
-            title={isPlaying ? "Pause" : "Play"}
-            onClick={onTogglePlaying}
-          >
-            {isPlaying ? <Pause /> : <Play />}
-          </Button>
-        </div>
-        <span className="w-7 shrink-0 text-[9px] tabular-nums text-muted-foreground">
-          {hasDuration ? formatTime(duration) : "LIVE"}
-        </span>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
-          aria-label={isMuted ? "Unmute" : "Mute"}
-          title={isMuted ? "Unmute" : "Mute"}
-          onClick={onToggleMute}
-        >
-          {isMuted ? <VolumeX /> : <Volume2 />}
-        </Button>
-      </div>
+      <DragHandle title={item.title} />
+      <div className="min-w-0 truncate text-base font-medium">{item.title}</div>
+      <QueueMeta item={item} dimmed />
+      <span className="justify-self-end text-base text-muted-foreground tabular-nums">
+        {formatTime(item.durationSeconds)}
+      </span>
     </div>
   )
 }
@@ -328,10 +250,14 @@ function UpcomingRow({
   item,
   index,
   onMove,
+  onDragStart,
+  onDropSource,
 }: {
-  item: PrototypeQueueItem
+  item: QueueItem
   index: number
   onMove: (from: number, to: number) => void
+  onDragStart: (event: React.DragEvent, source: string) => void
+  onDropSource: (source: string, targetIndex: number) => void
 }) {
   const [dragging, setDragging] = React.useState(false)
 
@@ -341,8 +267,7 @@ function UpcomingRow({
       draggable
       onDragStart={(event) => {
         setDragging(true)
-        event.dataTransfer.effectAllowed = "move"
-        event.dataTransfer.setData("text/plain", String(index))
+        onDragStart(event, `upcoming:${index}`)
       }}
       onDragEnd={() => setDragging(false)}
       onDragOver={(event) => {
@@ -351,62 +276,196 @@ function UpcomingRow({
       }}
       onDrop={(event) => {
         event.preventDefault()
-        const from = Number(event.dataTransfer.getData("text/plain"))
-        if (Number.isInteger(from)) onMove(from, index)
+        onDropSource(event.dataTransfer.getData("text/plain"), index)
       }}
       className={cn(
-        "flex min-h-12 items-center gap-2 border-b border-border/50 px-2.5 py-1.5 transition-colors hover:bg-accent/35",
+        "grid min-h-16 grid-cols-[32px_minmax(0,1fr)_minmax(180px,280px)_96px] items-center gap-3 border-b border-border/60 px-3 py-2 transition-colors last:border-b-0 hover:bg-accent/25",
         dragging && "opacity-45"
       )}
     >
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-xs"
-        className="cursor-grab text-muted-foreground active:cursor-grabbing"
-        aria-label={`Reorder ${item.title}. Hold Alt and use arrow keys for keyboard reordering.`}
-        title="Drag to reorder · Alt+↑/↓ on keyboard"
+      <DragHandle
+        title={item.title}
         onKeyDown={(event) => {
           if (!event.altKey) return
+
           if (event.key === "ArrowUp") {
             event.preventDefault()
             onMove(index, index - 1)
           }
+
           if (event.key === "ArrowDown") {
             event.preventDefault()
             onMove(index, index + 1)
           }
         }}
-      >
-        <GripVertical />
-      </Button>
-      <Thumbnail item={item} />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-xs font-medium">{item.title}</div>
-        <div className="mt-0.5 truncate text-[10px] leading-3.5 text-muted-foreground">
-          {item.platform} · added by {item.addedBy}
-        </div>
-      </div>
-      <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+      />
+      <div className="min-w-0 truncate text-base font-medium">{item.title}</div>
+      <QueueMeta item={item} />
+      <span className="justify-self-end text-base text-muted-foreground tabular-nums">
         {formatTime(item.durationSeconds)}
       </span>
     </div>
   )
 }
 
-function normalizeSetlist(fileName: string, value: unknown): PendingSetlist {
+function CurrentCard({
+  item,
+  elapsed,
+  isPlaying,
+  onElapsedChange,
+  onTogglePlaying,
+  onSkipUp,
+  onSkipDown,
+}: {
+  item: QueueItem
+  elapsed: number
+  isPlaying: boolean
+  onElapsedChange: (value: number) => void
+  onTogglePlaying: () => void
+  onSkipUp: () => void
+  onSkipDown: () => void
+}) {
+  const duration = item.durationSeconds ?? 0
+  const hasDuration = duration > 0
+  const progress = hasDuration
+    ? Math.min(100, Math.max(0, (elapsed / duration) * 100))
+    : 0
+
+  function seekFromPointer(event: React.PointerEvent<HTMLDivElement>) {
+    if (!hasDuration) return
+    const rect = event.currentTarget.getBoundingClientRect()
+    const ratio = Math.min(
+      1,
+      Math.max(0, (event.clientX - rect.left) / rect.width)
+    )
+    onElapsedChange(Math.round(duration * ratio))
+  }
+
+  return (
+    <Card
+      data-testid="current-row"
+      className="gap-0 rounded-xl bg-card py-0 ring-1 ring-foreground/15"
+    >
+      <CardContent className="grid min-h-44 grid-cols-[44px_minmax(0,1fr)_104px] gap-0 p-0">
+        <div
+          className="flex items-start justify-center pt-6"
+          aria-hidden="true"
+        >
+          <GripVertical className="size-4 text-muted-foreground/70" />
+        </div>
+
+        <div className="min-w-0 px-1 py-6 pr-6">
+          <div className="truncate text-xl font-semibold tracking-tight">
+            {item.title}
+          </div>
+          <div className="mt-2">
+            <QueueMeta item={item} />
+          </div>
+
+          <div className="mt-8 grid grid-cols-[64px_minmax(0,1fr)_84px] items-center gap-3">
+            <span className="text-base text-muted-foreground tabular-nums">
+              {hasDuration ? formatTime(elapsed) : "LIVE"}
+            </span>
+
+            <div
+              className={cn("relative h-10", hasDuration && "cursor-pointer")}
+              role="slider"
+              tabIndex={hasDuration ? 0 : -1}
+              aria-label="Playback position"
+              aria-valuemin={0}
+              aria-valuemax={hasDuration ? duration : 0}
+              aria-valuenow={hasDuration ? Math.min(duration, elapsed) : 0}
+              onPointerDown={seekFromPointer}
+              onKeyDown={(event) => {
+                if (!hasDuration) return
+                if (event.key === "ArrowLeft") {
+                  event.preventDefault()
+                  onElapsedChange(Math.max(0, elapsed - 5))
+                }
+                if (event.key === "ArrowRight") {
+                  event.preventDefault()
+                  onElapsedChange(Math.min(duration, elapsed + 5))
+                }
+              }}
+            >
+              <div className="absolute top-1/2 right-0 left-0 h-1 -translate-y-1/2 overflow-hidden rounded-full bg-muted">
+                {hasDuration ? (
+                  <div
+                    className="h-full rounded-full bg-indigo-400"
+                    style={{ width: `${progress}%` }}
+                  />
+                ) : null}
+              </div>
+              {hasDuration ? (
+                <span
+                  aria-hidden="true"
+                  className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-400 ring-4 ring-card"
+                  style={{ left: `${progress}%` }}
+                />
+              ) : null}
+            </div>
+
+            <span className="justify-self-end text-base text-muted-foreground tabular-nums">
+              {hasDuration ? formatTime(duration) : "LIVE"}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center justify-center gap-3 border-l border-border/70 px-4">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-lg"
+            aria-label="Skip up"
+            title="Skip up"
+            onClick={onSkipUp}
+          >
+            <ChevronUp />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-lg"
+            className="rounded-full bg-card"
+            aria-label={isPlaying ? "Pause" : "Play"}
+            title={isPlaying ? "Pause" : "Play"}
+            onClick={onTogglePlaying}
+          >
+            {isPlaying ? <Pause /> : <Play />}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-lg"
+            aria-label="Skip down"
+            title="Skip down"
+            onClick={onSkipDown}
+          >
+            <ChevronDown />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function normalizeSetlist(value: unknown): PendingSetlist {
   if (!value || typeof value !== "object") {
     throw new Error("That file is not a setlist object.")
   }
 
-  const record = value as { name?: unknown; segments?: unknown }
+  const record = value as { segments?: unknown }
   if (!Array.isArray(record.segments) || record.segments.length === 0) {
     throw new Error("A setlist needs at least one segment.")
   }
 
-  const sourceSegments = record.segments.slice(0, SETLIST_LIMIT) as SetlistSegment[]
+  const sourceSegments = record.segments.slice(
+    0,
+    SETLIST_LIMIT
+  ) as SetlistSegment[]
   const items = sourceSegments.flatMap((segment, index) => {
-    if (typeof segment.url !== "string" || !isSafeHttpUrl(segment.url)) return []
+    if (typeof segment.url !== "string" || !isSafeHttpUrl(segment.url))
+      return []
 
     const durationMinutes =
       typeof segment.duration === "number" && Number.isFinite(segment.duration)
@@ -425,9 +484,9 @@ function normalizeSetlist(fileName: string, value: unknown): PendingSetlist {
           typeof segment.platform === "string" && segment.platform.trim()
             ? segment.platform.trim()
             : providerFromUrl(segment.url),
-        addedBy: "@You",
+        addedBy: "@you",
         durationSeconds: Math.round(durationMinutes * 60),
-      } satisfies PrototypeQueueItem,
+      } satisfies QueueItem,
     ]
   })
 
@@ -436,10 +495,6 @@ function normalizeSetlist(fileName: string, value: unknown): PendingSetlist {
   }
 
   return {
-    name:
-      typeof record.name === "string" && record.name.trim()
-        ? record.name.trim()
-        : fileName,
     items,
     dropped: record.segments.length - items.length,
   }
@@ -447,331 +502,381 @@ function normalizeSetlist(fileName: string, value: unknown): PendingSetlist {
 
 export function MqsPrototype() {
   const [played, setPlayed] = React.useState(INITIAL_PLAYED)
-  const [current, setCurrent] = React.useState<PrototypeQueueItem | null>(
+  const [current, setCurrent] = React.useState<QueueItem | null>(
     INITIAL_CURRENT
   )
   const [upcoming, setUpcoming] = React.useState(INITIAL_UPCOMING)
-  const [elapsed, setElapsed] = React.useState(72)
+  const [elapsed, setElapsed] = React.useState(1938)
   const [isPlaying, setIsPlaying] = React.useState(true)
-  const [isMuted, setIsMuted] = React.useState(false)
+  const [expanded, setExpanded] = React.useState(false)
   const [url, setUrl] = React.useState("")
-  const [message, setMessage] = React.useState("")
+  const [error, setError] = React.useState<string | null>(null)
+  const [pendingSetlist, setPendingSetlist] =
+    React.useState<PendingSetlist | null>(null)
   const [stopOpen, setStopOpen] = React.useState(false)
-  const [pendingSetlist, setPendingSetlist] = React.useState<PendingSetlist | null>(
-    null
-  )
-  const viewportRef = React.useRef<HTMLDivElement>(null)
-  const currentRef = React.useRef<HTMLDivElement>(null)
-  const fileRef = React.useRef<HTMLInputElement>(null)
-
-  React.useLayoutEffect(() => {
-    const viewport = viewportRef.current
-    const currentElement = currentRef.current
-    if (!viewport || !currentElement) return
-
-    const frame = window.requestAnimationFrame(() => {
-      viewport.scrollTop = Math.max(0, currentElement.offsetTop - 6)
-    })
-
-    return () => window.cancelAnimationFrame(frame)
-  }, [current?.id])
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
-    if (!current || !isPlaying) return
+    if (!isPlaying || !current?.durationSeconds) return
 
     const timer = window.setInterval(() => {
-      setElapsed((value) => {
-        if (!current.durationSeconds) return value + 1
-        return Math.min(current.durationSeconds, value + 1)
-      })
+      setElapsed((value) =>
+        Math.min(current.durationSeconds ?? value, value + 1)
+      )
     }, 1000)
 
     return () => window.clearInterval(timer)
   }, [current, isPlaying])
 
-  const moveUpcoming = React.useCallback((from: number, to: number) => {
+  function moveUpcoming(from: number, to: number) {
+    if (
+      from < 0 ||
+      to < 0 ||
+      from >= upcoming.length ||
+      to >= upcoming.length ||
+      from === to
+    ) {
+      return
+    }
+
     setUpcoming((items) => {
-      if (
-        from === to ||
-        from < 0 ||
-        to < 0 ||
-        from >= items.length ||
-        to >= items.length
-      ) {
-        return items
-      }
       const next = [...items]
       const [moved] = next.splice(from, 1)
       next.splice(to, 0, moved)
       return next
     })
-  }, [])
+  }
 
-  const addUrl = React.useCallback(() => {
-    const value = url.trim()
-    if (!value) return
-    if (!isSafeHttpUrl(value)) {
-      setMessage("Use a valid http(s) media URL.")
+  function insertHistory(index: number, targetIndex: number) {
+    const item = played[index]
+    if (!item) return
+
+    setPlayed((items) => items.filter((_, itemIndex) => itemIndex !== index))
+    setUpcoming((items) => {
+      const next = [...items]
+      next.splice(Math.max(0, Math.min(targetIndex, next.length)), 0, item)
+      return next
+    })
+  }
+
+  function handleDragStart(event: React.DragEvent, source: string) {
+    event.dataTransfer.effectAllowed = "move"
+    event.dataTransfer.setData("text/plain", source)
+  }
+
+  function handleDropSource(source: string, targetIndex: number) {
+    const [kind, rawIndex] = source.split(":")
+    const sourceIndex = Number(rawIndex)
+    if (!Number.isInteger(sourceIndex)) return
+
+    if (kind === "upcoming") moveUpcoming(sourceIndex, targetIndex)
+    if (kind === "history") insertHistory(sourceIndex, targetIndex)
+  }
+
+  function skipDown() {
+    if (!current || upcoming.length === 0) return
+    const [next, ...rest] = upcoming
+    setPlayed((items) => [...items, current].slice(-HISTORY_LIMIT))
+    setCurrent(next)
+    setUpcoming(rest)
+    setElapsed(0)
+    setIsPlaying(true)
+  }
+
+  function skipUp() {
+    const previous = played.at(-1)
+    if (!previous) return
+
+    setPlayed((items) => items.slice(0, -1))
+    if (current) setUpcoming((items) => [current, ...items])
+    setCurrent(previous)
+    setElapsed(0)
+    setIsPlaying(true)
+  }
+
+  function addUrl(mode: "tail" | "next") {
+    const trimmed = url.trim()
+    if (!trimmed) return
+
+    if (!isSafeHttpUrl(trimmed)) {
+      setError("Use a valid http(s) media URL.")
       return
     }
 
-    const nextItem: PrototypeQueueItem = {
-      id: `manual-${Date.now()}`,
-      title: value,
-      url: value,
-      platform: providerFromUrl(value),
-      addedBy: "@You",
+    const item: QueueItem = {
+      id: `url-${Date.now()}`,
+      title: trimmed,
+      url: trimmed,
+      platform: providerFromUrl(trimmed),
+      addedBy: "@you",
     }
 
-    if (!current) {
-      setCurrent(nextItem)
-      setElapsed(0)
-      setIsPlaying(true)
-    } else {
-      setUpcoming((items) => [...items, nextItem])
-    }
-
+    setUpcoming((items) =>
+      mode === "next" ? [item, ...items] : [...items, item]
+    )
     setUrl("")
-    setMessage("Added to queue.")
-  }, [current, url])
+    setError(null)
+  }
 
-  const applySetlist = React.useCallback(() => {
-    if (!pendingSetlist) return
-    const [first, ...rest] = pendingSetlist.items
+  async function readSetlist(file: File) {
+    try {
+      setPendingSetlist(
+        normalizeSetlist(JSON.parse(await file.text()) as unknown)
+      )
+      setError(null)
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Could not read setlist."
+      )
+    }
+  }
+
+  function replaceWithSetlist() {
+    if (!pendingSetlist?.items.length) return
+    const [nextCurrent, ...nextUpcoming] = pendingSetlist.items
     setPlayed([])
-    setCurrent(first ?? null)
-    setUpcoming(rest)
+    setCurrent(nextCurrent)
+    setUpcoming(nextUpcoming)
     setElapsed(0)
     setIsPlaying(false)
     setPendingSetlist(null)
-    setMessage(
-      `Loaded ${pendingSetlist.items.length} segment${pendingSetlist.items.length === 1 ? "" : "s"}. Playback is paused.`
-    )
-  }, [pendingSetlist])
+  }
+
+  function stopAndClear() {
+    setPlayed([])
+    setCurrent(null)
+    setUpcoming([])
+    setElapsed(0)
+    setIsPlaying(false)
+    setStopOpen(false)
+  }
 
   return (
-    <main className="grid min-h-svh place-items-center bg-[#181a1f] p-3 text-foreground">
-      <section
-        aria-label="MQS queue prototype"
-        className="flex h-[min(430px,calc(100svh-24px))] w-[300px] max-w-[calc(100vw-24px)] flex-col overflow-hidden rounded-xl border border-border bg-[#24262b] shadow-2xl"
+    <main className="dark min-h-screen bg-background px-4 py-6 text-foreground sm:px-8 sm:py-10">
+      <Card
+        className={cn(
+          "mx-auto w-full gap-0 overflow-hidden rounded-3xl bg-card py-0 shadow-2xl ring-1 ring-foreground/15 transition-[max-width]",
+          expanded ? "max-w-[1320px]" : "max-w-[1028px]"
+        )}
       >
-        <header className="flex h-11 shrink-0 items-center border-b border-border px-2.5">
-          <span className="text-sm font-semibold tracking-tight">MQS</span>
-          <div className="ml-auto flex items-center gap-0.5">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Queue actions"
-                >
-                  <MoreHorizontal />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem
-                  disabled={upcoming.length < 2}
-                  onSelect={() => {
-                    setUpcoming((items) => [...items].sort(() => Math.random() - 0.5))
-                    setMessage("Upcoming queue shuffled.")
-                  }}
-                >
-                  <Shuffle /> Shuffle upcoming
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  variant="destructive"
-                  disabled={upcoming.length === 0}
-                  onSelect={() => {
-                    setUpcoming([])
-                    setMessage("Upcoming queue cleared. Current media is unchanged.")
-                  }}
-                >
-                  <Trash2 /> Clear upcoming
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  variant="destructive"
-                  disabled={!current && upcoming.length === 0}
-                  onSelect={() => setStopOpen(true)}
-                >
-                  <Trash2 /> Stop & clear all
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Close prototype"
-              title="Back to Hubzz UI"
-              onClick={() => {
-                window.location.href = window.location.pathname
-              }}
-            >
-              <X />
-            </Button>
-          </div>
-        </header>
+        <CardHeader className="flex min-h-24 flex-row items-center justify-between border-b px-8 py-6">
+          <CardTitle className="text-3xl font-semibold tracking-tight">
+            Rooftop
+          </CardTitle>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-lg"
+            aria-label={expanded ? "Restore queue" : "Expand queue"}
+            title={expanded ? "Restore queue" : "Expand queue"}
+            onClick={() => setExpanded((value) => !value)}
+          >
+            {expanded ? <Minimize2 /> : <Maximize2 />}
+          </Button>
+        </CardHeader>
 
-        <div
-          ref={viewportRef}
-          data-testid="queue-scroll-area"
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        <section
+          className="border-b px-8 py-7"
+          aria-labelledby="last-played-title"
         >
-          <div className="relative min-h-full">
-            {played.slice(-HISTORY_LIMIT).map((item) => (
-              <HistoryRow key={item.id} item={item} />
-            ))}
-
-            {current ? (
-              <CurrentRow
-                item={current}
-                elapsed={elapsed}
-                isPlaying={isPlaying}
-                isMuted={isMuted}
-                onTogglePlaying={() => setIsPlaying((value) => !value)}
-                onToggleMute={() => setIsMuted((value) => !value)}
-                currentRef={currentRef}
-              />
-            ) : (
-              <div
-                ref={currentRef}
-                data-testid="empty-current"
-                className="flex min-h-28 items-center justify-center px-5 text-center text-xs text-muted-foreground"
-              >
-                Nothing is playing. Add a URL or load a setlist below.
-              </div>
-            )}
-
-            {upcoming.map((item, index) => (
-              <UpcomingRow
+          <h2
+            id="last-played-title"
+            className="mb-4 text-sm font-semibold tracking-[0.08em] text-muted-foreground uppercase"
+          >
+            Last Played
+          </h2>
+          <Card className="gap-0 rounded-xl bg-card py-0 ring-1 ring-foreground/10">
+            {played.map((item, index) => (
+              <HistoryRow
                 key={item.id}
                 item={item}
                 index={index}
-                onMove={moveUpcoming}
+                onDragStart={handleDragStart}
               />
             ))}
+          </Card>
+        </section>
 
-            {current && upcoming.length === 0 ? (
-              <div className="px-4 py-5 text-center text-[11px] text-muted-foreground">
-                End of queue
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        <form
-          className="shrink-0 border-t border-border p-2"
-          onSubmit={(event) => {
-            event.preventDefault()
-            addUrl()
-          }}
+        <section
+          className="border-b px-8 py-7"
+          aria-labelledby="now-playing-title"
         >
-          <div className="flex items-center gap-1.5">
+          <h2
+            id="now-playing-title"
+            className="mb-4 text-sm font-semibold tracking-[0.08em] uppercase"
+          >
+            Now Playing
+          </h2>
+          {current ? (
+            <CurrentCard
+              item={current}
+              elapsed={elapsed}
+              isPlaying={isPlaying}
+              onElapsedChange={setElapsed}
+              onTogglePlaying={() => setIsPlaying((value) => !value)}
+              onSkipUp={skipUp}
+              onSkipDown={skipDown}
+            />
+          ) : (
+            <Card className="rounded-xl bg-card py-8 text-center text-muted-foreground ring-1 ring-foreground/10">
+              Nothing is playing.
+            </Card>
+          )}
+        </section>
+
+        <section className="border-b px-8 py-7" aria-labelledby="up-next-title">
+          <h2
+            id="up-next-title"
+            className="mb-4 text-sm font-semibold tracking-[0.08em] uppercase"
+          >
+            Up Next
+          </h2>
+          <Card className="gap-0 rounded-xl bg-card py-0 ring-1 ring-foreground/10">
+            {upcoming.length > 0 ? (
+              upcoming.map((item, index) => (
+                <UpcomingRow
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  onMove={moveUpcoming}
+                  onDragStart={handleDragStart}
+                  onDropSource={handleDropSource}
+                />
+              ))
+            ) : (
+              <CardContent className="py-7 text-center text-sm text-muted-foreground">
+                Nothing queued.
+              </CardContent>
+            )}
+          </Card>
+        </section>
+
+        <div className="flex items-center gap-4 px-8 py-7">
+          <div className="relative min-w-0 flex-1">
+            <Link2
+              className="pointer-events-none absolute top-1/2 left-4 z-10 size-5 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
             <Input
-              aria-label="Media URL"
-              type="url"
-              inputMode="url"
-              placeholder="Paste media URL…"
               value={url}
               onChange={(event) => {
                 setUrl(event.target.value)
-                if (message) setMessage("")
+                setError(null)
               }}
-              aria-invalid={Boolean(url.trim()) && !isSafeHttpUrl(url.trim())}
-              className="min-w-0 flex-1"
-            />
-            <Button
-              type="submit"
-              size="icon"
-              aria-label="Add to queue"
-              title="Add to queue"
-              disabled={!url.trim()}
-            >
-              <span className="text-xl leading-none" aria-hidden="true">
-                +
-              </span>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Upload setlist"
-              title="Upload setlist"
-              onClick={() => fileRef.current?.click()}
-            >
-              <Upload />
-            </Button>
-            <input
-              ref={fileRef}
-              className="sr-only"
-              type="file"
-              accept="application/json,.json"
-              aria-label="Setlist JSON file"
-              onChange={async (event) => {
-                const file = event.currentTarget.files?.[0]
-                event.currentTarget.value = ""
-                if (!file) return
-                try {
-                  const parsed = JSON.parse(await file.text()) as unknown
-                  const next = normalizeSetlist(file.name, parsed)
-                  setPendingSetlist(next)
-                  setMessage("")
-                } catch (error) {
-                  setMessage(
-                    error instanceof Error
-                      ? error.message
-                      : "That file could not be read."
-                  )
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault()
+                  addUrl("tail")
                 }
               }}
+              aria-label="Media URL"
+              placeholder="Paste YouTube or Twitch URL"
+              className="h-14 rounded-lg bg-transparent pl-12 text-base"
             />
           </div>
-          <p
-            className={cn(
-              "mt-1 min-h-3 truncate px-0.5 text-[9px]",
-              message.includes("valid") || message.includes("not") || message.includes("needs")
-                ? "text-destructive"
-                : "text-muted-foreground"
-            )}
-            aria-live="polite"
-          >
-            {message}
-          </p>
-        </form>
-      </section>
 
-      <Dialog open={Boolean(pendingSetlist)} onOpenChange={(open) => !open && setPendingSetlist(null)}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="size-14 rounded-lg"
+                aria-label="Queue actions"
+              >
+                <MoreVertical />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem
+                disabled={!url.trim()}
+                onSelect={() => addUrl("tail")}
+              >
+                Add pasted URL
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={!url.trim()}
+                onSelect={() => addUrl("next")}
+              >
+                Play pasted URL next
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => fileInputRef.current?.click()}>
+                <Upload />
+                Upload setlist
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={upcoming.length < 2}
+                onSelect={() =>
+                  setUpcoming((items) =>
+                    [...items].sort(() => Math.random() - 0.5)
+                  )
+                }
+              >
+                <Shuffle />
+                Shuffle upcoming
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={upcoming.length === 0}
+                onSelect={() => setUpcoming([])}
+              >
+                <Trash2 />
+                Clear upcoming
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                disabled={
+                  !current && upcoming.length === 0 && played.length === 0
+                }
+                onSelect={() => setStopOpen(true)}
+              >
+                <Trash2 />
+                Stop & clear all
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="sr-only"
+            aria-label="Setlist JSON file"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              if (file) void readSetlist(file)
+              event.currentTarget.value = ""
+            }}
+          />
+        </div>
+
+        {error ? (
+          <p role="alert" className="px-8 pb-6 text-sm text-destructive">
+            {error}
+          </p>
+        ) : null}
+      </Card>
+
+      <Dialog
+        open={Boolean(pendingSetlist)}
+        onOpenChange={(open) => {
+          if (!open) setPendingSetlist(null)
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Load setlist</DialogTitle>
             <DialogDescription>
-              This prototype mirrors the current replace-only handoff: loading a setlist replaces the queue and leaves playback paused on its first valid segment.
+              {pendingSetlist
+                ? `${pendingSetlist.items.length} valid segments · ${pendingSetlist.dropped} invalid or capped`
+                : "Review the setlist before replacing the queue."}
             </DialogDescription>
           </DialogHeader>
-          {pendingSetlist ? (
-            <div className="rounded-lg border border-border bg-muted/30 p-3 text-xs">
-              <div className="font-medium">{pendingSetlist.name}</div>
-              <div className="mt-1 text-muted-foreground">
-                {pendingSetlist.items.length} valid segment{pendingSetlist.items.length === 1 ? "" : "s"}
-                {pendingSetlist.dropped > 0
-                  ? ` · ${pendingSetlist.dropped} invalid or capped`
-                  : ""}
-              </div>
-            </div>
-          ) : null}
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setPendingSetlist(null)}
-            >
+            <Button variant="outline" onClick={() => setPendingSetlist(null)}>
               Cancel
             </Button>
-            <Button type="button" onClick={applySetlist}>
-              Replace queue
-            </Button>
+            <Button onClick={replaceWithSetlist}>Replace queue</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -781,26 +886,15 @@ export function MqsPrototype() {
           <DialogHeader>
             <DialogTitle>Stop and clear MQS?</DialogTitle>
             <DialogDescription>
-              This clears the current item, the last three played items, and everything upcoming.
+              This stops playback and clears played, current, and upcoming
+              items.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setStopOpen(false)}>
+            <Button variant="outline" onClick={() => setStopOpen(false)}>
               Cancel
             </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => {
-                setPlayed([])
-                setCurrent(null)
-                setUpcoming([])
-                setElapsed(0)
-                setIsPlaying(false)
-                setStopOpen(false)
-                setMessage("Queue stopped and cleared.")
-              }}
-            >
+            <Button variant="destructive" onClick={stopAndClear}>
               Stop & clear all
             </Button>
           </DialogFooter>
