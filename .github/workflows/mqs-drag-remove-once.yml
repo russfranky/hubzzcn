@@ -41,11 +41,12 @@ jobs:
         run: |
           python <<'PY'
           from pathlib import Path
+          import re
 
           source_path = Path("src/pages/MqsPrototype.tsx")
           source = source_path.read_text()
 
-          old = '''function Contributor({ name }: { name: string }) {'''
+          old = 'function Contributor({ name }: { name: string }) {'
           new = '''function playRemovalPoof(target: HTMLElement) {
             if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
 
@@ -114,7 +115,7 @@ jobs:
 
           function Contributor({ name }: { name: string }) {'''
           assert source.count(old) == 1, "Contributor insertion point changed"
-          source = source.replace(old, new)
+          source = source.replace(old, new, 1)
 
           old = '''  const [stopOpen, setStopOpen] = React.useState(false)
             const fileInputRef = React.useRef<HTMLInputElement>(null)'''
@@ -124,15 +125,15 @@ jobs:
             const fileInputRef = React.useRef<HTMLInputElement>(null)
             const removeTargetRef = React.useRef<HTMLDivElement>(null)'''
           assert source.count(old) == 1, "state insertion point changed"
-          source = source.replace(old, new)
+          source = source.replace(old, new, 1)
 
-          old = '''  function handleDragStart(event: React.DragEvent, source: string) {
-            event.dataTransfer.effectAllowed = "move"
-            event.dataTransfer.setData("text/plain", source)
-          }
-
-          function handleDropSource(source: string, targetIndex: number) {'''
-          new = '''  function handleDragStart(event: React.DragEvent, source: string) {
+          pattern = re.compile(
+            r'''  function handleDragStart\(event: React\.DragEvent, source: string\) \{\n'''
+            r'''    event\.dataTransfer\.effectAllowed = "move"\n'''
+            r'''    event\.dataTransfer\.setData\("text/plain", source\)\n'''
+            r'''  \}\n'''
+          )
+          replacement = '''  function handleDragStart(event: React.DragEvent, source: string) {
             event.dataTransfer.effectAllowed = "move"
             event.dataTransfer.setData("text/plain", source)
             setDragSource(source)
@@ -183,12 +184,11 @@ jobs:
             setRemoveTargetActive(false)
             setDragSource(null)
           }
+'''
+          source, count = pattern.subn(replacement, source, count=1)
+          assert count == 1, "drag handler insertion point changed"
 
-          function handleDropSource(source: string, targetIndex: number) {'''
-          assert source.count(old) == 1, "drag handler insertion point changed"
-          source = source.replace(old, new)
-
-          old = '''    <main className="dark min-h-screen bg-background px-4 py-6 text-foreground sm:px-8 sm:py-10">'''
+          old = '    <main className="dark min-h-screen bg-background px-4 py-6 text-foreground sm:px-8 sm:py-10">'
           new = '''    <main
               className="dark min-h-screen bg-background px-4 py-6 text-foreground sm:px-8 sm:py-10"
               onDragEnd={() => {
@@ -197,31 +197,18 @@ jobs:
               }}
             >'''
           assert source.count(old) == 1, "main drag-end insertion point changed"
-          source = source.replace(old, new)
+          source = source.replace(old, new, 1)
 
-          old = '''          <div className="relative min-w-0 flex-1">
-            <Link2
-              className="pointer-events-none absolute top-1/2 left-4 z-10 size-5 -translate-y-1/2 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <Input
-              value={url}
-              onChange={(event) => {
-                setUrl(event.target.value)
-                setError(null)
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault()
-                  addUrl("tail")
-                }
-              }}
-              aria-label="Media URL"
-              placeholder="Paste YouTube or Twitch URL"
-              className="h-14 rounded-lg bg-transparent pl-12 text-base"
-            />
-          </div>'''
-          new = '''          <div className="relative min-w-0 flex-1">
+          composer_anchor = '<div className="flex items-center gap-4 px-8 py-7">'
+          composer_area = source.index(composer_anchor)
+          composer_start = source.index(
+            '          <div className="relative min-w-0 flex-1">', composer_area
+          )
+          composer_end_marker = '\n          </div>\n\n          <DropdownMenu>'
+          composer_end = source.index(composer_end_marker, composer_start) + len(
+            '\n          </div>'
+          )
+          composer = '''          <div className="relative min-w-0 flex-1">
             {dragSource ? (
               <div
                 ref={removeTargetRef}
@@ -279,14 +266,12 @@ jobs:
               </>
             )}
           </div>'''
-          assert source.count(old) == 1, "composer replacement point changed"
-          source = source.replace(old, new)
-
+          source = source[:composer_start] + composer + source[composer_end:]
           source_path.write_text(source)
 
           test_path = Path("tests/mqs-prototype.spec.ts")
           tests = test_path.read_text()
-          marker = '''  test("previews a setlist and replaces the queue in paused state", async ({'''
+          marker = '  test("previews a setlist and replaces the queue in paused state", async ({'
           addition = '''  test("turns the media input into a drag-to-remove target", async ({
             page,
           }) => {
@@ -314,7 +299,7 @@ jobs:
 
           ''' + marker
           assert tests.count(marker) == 1, "test insertion point changed"
-          tests = tests.replace(marker, addition)
+          tests = tests.replace(marker, addition, 1)
           test_path.write_text(tests)
           PY
 
