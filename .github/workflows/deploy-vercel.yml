@@ -1,0 +1,54 @@
+name: Deploy Vercel Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VERCEL_ORG_ID: team_fxAj717BuD1hQ9q3PeCu02hC
+      VERCEL_PROJECT_ID: prj_dol1AgcBzkQ17lN8zQJ1DOaXCrOA
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Pull Vercel project settings
+        run: pnpm dlx vercel@59.5.0 pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build production bundle
+        run: pnpm dlx vercel@59.5.0 build --prod --token="$VERCEL_TOKEN"
+
+      - name: Deploy production
+        run: |
+          set -euo pipefail
+          url="$(pnpm dlx vercel@59.5.0 deploy --prebuilt --prod --token="$VERCEL_TOKEN")"
+          echo "Production URL: $url"
+          echo "### Production deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "$url" >> "$GITHUB_STEP_SUMMARY"
