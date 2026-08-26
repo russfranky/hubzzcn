@@ -328,6 +328,9 @@ function UpcomingRow({
   onDropSource: (source: string, targetIndex: number) => void
 }) {
   const [dragging, setDragging] = React.useState(false)
+  const [dropInsertionIndex, setDropInsertionIndex] = React.useState<
+    number | null
+  >(null)
 
   return (
     <div
@@ -337,20 +340,44 @@ function UpcomingRow({
         setDragging(true)
         onDragStart(event, `upcoming:${index}`)
       }}
-      onDragEnd={() => setDragging(false)}
+      onDragEnd={() => {
+        setDragging(false)
+        setDropInsertionIndex(null)
+      }}
       onDragOver={(event) => {
         event.preventDefault()
         event.dataTransfer.dropEffect = "move"
+        const rect = event.currentTarget.getBoundingClientRect()
+        const after = event.clientY >= rect.top + rect.height / 2
+        setDropInsertionIndex(index + (after ? 1 : 0))
+      }}
+      onDragLeave={(event) => {
+        const nextTarget = event.relatedTarget as Node | null
+        if (nextTarget && event.currentTarget.contains(nextTarget)) return
+        setDropInsertionIndex(null)
       }}
       onDrop={(event) => {
         event.preventDefault()
-        onDropSource(event.dataTransfer.getData("text/plain"), index)
+        const targetIndex = dropInsertionIndex ?? index
+        setDropInsertionIndex(null)
+        onDropSource(event.dataTransfer.getData("text/plain"), targetIndex)
       }}
       className={cn(
-        "grid min-h-16 grid-cols-[32px_minmax(0,1fr)_minmax(180px,280px)_96px] items-center gap-3 border-b border-border/60 px-3 py-2 transition-colors last:border-b-0 hover:bg-accent/25",
+        "relative grid min-h-16 grid-cols-[32px_minmax(0,1fr)_minmax(180px,280px)_96px] items-center gap-3 border-b border-border/60 px-3 py-2 transition-colors last:border-b-0 hover:bg-accent/25",
         dragging && "opacity-45"
       )}
     >
+      {dropInsertionIndex !== null ? (
+        <span
+          data-testid="queue-drop-indicator"
+          data-position={dropInsertionIndex === index ? "before" : "after"}
+          aria-hidden="true"
+          className={cn(
+            "pointer-events-none absolute right-3 left-3 z-20 h-0.5 rounded-full bg-indigo-400",
+            dropInsertionIndex === index ? "-top-px" : "-bottom-px"
+          )}
+        />
+      ) : null}
       <DragHandle
         title={item.title}
         onKeyDown={(event) => {
@@ -619,6 +646,21 @@ export function MqsPrototype() {
     })
   }
 
+  function moveUpcomingToInsertion(from: number, insertionIndex: number) {
+    setUpcoming((items) => {
+      if (from < 0 || from >= items.length) return items
+
+      const next = [...items]
+      const [moved] = next.splice(from, 1)
+      const adjustedIndex = Math.max(
+        0,
+        Math.min(insertionIndex - (from < insertionIndex ? 1 : 0), next.length)
+      )
+      next.splice(adjustedIndex, 0, moved)
+      return next
+    })
+  }
+
   function insertHistory(index: number, targetIndex: number) {
     const item = played[index]
     if (!item) return
@@ -683,7 +725,7 @@ export function MqsPrototype() {
     const sourceIndex = Number(rawIndex)
     if (!Number.isInteger(sourceIndex)) return
 
-    if (kind === "upcoming") moveUpcoming(sourceIndex, targetIndex)
+    if (kind === "upcoming") moveUpcomingToInsertion(sourceIndex, targetIndex)
     if (kind === "history") insertHistory(sourceIndex, targetIndex)
   }
 
