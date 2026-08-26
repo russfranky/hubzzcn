@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test"
 
-test.describe("MQS scroll queue prototype", () => {
+test.describe("MQS shadcn port-ready prototype", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/?prototype=mqs")
   })
 
-  test("opens anchored on current playback with the last three picks above the viewport", async ({
+  test("opens on Now Playing with the last three picks above the initial viewport", async ({
     page,
   }) => {
     const viewport = page.getByTestId("queue-scroll-area")
@@ -15,9 +15,7 @@ test.describe("MQS scroll queue prototype", () => {
     await expect(current).toBeInViewport()
     await expect(history).toHaveCount(3)
     await expect(history.last()).not.toBeInViewport()
-    await expect
-      .poll(() => viewport.evaluate((node) => node.scrollTop))
-      .toBeGreaterThan(0)
+    await expect.poll(() => viewport.evaluate((node) => node.scrollTop)).toBeGreaterThan(0)
 
     await viewport.evaluate((node) => {
       node.scrollTop = 0
@@ -26,48 +24,71 @@ test.describe("MQS scroll queue prototype", () => {
     await expect(history.last()).toBeInViewport()
   })
 
-  test("uses one continuous queue with no history tab or per-row overflow menus", async ({
+  test("uses no thumbnails, tabs, volume button, or per-row overflow menus", async ({
     page,
   }) => {
+    await expect(page.locator("img")).toHaveCount(0)
     await expect(page.getByRole("tab")).toHaveCount(0)
-    await expect(page.getByText("History", { exact: true })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: /mute|volume/i })).toHaveCount(0)
 
     const rows = page.getByTestId("upcoming-row")
     await expect(rows).toHaveCount(5)
-
-    for (let index = 0; index < 5; index += 1) {
-      await expect(rows.nth(index).getByRole("button")).toHaveCount(1)
-      await expect(
-        rows.nth(index).getByRole("button", { name: /Reorder/ })
-      ).toBeVisible()
-    }
+    await expect(page.getByRole("button", { name: "Queue actions" })).toHaveCount(1)
   })
 
-  test("keeps play and pause on the progress playhead and has no previous/next buttons", async ({
+  test("keeps play/pause on the playhead and skip controls vertical on the card edge", async ({
     page,
   }) => {
-    await expect(page.getByRole("button", { name: "Previous" })).toHaveCount(0)
-    await expect(page.getByRole("button", { name: "Next" })).toHaveCount(0)
-
     const pause = page.getByRole("button", { name: "Pause" })
     await expect(pause).toBeVisible()
+    await expect(page.getByRole("button", { name: "Skip up" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Skip down" })).toBeVisible()
+
     await pause.click()
     await expect(page.getByRole("button", { name: "Play" })).toBeVisible()
   })
 
-  test("supports keyboard reordering without adding another visible action", async ({
+  test("supports seeking without adding a second visible playback control", async ({ page }) => {
+    const slider = page.getByRole("slider", { name: "Playback position" })
+    await expect(slider).toBeVisible()
+    await slider.focus()
+    const before = await slider.getAttribute("aria-valuenow")
+    await slider.press("ArrowRight")
+    const after = await slider.getAttribute("aria-valuenow")
+    expect(Number(after)).toBeGreaterThan(Number(before))
+  })
+
+  test("keeps reorder affordances hidden until hover or focus and supports keyboard movement", async ({
     page,
   }) => {
     const rows = page.getByTestId("upcoming-row")
-    await expect(rows.nth(0)).toContainText("The Pretender")
-    await expect(rows.nth(1)).toContainText("Sabotage")
+    await expect(rows.nth(0)).toContainText("Afterlife Tulum 2025")
+    await expect(rows.nth(1)).toContainText("Calvin Harris")
 
-    const handle = rows.nth(1).getByRole("button", { name: /Reorder Sabotage/ })
+    const handle = rows.nth(1).getByRole("button", { name: /Reorder Calvin Harris/ })
+    await expect(handle).toHaveCSS("opacity", "0")
+    await rows.nth(1).hover()
+    await expect(handle).toHaveCSS("opacity", "1")
     await handle.focus()
     await handle.press("Alt+ArrowUp")
 
-    await expect(rows.nth(0)).toContainText("Sabotage")
-    await expect(rows.nth(1)).toContainText("The Pretender")
+    await expect(rows.nth(0)).toContainText("Calvin Harris")
+    await expect(rows.nth(1)).toContainText("Afterlife Tulum 2025")
+  })
+
+  test("can requeue a last-played item from its hover handle", async ({ page }) => {
+    const viewport = page.getByTestId("queue-scroll-area")
+    await viewport.evaluate((node) => {
+      node.scrollTop = 0
+    })
+
+    const history = page.getByTestId("history-row")
+    const first = history.first()
+    await first.hover()
+    await first.getByRole("button", { name: /Add Sunset Drive 2025/ }).click()
+
+    await expect(page.getByTestId("upcoming-row")).toHaveCount(6)
+    await expect(page.getByTestId("upcoming-row").last()).toContainText("Sunset Drive 2025")
   })
 
   test("adds safe URLs and rejects unsafe schemes", async ({ page }) => {
@@ -87,9 +108,7 @@ test.describe("MQS scroll queue prototype", () => {
     )
   })
 
-  test("previews a setlist and replaces the queue in paused state", async ({
-    page,
-  }) => {
+  test("previews a setlist and replaces the queue in paused state", async ({ page }) => {
     const file = {
       version: "1.0",
       name: "Friday",
@@ -134,9 +153,7 @@ test.describe("MQS scroll queue prototype", () => {
     await page.getByRole("button", { name: "Queue actions" }).click()
     await page.getByRole("menuitem", { name: "Stop & clear all" }).click()
 
-    await expect(
-      page.getByRole("heading", { name: "Stop and clear MQS?" })
-    ).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Stop and clear MQS?" })).toBeVisible()
     await page.getByRole("button", { name: "Stop & clear all" }).click()
 
     await expect(page.getByTestId("current-row")).toHaveCount(0)
