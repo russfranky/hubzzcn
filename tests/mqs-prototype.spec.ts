@@ -107,6 +107,61 @@ test.describe("MQS final-layout prototype", () => {
     ).toBeVisible()
   })
 
+  test("turns the media input into a full-width drag-to-remove target", async ({
+    page,
+  }) => {
+    const rows = page.getByTestId("upcoming-row")
+    const firstRow = rows.first()
+    const mediaInput = page.getByRole("textbox", { name: "Media URL" })
+    const dataTransfer = await page.evaluateHandle(() => new DataTransfer())
+
+    await expect(rows).toHaveCount(5)
+    await firstRow.dispatchEvent("dragstart", { dataTransfer })
+
+    const removeTarget = page.getByTestId("remove-drop-target")
+    await expect(mediaInput).toHaveCount(0)
+    await expect(
+      page.getByRole("button", { name: "Queue actions" })
+    ).toHaveCount(0)
+    await expect(removeTarget).toContainText("Drop to remove")
+
+    await removeTarget.dispatchEvent("dragenter", { dataTransfer })
+    await expect(removeTarget).toContainText("Drop here to remove")
+    await removeTarget.dispatchEvent("drop", { dataTransfer })
+
+    await expect(rows).toHaveCount(4)
+    await expect(page.getByText("Afterlife Tulum 2025")).toHaveCount(0)
+    await expect(mediaInput).toBeVisible()
+    await expect(page.locator('[data-mqs-poof="true"]')).not.toHaveCount(0)
+  })
+
+  test("swaps queue actions for a send button while the media input is active", async ({
+    page,
+  }) => {
+    const input = page.getByRole("textbox", { name: "Media URL" })
+
+    await expect(
+      page.getByRole("button", { name: "Queue actions" })
+    ).toBeVisible()
+    await input.focus()
+    await expect(
+      page.getByRole("button", { name: "Queue actions" })
+    ).toHaveCount(0)
+    await expect(
+      page.getByRole("button", { name: "Add media to queue" })
+    ).toBeVisible()
+
+    await input.fill("https://example.com/focused-send")
+    await page.getByRole("button", { name: "Add media to queue" }).click()
+    await expect(page.getByTestId("upcoming-row")).toHaveCount(6)
+    await expect(page.getByTestId("upcoming-row").last()).toContainText(
+      "https://example.com/focused-send"
+    )
+    await expect(
+      page.getByRole("button", { name: "Queue actions" })
+    ).toBeVisible()
+  })
+
   test("previews a setlist and replaces the queue in paused state", async ({
     page,
   }) => {
