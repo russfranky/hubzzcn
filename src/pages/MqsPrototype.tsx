@@ -15,12 +15,7 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -181,7 +176,7 @@ function Contributor({ name }: { name: string }) {
   return (
     <a
       href={`#user-${encodeURIComponent(name.replace(/^@/, ""))}`}
-      className="font-medium text-indigo-400 underline-offset-2 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
+      className="font-medium text-indigo-400 underline-offset-2 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
     >
       {name}
     </a>
@@ -244,7 +239,7 @@ function HistoryRow({
       <DragHandle title={item.title} />
       <div className="min-w-0 truncate text-base font-medium">{item.title}</div>
       <QueueMeta item={item} dimmed />
-      <span className="justify-self-end text-base tabular-nums text-muted-foreground">
+      <span className="justify-self-end text-base text-muted-foreground tabular-nums">
         {formatTime(item.durationSeconds)}
       </span>
     </div>
@@ -284,7 +279,7 @@ function UpcomingRow({
         onDropSource(event.dataTransfer.getData("text/plain"), index)
       }}
       className={cn(
-        "grid min-h-16 grid-cols-[32px_minmax(0,1fr)_minmax(180px,280px)_96px] items-center gap-3 border-b border-border/60 px-3 py-2 transition-colors hover:bg-accent/25 last:border-b-0",
+        "grid min-h-16 grid-cols-[32px_minmax(0,1fr)_minmax(180px,280px)_96px] items-center gap-3 border-b border-border/60 px-3 py-2 transition-colors last:border-b-0 hover:bg-accent/25",
         dragging && "opacity-45"
       )}
     >
@@ -306,7 +301,7 @@ function UpcomingRow({
       />
       <div className="min-w-0 truncate text-base font-medium">{item.title}</div>
       <QueueMeta item={item} />
-      <span className="justify-self-end text-base tabular-nums text-muted-foreground">
+      <span className="justify-self-end text-base text-muted-foreground tabular-nums">
         {formatTime(item.durationSeconds)}
       </span>
     </div>
@@ -339,7 +334,10 @@ function CurrentCard({
   function seekFromPointer(event: React.PointerEvent<HTMLDivElement>) {
     if (!hasDuration) return
     const rect = event.currentTarget.getBoundingClientRect()
-    const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width))
+    const ratio = Math.min(
+      1,
+      Math.max(0, (event.clientX - rect.left) / rect.width)
+    )
     onElapsedChange(Math.round(duration * ratio))
   }
 
@@ -349,7 +347,10 @@ function CurrentCard({
       className="gap-0 rounded-xl bg-card py-0 ring-1 ring-foreground/15"
     >
       <CardContent className="grid min-h-44 grid-cols-[44px_minmax(0,1fr)_104px] gap-0 p-0">
-        <div className="flex items-start justify-center pt-6" aria-hidden="true">
+        <div
+          className="flex items-start justify-center pt-6"
+          aria-hidden="true"
+        >
           <GripVertical className="size-4 text-muted-foreground/70" />
         </div>
 
@@ -362,15 +363,12 @@ function CurrentCard({
           </div>
 
           <div className="mt-8 grid grid-cols-[64px_minmax(0,1fr)_84px] items-center gap-3">
-            <span className="text-base tabular-nums text-muted-foreground">
+            <span className="text-base text-muted-foreground tabular-nums">
               {hasDuration ? formatTime(elapsed) : "LIVE"}
             </span>
 
             <div
-              className={cn(
-                "relative h-10",
-                hasDuration && "cursor-pointer"
-              )}
+              className={cn("relative h-10", hasDuration && "cursor-pointer")}
               role="slider"
               tabIndex={hasDuration ? 0 : -1}
               aria-label="Playback position"
@@ -407,7 +405,7 @@ function CurrentCard({
               ) : null}
             </div>
 
-            <span className="justify-self-end text-base tabular-nums text-muted-foreground">
+            <span className="justify-self-end text-base text-muted-foreground tabular-nums">
               {hasDuration ? formatTime(duration) : "LIVE"}
             </span>
           </div>
@@ -461,9 +459,13 @@ function normalizeSetlist(value: unknown): PendingSetlist {
     throw new Error("A setlist needs at least one segment.")
   }
 
-  const sourceSegments = record.segments.slice(0, SETLIST_LIMIT) as SetlistSegment[]
+  const sourceSegments = record.segments.slice(
+    0,
+    SETLIST_LIMIT
+  ) as SetlistSegment[]
   const items = sourceSegments.flatMap((segment, index) => {
-    if (typeof segment.url !== "string" || !isSafeHttpUrl(segment.url)) return []
+    if (typeof segment.url !== "string" || !isSafeHttpUrl(segment.url))
+      return []
 
     const durationMinutes =
       typeof segment.duration === "number" && Number.isFinite(segment.duration)
@@ -500,16 +502,17 @@ function normalizeSetlist(value: unknown): PendingSetlist {
 
 export function MqsPrototype() {
   const [played, setPlayed] = React.useState(INITIAL_PLAYED)
-  const [current, setCurrent] = React.useState<QueueItem | null>(INITIAL_CURRENT)
+  const [current, setCurrent] = React.useState<QueueItem | null>(
+    INITIAL_CURRENT
+  )
   const [upcoming, setUpcoming] = React.useState(INITIAL_UPCOMING)
   const [elapsed, setElapsed] = React.useState(1938)
   const [isPlaying, setIsPlaying] = React.useState(true)
   const [expanded, setExpanded] = React.useState(false)
   const [url, setUrl] = React.useState("")
   const [error, setError] = React.useState<string | null>(null)
-  const [pendingSetlist, setPendingSetlist] = React.useState<PendingSetlist | null>(
-    null
-  )
+  const [pendingSetlist, setPendingSetlist] =
+    React.useState<PendingSetlist | null>(null)
   const [stopOpen, setStopOpen] = React.useState(false)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -517,7 +520,9 @@ export function MqsPrototype() {
     if (!isPlaying || !current?.durationSeconds) return
 
     const timer = window.setInterval(() => {
-      setElapsed((value) => Math.min(current.durationSeconds ?? value, value + 1))
+      setElapsed((value) =>
+        Math.min(current.durationSeconds ?? value, value + 1)
+      )
     }, 1000)
 
     return () => window.clearInterval(timer)
@@ -615,10 +620,14 @@ export function MqsPrototype() {
 
   async function readSetlist(file: File) {
     try {
-      setPendingSetlist(normalizeSetlist(JSON.parse(await file.text()) as unknown))
+      setPendingSetlist(
+        normalizeSetlist(JSON.parse(await file.text()) as unknown)
+      )
       setError(null)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not read setlist.")
+      setError(
+        cause instanceof Error ? cause.message : "Could not read setlist."
+      )
     }
   }
 
@@ -715,10 +724,7 @@ export function MqsPrototype() {
           )}
         </section>
 
-        <section
-          className="border-b px-8 py-7"
-          aria-labelledby="up-next-title"
-        >
+        <section className="border-b px-8 py-7" aria-labelledby="up-next-title">
           <h2
             id="up-next-title"
             className="mb-4 text-sm font-semibold tracking-[0.08em] uppercase"
@@ -819,7 +825,9 @@ export function MqsPrototype() {
               </DropdownMenuItem>
               <DropdownMenuItem
                 variant="destructive"
-                disabled={!current && upcoming.length === 0 && played.length === 0}
+                disabled={
+                  !current && upcoming.length === 0 && played.length === 0
+                }
                 onSelect={() => setStopOpen(true)}
               >
                 <Trash2 />
@@ -878,7 +886,8 @@ export function MqsPrototype() {
           <DialogHeader>
             <DialogTitle>Stop and clear MQS?</DialogTitle>
             <DialogDescription>
-              This stops playback and clears played, current, and upcoming items.
+              This stops playback and clears played, current, and upcoming
+              items.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

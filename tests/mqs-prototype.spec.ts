@@ -9,8 +9,12 @@ test.describe("MQS final-layout prototype", () => {
     page,
   }) => {
     await expect(page.getByText("Rooftop", { exact: true })).toBeVisible()
-    await expect(page.getByRole("heading", { name: "Last Played" })).toBeVisible()
-    await expect(page.getByRole("heading", { name: "Now Playing" })).toBeVisible()
+    await expect(
+      page.getByRole("heading", { name: "Last Played" })
+    ).toBeVisible()
+    await expect(
+      page.getByRole("heading", { name: "Now Playing" })
+    ).toBeVisible()
     await expect(page.getByRole("heading", { name: "Up Next" })).toBeVisible()
 
     await expect(page.getByTestId("history-row")).toHaveCount(3)
@@ -18,9 +22,15 @@ test.describe("MQS final-layout prototype", () => {
     await expect(page.getByTestId("upcoming-row")).toHaveCount(5)
     await expect(page.locator("img")).toHaveCount(0)
 
-    await expect(page.getByRole("button", { name: "Expand queue" })).toBeVisible()
-    await expect(page.getByRole("button", { name: "Queue actions" })).toBeVisible()
-    await expect(page.getByRole("button", { name: /Mute|Unmute/ })).toHaveCount(0)
+    await expect(
+      page.getByRole("button", { name: "Expand queue" })
+    ).toBeVisible()
+    await expect(
+      page.getByRole("button", { name: "Queue actions" })
+    ).toBeVisible()
+    await expect(page.getByRole("button", { name: /Mute|Unmute/ })).toHaveCount(
+      0
+    )
   })
 
   test("keeps play and pause on the playhead with vertical skip controls", async ({
@@ -86,9 +96,15 @@ test.describe("MQS final-layout prototype", () => {
     )
 
     await page.getByRole("button", { name: "Queue actions" }).click()
-    await expect(page.getByRole("menuitem", { name: "Upload setlist" })).toBeVisible()
-    await expect(page.getByRole("menuitem", { name: "Shuffle upcoming" })).toBeVisible()
-    await expect(page.getByRole("menuitem", { name: "Clear upcoming" })).toBeVisible()
+    await expect(
+      page.getByRole("menuitem", { name: "Upload setlist" })
+    ).toBeVisible()
+    await expect(
+      page.getByRole("menuitem", { name: "Shuffle upcoming" })
+    ).toBeVisible()
+    await expect(
+      page.getByRole("menuitem", { name: "Clear upcoming" })
+    ).toBeVisible()
   })
 
   test("previews a setlist and replaces the queue in paused state", async ({
@@ -124,8 +140,12 @@ test.describe("MQS final-layout prototype", () => {
       buffer: Buffer.from(JSON.stringify(file)),
     })
 
-    await expect(page.getByRole("heading", { name: "Load setlist" })).toBeVisible()
-    await expect(page.getByText("2 valid segments · 1 invalid or capped")).toBeVisible()
+    await expect(
+      page.getByRole("heading", { name: "Load setlist" })
+    ).toBeVisible()
+    await expect(
+      page.getByText("2 valid segments · 1 invalid or capped")
+    ).toBeVisible()
     await page.getByRole("button", { name: "Replace queue" }).click()
 
     await expect(page.getByTestId("current-row")).toContainText("Opening")
