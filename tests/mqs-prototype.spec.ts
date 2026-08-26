@@ -140,49 +140,117 @@ test.describe("MQS final-layout prototype", () => {
     await expect(page.getByTestId("queue-drop-indicator")).toHaveCount(0)
   })
 
-  test("turns the media input into a full-width drag-to-remove target", async ({
+  test("keeps composer geometry fixed while dragging and centers the removal poof", async ({
     page,
   }) => {
     const rows = page.getByTestId("upcoming-row")
     const firstRow = rows.first()
     const mediaInput = page.getByRole("textbox", { name: "Media URL" })
+    const queueActions = page.getByRole("button", { name: "Queue actions" })
+    const composer = page.getByTestId("queue-composer")
+    const inputBox = await mediaInput.boundingBox()
+    const actionsBox = await queueActions.boundingBox()
+    const composerBox = await composer.boundingBox()
     const dataTransfer = await page.evaluateHandle(() => new DataTransfer())
 
+    expect(inputBox).not.toBeNull()
+    expect(actionsBox).not.toBeNull()
+    expect(composerBox).not.toBeNull()
     await expect(rows).toHaveCount(5)
     await firstRow.dispatchEvent("dragstart", { dataTransfer })
 
     const removeTarget = page.getByTestId("remove-drop-target")
     await expect(mediaInput).toHaveCount(0)
-    await expect(
-      page.getByRole("button", { name: "Queue actions" })
-    ).toHaveCount(0)
+    await expect(queueActions).toBeVisible()
     await expect(removeTarget).toContainText("Drop to remove")
+
+    const removeBox = await removeTarget.boundingBox()
+    const dragActionsBox = await queueActions.boundingBox()
+    const dragComposerBox = await composer.boundingBox()
+    expect(removeBox).not.toBeNull()
+    expect(dragActionsBox).not.toBeNull()
+    expect(dragComposerBox).not.toBeNull()
+    expect(
+      Math.abs((removeBox?.width ?? 0) - (inputBox?.width ?? 0))
+    ).toBeLessThan(1)
+    expect(
+      Math.abs((removeBox?.height ?? 0) - (inputBox?.height ?? 0))
+    ).toBeLessThan(1)
+    expect(
+      Math.abs((dragActionsBox?.x ?? 0) - (actionsBox?.x ?? 0))
+    ).toBeLessThan(1)
+    expect(
+      Math.abs((dragActionsBox?.y ?? 0) - (actionsBox?.y ?? 0))
+    ).toBeLessThan(1)
+    expect(
+      Math.abs((dragComposerBox?.width ?? 0) - (composerBox?.width ?? 0))
+    ).toBeLessThan(1)
+    expect(
+      Math.abs((dragComposerBox?.height ?? 0) - (composerBox?.height ?? 0))
+    ).toBeLessThan(1)
 
     await removeTarget.dispatchEvent("dragenter", { dataTransfer })
     await expect(removeTarget).toContainText("Drop here to remove")
+    const activeBox = await removeTarget.boundingBox()
     await removeTarget.dispatchEvent("drop", { dataTransfer })
 
     await expect(rows).toHaveCount(4)
     await expect(page.getByText("Afterlife Tulum 2025")).toHaveCount(0)
     await expect(mediaInput).toBeVisible()
-    await expect(page.locator('[data-mqs-poof="true"]')).not.toHaveCount(0)
+    const poofOrigin = page.locator('[data-mqs-poof-origin="true"]')
+    await expect(poofOrigin).toHaveCount(1)
+    const poofPosition = await poofOrigin.evaluate((element) => ({
+      left: Number.parseFloat((element as HTMLElement).style.left),
+      top: Number.parseFloat((element as HTMLElement).style.top),
+    }))
+    expect(
+      Math.abs(
+        poofPosition.left - ((activeBox?.x ?? 0) + (activeBox?.width ?? 0) / 2)
+      )
+    ).toBeLessThan(1)
+    expect(
+      Math.abs(
+        poofPosition.top - ((activeBox?.y ?? 0) + (activeBox?.height ?? 0) / 2)
+      )
+    ).toBeLessThan(1)
   })
 
   test("swaps queue actions for a send button while the media input is active", async ({
     page,
   }) => {
     const input = page.getByRole("textbox", { name: "Media URL" })
+    const queueActions = page.getByRole("button", { name: "Queue actions" })
+    const composer = page.getByTestId("queue-composer")
 
-    await expect(
-      page.getByRole("button", { name: "Queue actions" })
-    ).toBeVisible()
+    await expect(queueActions).toBeVisible()
+    const dropdownBox = await queueActions.boundingBox()
+    const composerBox = await composer.boundingBox()
+    expect(dropdownBox).not.toBeNull()
+    expect(composerBox).not.toBeNull()
     await input.focus()
     await expect(
       page.getByRole("button", { name: "Queue actions" })
     ).toHaveCount(0)
-    await expect(
-      page.getByRole("button", { name: "Add media to queue" })
-    ).toBeVisible()
+    const sendButton = page.getByRole("button", { name: "Add media to queue" })
+    await expect(sendButton).toBeVisible()
+    const sendBox = await sendButton.boundingBox()
+    const focusedComposerBox = await composer.boundingBox()
+    expect(sendBox).not.toBeNull()
+    expect(focusedComposerBox).not.toBeNull()
+    expect(Math.abs((sendBox?.x ?? 0) - (dropdownBox?.x ?? 0))).toBeLessThan(1)
+    expect(Math.abs((sendBox?.y ?? 0) - (dropdownBox?.y ?? 0))).toBeLessThan(1)
+    expect(
+      Math.abs((sendBox?.width ?? 0) - (dropdownBox?.width ?? 0))
+    ).toBeLessThan(1)
+    expect(
+      Math.abs((sendBox?.height ?? 0) - (dropdownBox?.height ?? 0))
+    ).toBeLessThan(1)
+    expect(
+      Math.abs((focusedComposerBox?.width ?? 0) - (composerBox?.width ?? 0))
+    ).toBeLessThan(1)
+    expect(
+      Math.abs((focusedComposerBox?.height ?? 0) - (composerBox?.height ?? 0))
+    ).toBeLessThan(1)
 
     await input.fill("https://example.com/focused-send")
     await page.getByRole("button", { name: "Add media to queue" }).click()
@@ -193,6 +261,86 @@ test.describe("MQS final-layout prototype", () => {
     await expect(
       page.getByRole("button", { name: "Queue actions" })
     ).toBeVisible()
+  })
+
+  test("removes the Last Played section entirely when history is empty", async ({
+    page,
+  }) => {
+    for (let index = 0; index < 3; index += 1) {
+      const dataTransfer = await page.evaluateHandle(() => new DataTransfer())
+      await page.getByTestId("history-row").first().dispatchEvent("dragstart", {
+        dataTransfer,
+      })
+      await page.getByTestId("remove-drop-target").dispatchEvent("drop", {
+        dataTransfer,
+      })
+    }
+
+    await expect(page.getByTestId("history-row")).toHaveCount(0)
+    await expect(page.getByTestId("last-played-section")).toHaveCount(0)
+    await expect(
+      page.getByRole("heading", { name: "Last Played" })
+    ).toHaveCount(0)
+  })
+
+  test("fills its host height and keeps long queues scrolling inside Up Next", async ({
+    page,
+  }) => {
+    const file = {
+      version: "1.0",
+      name: "Long queue",
+      segments: Array.from({ length: 32 }, (_, index) => ({
+        title: `Queue item ${index + 1}`,
+        url: `https://example.com/media-${index + 1}`,
+        platform: "Web",
+        duration: 5,
+      })),
+    }
+
+    await page.getByLabel("Setlist JSON file").setInputFiles({
+      name: "long-queue.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify(file)),
+    })
+    await page.getByRole("button", { name: "Replace queue" }).click()
+
+    const metrics = await page.evaluate(() => {
+      const container = document.querySelector(
+        '[data-testid="mqs-container"]'
+      ) as HTMLElement
+      const modal = document.querySelector(
+        '[data-testid="mqs-modal"]'
+      ) as HTMLElement
+      const upNext = document.querySelector(
+        '[data-testid="up-next-scroll"]'
+      ) as HTMLElement
+      const containerStyle = getComputedStyle(container)
+      const modalStyle = getComputedStyle(modal)
+      const upNextStyle = getComputedStyle(upNext)
+      const containerRect = container.getBoundingClientRect()
+      const modalRect = modal.getBoundingClientRect()
+      return {
+        availableHeight:
+          containerRect.height -
+          Number.parseFloat(containerStyle.paddingTop) -
+          Number.parseFloat(containerStyle.paddingBottom),
+        modalHeight: modalRect.height,
+        modalOverflowY: modalStyle.overflowY,
+        upNextClientHeight: upNext.clientHeight,
+        upNextScrollHeight: upNext.scrollHeight,
+        upNextOverflowY: upNextStyle.overflowY,
+      }
+    })
+
+    expect(
+      Math.abs(metrics.modalHeight - metrics.availableHeight)
+    ).toBeLessThan(1)
+    expect(metrics.modalOverflowY).toBe("hidden")
+    expect(metrics.upNextOverflowY).toBe("auto")
+    expect(metrics.upNextScrollHeight).toBeGreaterThan(
+      metrics.upNextClientHeight
+    )
+    await expect(page.getByTestId("upcoming-row")).toHaveCount(31)
   })
 
   test("previews a setlist and replaces the queue in paused state", async ({

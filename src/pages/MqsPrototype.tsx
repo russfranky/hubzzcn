@@ -177,37 +177,47 @@ function playRemovalPoof(target: HTMLElement) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
 
   const rect = target.getBoundingClientRect()
-  const originX = rect.left + rect.width / 2
-  const originY = rect.top + rect.height / 2
+  const origin = document.createElement("span")
+  origin.dataset.mqsPoofOrigin = "true"
+  Object.assign(origin.style, {
+    position: "fixed",
+    left: `${rect.left + rect.width / 2}px`,
+    top: `${rect.top + rect.height / 2}px`,
+    width: "0px",
+    height: "0px",
+    pointerEvents: "none",
+    zIndex: "9999",
+  })
+  document.body.appendChild(origin)
+
   const particles = [
-    [-34, -8, 12],
-    [-27, -25, 16],
-    [-10, -34, 11],
-    [10, -31, 14],
-    [29, -22, 12],
-    [35, -2, 16],
-    [27, 20, 11],
-    [8, 28, 15],
-    [-13, 27, 13],
-    [-31, 16, 10],
+    [-36, 0, 11],
+    [-28, -25, 13],
+    [0, -34, 15],
+    [28, -25, 12],
+    [36, 0, 16],
+    [28, 25, 11],
+    [0, 34, 14],
+    [-28, 25, 13],
+    [0, 0, 18],
   ] as const
+  let remaining = particles.length
 
   particles.forEach(([x, y, size], index) => {
     const particle = document.createElement("span")
     particle.dataset.mqsPoof = "true"
     Object.assign(particle.style, {
-      position: "fixed",
-      left: `${originX}px`,
-      top: `${originY}px`,
+      position: "absolute",
+      left: "0px",
+      top: "0px",
       width: `${size}px`,
       height: `${size}px`,
       borderRadius: "9999px",
       background: "rgba(230, 230, 235, 0.42)",
       boxShadow: "0 0 10px rgba(230, 230, 235, 0.16)",
       pointerEvents: "none",
-      zIndex: "9999",
     })
-    document.body.appendChild(particle)
+    origin.appendChild(particle)
 
     const animation = particle.animate(
       [
@@ -235,8 +245,13 @@ function playRemovalPoof(target: HTMLElement) {
       }
     )
 
-    animation.onfinish = () => particle.remove()
-    animation.oncancel = () => particle.remove()
+    const cleanup = () => {
+      particle.remove()
+      remaining -= 1
+      if (remaining === 0) origin.remove()
+    }
+    animation.onfinish = cleanup
+    animation.oncancel = cleanup
   })
 }
 
@@ -810,15 +825,17 @@ export function MqsPrototype() {
 
   return (
     <main
-      className="dark min-h-screen bg-background px-4 py-6 text-foreground sm:px-8 sm:py-10"
+      data-testid="mqs-container"
+      className="dark flex h-dvh min-h-0 flex-col bg-background px-4 py-6 text-foreground sm:px-8 sm:py-10"
       onDragEnd={() => {
         setDragSource(null)
         setRemoveTargetActive(false)
       }}
     >
       <Card
+        data-testid="mqs-modal"
         className={cn(
-          "mx-auto w-full gap-0 overflow-hidden rounded-3xl bg-card py-0 shadow-2xl ring-1 ring-foreground/15 transition-[max-width]",
+          "mx-auto flex min-h-0 w-full flex-1 flex-col gap-0 overflow-hidden rounded-3xl bg-card py-0 shadow-2xl ring-1 ring-foreground/15 transition-[max-width]",
           expanded ? "max-w-[1320px]" : "max-w-[1028px]"
         )}
       >
@@ -838,30 +855,33 @@ export function MqsPrototype() {
           </Button>
         </CardHeader>
 
-        <section
-          className="border-b px-8 py-7"
-          aria-labelledby="last-played-title"
-        >
-          <h2
-            id="last-played-title"
-            className="mb-4 text-sm font-semibold tracking-[0.08em] text-muted-foreground uppercase"
+        {played.length > 0 ? (
+          <section
+            data-testid="last-played-section"
+            className="shrink-0 border-b px-8 py-7"
+            aria-labelledby="last-played-title"
           >
-            Last Played
-          </h2>
-          <Card className="gap-0 rounded-xl bg-card py-0 ring-1 ring-foreground/10">
-            {played.map((item, index) => (
-              <HistoryRow
-                key={item.id}
-                item={item}
-                index={index}
-                onDragStart={handleDragStart}
-              />
-            ))}
-          </Card>
-        </section>
+            <h2
+              id="last-played-title"
+              className="mb-4 text-sm font-semibold tracking-[0.08em] text-muted-foreground uppercase"
+            >
+              Last Played
+            </h2>
+            <Card className="gap-0 rounded-xl bg-card py-0 ring-1 ring-foreground/10">
+              {played.map((item, index) => (
+                <HistoryRow
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  onDragStart={handleDragStart}
+                />
+              ))}
+            </Card>
+          </section>
+        ) : null}
 
         <section
-          className="border-b px-8 py-7"
+          className="shrink-0 border-b px-8 py-7"
           aria-labelledby="now-playing-title"
         >
           <h2
@@ -887,14 +907,21 @@ export function MqsPrototype() {
           )}
         </section>
 
-        <section className="border-b px-8 py-7" aria-labelledby="up-next-title">
+        <section
+          data-testid="up-next-section"
+          className="flex min-h-0 flex-1 flex-col border-b px-8 py-7"
+          aria-labelledby="up-next-title"
+        >
           <h2
             id="up-next-title"
             className="mb-4 text-sm font-semibold tracking-[0.08em] uppercase"
           >
             Up Next
           </h2>
-          <Card className="gap-0 rounded-xl bg-card py-0 ring-1 ring-foreground/10">
+          <Card
+            data-testid="up-next-scroll"
+            className="min-h-0 flex-1 gap-0 overflow-y-auto rounded-xl bg-card py-0 ring-1 ring-foreground/10"
+          >
             {upcoming.length > 0 ? (
               upcoming.map((item, index) => (
                 <UpcomingRow
@@ -915,14 +942,15 @@ export function MqsPrototype() {
         </section>
 
         <div
-          className="flex items-center gap-4 px-8 py-7"
+          data-testid="queue-composer"
+          className="flex shrink-0 items-center gap-2 px-4 py-3"
           onBlurCapture={(event) => {
             const next = event.relatedTarget as Node | null
             if (next && event.currentTarget.contains(next)) return
             setInputFocused(false)
           }}
         >
-          <div className="relative min-w-0 flex-1">
+          <div className="relative h-9 min-w-0 flex-1">
             {dragSource ? (
               <div
                 ref={removeTargetRef}
@@ -948,7 +976,7 @@ export function MqsPrototype() {
                 }}
                 onDrop={handleRemoveDrop}
                 className={cn(
-                  "flex h-9 items-center justify-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 text-xs font-medium text-destructive transition-colors",
+                  "flex h-9 w-full items-center justify-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 text-xs font-medium text-destructive transition-colors",
                   removeTargetActive &&
                     "border-destructive/70 bg-destructive/20 ring-1 ring-destructive/30"
                 )}
@@ -963,7 +991,7 @@ export function MqsPrototype() {
             ) : (
               <>
                 <Link2
-                  className="pointer-events-none absolute top-1/2 left-4 z-10 size-5 -translate-y-1/2 text-muted-foreground"
+                  className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-muted-foreground"
                   aria-hidden="true"
                 />
                 <Input
@@ -981,89 +1009,87 @@ export function MqsPrototype() {
                   }}
                   aria-label="Media URL"
                   placeholder="Paste YouTube or Twitch URL"
-                  className="h-14 rounded-lg bg-transparent pl-12 text-base"
+                  className="h-9 rounded-md bg-transparent pl-9 text-sm"
                 />
               </>
             )}
           </div>
 
-          {!dragSource ? (
-            inputFocused ? (
-              <Button
-                type="button"
-                className="size-14 rounded-lg"
-                aria-label="Add media to queue"
-                title="Add media to queue"
-                disabled={!url.trim()}
-                onClick={() => addUrl("tail")}
-              >
-                <Send />
-              </Button>
-            ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="size-14 rounded-lg"
-                    aria-label="Queue actions"
-                  >
-                    <MoreVertical />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem
-                    disabled={!url.trim()}
-                    onSelect={() => addUrl("tail")}
-                  >
-                    Add pasted URL
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    disabled={!url.trim()}
-                    onSelect={() => addUrl("next")}
-                  >
-                    Play pasted URL next
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onSelect={() => fileInputRef.current?.click()}
-                  >
-                    <Upload />
-                    Upload setlist
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    disabled={upcoming.length < 2}
-                    onSelect={() =>
-                      setUpcoming((items) =>
-                        [...items].sort(() => Math.random() - 0.5)
-                      )
-                    }
-                  >
-                    <Shuffle />
-                    Shuffle upcoming
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    disabled={upcoming.length === 0}
-                    onSelect={() => setUpcoming([])}
-                  >
-                    <Trash2 />
-                    Clear upcoming
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    variant="destructive"
-                    disabled={
-                      !current && upcoming.length === 0 && played.length === 0
-                    }
-                    onSelect={() => setStopOpen(true)}
-                  >
-                    <Trash2 />
-                    Stop & clear all
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )
-          ) : null}
+          {inputFocused && !dragSource ? (
+            <Button
+              type="button"
+              className="size-9 shrink-0 rounded-md"
+              aria-label="Add media to queue"
+              title="Add media to queue"
+              disabled={!url.trim()}
+              onClick={() => addUrl("tail")}
+            >
+              <Send />
+            </Button>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="size-9 shrink-0 rounded-md"
+                  aria-label="Queue actions"
+                >
+                  <MoreVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem
+                  disabled={!url.trim()}
+                  onSelect={() => addUrl("tail")}
+                >
+                  Add pasted URL
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={!url.trim()}
+                  onSelect={() => addUrl("next")}
+                >
+                  Play pasted URL next
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => fileInputRef.current?.click()}
+                >
+                  <Upload />
+                  Upload setlist
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={upcoming.length < 2}
+                  onSelect={() =>
+                    setUpcoming((items) =>
+                      [...items].sort(() => Math.random() - 0.5)
+                    )
+                  }
+                >
+                  <Shuffle />
+                  Shuffle upcoming
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  disabled={upcoming.length === 0}
+                  onSelect={() => setUpcoming([])}
+                >
+                  <Trash2 />
+                  Clear upcoming
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  disabled={
+                    !current && upcoming.length === 0 && played.length === 0
+                  }
+                  onSelect={() => setStopOpen(true)}
+                >
+                  <Trash2 />
+                  Stop & clear all
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
           <input
             ref={fileInputRef}
