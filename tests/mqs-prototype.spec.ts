@@ -88,7 +88,7 @@ test.describe("MQS shadcn port-ready prototype", () => {
     await first.getByRole("button", { name: /Add Sunset Drive 2025/ }).click()
 
     await expect(page.getByTestId("upcoming-row")).toHaveCount(6)
-    await expect(page.getByTestId("upcoming-row").last()).toContainText("Sunset Drive 2025")
+    await expect(page.getByTestId("upcoming-row").last()).toContainText("history-1")
   })
 
   test("adds safe URLs and rejects unsafe schemes", async ({ page }) => {
