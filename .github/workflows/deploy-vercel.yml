@@ -53,3 +53,5 @@ jobs:
           echo "Production URL: $url"
           echo "### Production deployment" >> "$GITHUB_STEP_SUMMARY"
           echo "$url" >> "$GITHUB_STEP_SUMMARY"
+
+# Refresh production after gated MQS interaction commits.
