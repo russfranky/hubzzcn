@@ -5,6 +5,7 @@ import {
   GripVertical,
   Link2,
   Maximize2,
+  Minimize2,
   MoreVertical,
   Pause,
   Play,
@@ -38,7 +39,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 
-type PrototypeQueueItem = {
+type QueueItem = {
   id: string
   title: string
   url: string
@@ -55,15 +56,14 @@ type SetlistSegment = {
 }
 
 type PendingSetlist = {
-  name: string
-  items: PrototypeQueueItem[]
+  items: QueueItem[]
   dropped: number
 }
 
 const HISTORY_LIMIT = 3
 const SETLIST_LIMIT = 500
 
-const INITIAL_PLAYED: PrototypeQueueItem[] = [
+const INITIAL_PLAYED: QueueItem[] = [
   {
     id: "played-sunset-drive",
     title: "Sunset Drive 2025 – Live Set",
@@ -90,7 +90,7 @@ const INITIAL_PLAYED: PrototypeQueueItem[] = [
   },
 ]
 
-const INITIAL_CURRENT: PrototypeQueueItem = {
+const INITIAL_CURRENT: QueueItem = {
   id: "current-tomorrowland",
   title: "Tomorrowland 2026 Mainstage W1",
   url: "https://www.youtube.com/watch?v=tomorrowland-2026",
@@ -99,7 +99,7 @@ const INITIAL_CURRENT: PrototypeQueueItem = {
   durationSeconds: 4542,
 }
 
-const INITIAL_UPCOMING: PrototypeQueueItem[] = [
+const INITIAL_UPCOMING: QueueItem[] = [
   {
     id: "upcoming-afterlife",
     title: "Afterlife Tulum 2025",
@@ -144,6 +144,7 @@ const INITIAL_UPCOMING: PrototypeQueueItem[] = [
 
 function formatTime(seconds?: number) {
   if (!Number.isFinite(seconds) || seconds === undefined) return "LIVE"
+
   const safe = Math.max(0, Math.floor(seconds))
   const hours = Math.floor(safe / 3600)
   const minutes = Math.floor((safe % 3600) / 60)
@@ -209,13 +210,7 @@ function DragHandle({
   )
 }
 
-function QueueMeta({
-  item,
-  dimmed = false,
-}: {
-  item: PrototypeQueueItem
-  dimmed?: boolean
-}) {
+function QueueMeta({ item, dimmed }: { item: QueueItem; dimmed?: boolean }) {
   return (
     <div
       className={cn(
@@ -235,7 +230,7 @@ function HistoryRow({
   index,
   onDragStart,
 }: {
-  item: PrototypeQueueItem
+  item: QueueItem
   index: number
   onDragStart: (event: React.DragEvent, source: string) => void
 }) {
@@ -263,7 +258,7 @@ function UpcomingRow({
   onDragStart,
   onDropSource,
 }: {
-  item: PrototypeQueueItem
+  item: QueueItem
   index: number
   onMove: (from: number, to: number) => void
   onDragStart: (event: React.DragEvent, source: string) => void
@@ -297,10 +292,12 @@ function UpcomingRow({
         title={item.title}
         onKeyDown={(event) => {
           if (!event.altKey) return
+
           if (event.key === "ArrowUp") {
             event.preventDefault()
             onMove(index, index - 1)
           }
+
           if (event.key === "ArrowDown") {
             event.preventDefault()
             onMove(index, index + 1)
@@ -320,13 +317,15 @@ function CurrentCard({
   item,
   elapsed,
   isPlaying,
+  onElapsedChange,
   onTogglePlaying,
   onSkipUp,
   onSkipDown,
 }: {
-  item: PrototypeQueueItem
+  item: QueueItem
   elapsed: number
   isPlaying: boolean
+  onElapsedChange: (value: number) => void
   onTogglePlaying: () => void
   onSkipUp: () => void
   onSkipDown: () => void
@@ -337,14 +336,21 @@ function CurrentCard({
     ? Math.min(100, Math.max(0, (elapsed / duration) * 100))
     : 0
 
+  function seekFromPointer(event: React.PointerEvent<HTMLDivElement>) {
+    if (!hasDuration) return
+    const rect = event.currentTarget.getBoundingClientRect()
+    const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width))
+    onElapsedChange(Math.round(duration * ratio))
+  }
+
   return (
     <Card
       data-testid="current-row"
       className="gap-0 rounded-xl bg-card py-0 ring-1 ring-foreground/15"
     >
       <CardContent className="grid min-h-44 grid-cols-[44px_minmax(0,1fr)_104px] gap-0 p-0">
-        <div className="flex items-start justify-center pt-6">
-          <DragHandle title={item.title} />
+        <div className="flex items-start justify-center pt-6" aria-hidden="true">
+          <GripVertical className="size-4 text-muted-foreground/70" />
         </div>
 
         <div className="min-w-0 px-1 py-6 pr-6">
@@ -361,13 +367,28 @@ function CurrentCard({
             </span>
 
             <div
-              className="relative h-10"
+              className={cn(
+                "relative h-10",
+                hasDuration && "cursor-pointer"
+              )}
               role="slider"
               tabIndex={hasDuration ? 0 : -1}
               aria-label="Playback position"
               aria-valuemin={0}
               aria-valuemax={hasDuration ? duration : 0}
               aria-valuenow={hasDuration ? Math.min(duration, elapsed) : 0}
+              onPointerDown={seekFromPointer}
+              onKeyDown={(event) => {
+                if (!hasDuration) return
+                if (event.key === "ArrowLeft") {
+                  event.preventDefault()
+                  onElapsedChange(Math.max(0, elapsed - 5))
+                }
+                if (event.key === "ArrowRight") {
+                  event.preventDefault()
+                  onElapsedChange(Math.min(duration, elapsed + 5))
+                }
+              }}
             >
               <div className="absolute top-1/2 right-0 left-0 h-1 -translate-y-1/2 overflow-hidden rounded-full bg-muted">
                 {hasDuration ? (
@@ -377,19 +398,13 @@ function CurrentCard({
                   />
                 ) : null}
               </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="icon-lg"
-                className="absolute top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full border-ring bg-card shadow-sm hover:bg-accent"
-                style={{ left: hasDuration ? `${progress}%` : "50%" }}
-                aria-label={isPlaying ? "Pause" : "Play"}
-                title={isPlaying ? "Pause" : "Play"}
-                onClick={onTogglePlaying}
-              >
-                {isPlaying ? <Pause /> : <Play />}
-              </Button>
+              {hasDuration ? (
+                <span
+                  aria-hidden="true"
+                  className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-400 ring-4 ring-card"
+                  style={{ left: `${progress}%` }}
+                />
+              ) : null}
             </div>
 
             <span className="justify-self-end text-base tabular-nums text-muted-foreground">
@@ -411,6 +426,17 @@ function CurrentCard({
           </Button>
           <Button
             type="button"
+            variant="outline"
+            size="icon-lg"
+            className="rounded-full bg-card"
+            aria-label={isPlaying ? "Pause" : "Play"}
+            title={isPlaying ? "Pause" : "Play"}
+            onClick={onTogglePlaying}
+          >
+            {isPlaying ? <Pause /> : <Play />}
+          </Button>
+          <Button
+            type="button"
             variant="ghost"
             size="icon-lg"
             aria-label="Skip down"
@@ -425,12 +451,12 @@ function CurrentCard({
   )
 }
 
-function normalizeSetlist(fileName: string, value: unknown): PendingSetlist {
+function normalizeSetlist(value: unknown): PendingSetlist {
   if (!value || typeof value !== "object") {
     throw new Error("That file is not a setlist object.")
   }
 
-  const record = value as { name?: unknown; segments?: unknown }
+  const record = value as { segments?: unknown }
   if (!Array.isArray(record.segments) || record.segments.length === 0) {
     throw new Error("A setlist needs at least one segment.")
   }
@@ -458,7 +484,7 @@ function normalizeSetlist(fileName: string, value: unknown): PendingSetlist {
             : providerFromUrl(segment.url),
         addedBy: "@you",
         durationSeconds: Math.round(durationMinutes * 60),
-      } satisfies PrototypeQueueItem,
+      } satisfies QueueItem,
     ]
   })
 
@@ -467,10 +493,6 @@ function normalizeSetlist(fileName: string, value: unknown): PendingSetlist {
   }
 
   return {
-    name:
-      typeof record.name === "string" && record.name.trim()
-        ? record.name.trim()
-        : fileName,
     items,
     dropped: record.segments.length - items.length,
   }
@@ -478,12 +500,11 @@ function normalizeSetlist(fileName: string, value: unknown): PendingSetlist {
 
 export function MqsPrototype() {
   const [played, setPlayed] = React.useState(INITIAL_PLAYED)
-  const [current, setCurrent] = React.useState<PrototypeQueueItem | null>(
-    INITIAL_CURRENT
-  )
+  const [current, setCurrent] = React.useState<QueueItem | null>(INITIAL_CURRENT)
   const [upcoming, setUpcoming] = React.useState(INITIAL_UPCOMING)
   const [elapsed, setElapsed] = React.useState(1938)
   const [isPlaying, setIsPlaying] = React.useState(true)
+  const [expanded, setExpanded] = React.useState(false)
   const [url, setUrl] = React.useState("")
   const [error, setError] = React.useState<string | null>(null)
   const [pendingSetlist, setPendingSetlist] = React.useState<PendingSetlist | null>(
@@ -496,9 +517,7 @@ export function MqsPrototype() {
     if (!isPlaying || !current?.durationSeconds) return
 
     const timer = window.setInterval(() => {
-      setElapsed((value) =>
-        Math.min(current.durationSeconds ?? value, value + 1)
-      )
+      setElapsed((value) => Math.min(current.durationSeconds ?? value, value + 1))
     }, 1000)
 
     return () => window.clearInterval(timer)
@@ -530,8 +549,7 @@ export function MqsPrototype() {
     setPlayed((items) => items.filter((_, itemIndex) => itemIndex !== index))
     setUpcoming((items) => {
       const next = [...items]
-      const safeTarget = Math.max(0, Math.min(targetIndex, next.length))
-      next.splice(safeTarget, 0, item)
+      next.splice(Math.max(0, Math.min(targetIndex, next.length)), 0, item)
       return next
     })
   }
@@ -546,14 +564,8 @@ export function MqsPrototype() {
     const sourceIndex = Number(rawIndex)
     if (!Number.isInteger(sourceIndex)) return
 
-    if (kind === "upcoming") {
-      moveUpcoming(sourceIndex, targetIndex)
-      return
-    }
-
-    if (kind === "history") {
-      insertHistory(sourceIndex, targetIndex)
-    }
+    if (kind === "upcoming") moveUpcoming(sourceIndex, targetIndex)
+    if (kind === "history") insertHistory(sourceIndex, targetIndex)
   }
 
   function skipDown() {
@@ -571,9 +583,7 @@ export function MqsPrototype() {
     if (!previous) return
 
     setPlayed((items) => items.slice(0, -1))
-    if (current) {
-      setUpcoming((items) => [current, ...items])
-    }
+    if (current) setUpcoming((items) => [current, ...items])
     setCurrent(previous)
     setElapsed(0)
     setIsPlaying(true)
@@ -582,12 +592,13 @@ export function MqsPrototype() {
   function addUrl(mode: "tail" | "next") {
     const trimmed = url.trim()
     if (!trimmed) return
+
     if (!isSafeHttpUrl(trimmed)) {
       setError("Use a valid http(s) media URL.")
       return
     }
 
-    const item: PrototypeQueueItem = {
+    const item: QueueItem = {
       id: `url-${Date.now()}`,
       title: trimmed,
       url: trimmed,
@@ -595,15 +606,16 @@ export function MqsPrototype() {
       addedBy: "@you",
     }
 
-    setUpcoming((items) => (mode === "next" ? [item, ...items] : [...items, item]))
+    setUpcoming((items) =>
+      mode === "next" ? [item, ...items] : [...items, item]
+    )
     setUrl("")
     setError(null)
   }
 
   async function readSetlist(file: File) {
     try {
-      const value = JSON.parse(await file.text()) as unknown
-      setPendingSetlist(normalizeSetlist(file.name, value))
+      setPendingSetlist(normalizeSetlist(JSON.parse(await file.text()) as unknown))
       setError(null)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not read setlist.")
@@ -611,7 +623,7 @@ export function MqsPrototype() {
   }
 
   function replaceWithSetlist() {
-    if (!pendingSetlist || pendingSetlist.items.length === 0) return
+    if (!pendingSetlist?.items.length) return
     const [nextCurrent, ...nextUpcoming] = pendingSetlist.items
     setPlayed([])
     setCurrent(nextCurrent)
@@ -632,7 +644,12 @@ export function MqsPrototype() {
 
   return (
     <main className="dark min-h-screen bg-background px-4 py-6 text-foreground sm:px-8 sm:py-10">
-      <Card className="mx-auto w-full max-w-[1028px] gap-0 overflow-hidden rounded-3xl bg-card py-0 shadow-2xl ring-1 ring-foreground/15">
+      <Card
+        className={cn(
+          "mx-auto w-full gap-0 overflow-hidden rounded-3xl bg-card py-0 shadow-2xl ring-1 ring-foreground/15 transition-[max-width]",
+          expanded ? "max-w-[1320px]" : "max-w-[1028px]"
+        )}
+      >
         <CardHeader className="flex min-h-24 flex-row items-center justify-between border-b px-8 py-6">
           <CardTitle className="text-3xl font-semibold tracking-tight">
             Rooftop
@@ -641,14 +658,18 @@ export function MqsPrototype() {
             type="button"
             variant="ghost"
             size="icon-lg"
-            aria-label="Expand queue"
-            title="Expand queue"
+            aria-label={expanded ? "Restore queue" : "Expand queue"}
+            title={expanded ? "Restore queue" : "Expand queue"}
+            onClick={() => setExpanded((value) => !value)}
           >
-            <Maximize2 />
+            {expanded ? <Minimize2 /> : <Maximize2 />}
           </Button>
         </CardHeader>
 
-        <section className="border-b px-8 py-7" aria-labelledby="last-played-title">
+        <section
+          className="border-b px-8 py-7"
+          aria-labelledby="last-played-title"
+        >
           <h2
             id="last-played-title"
             className="mb-4 text-sm font-semibold tracking-[0.08em] text-muted-foreground uppercase"
@@ -667,7 +688,10 @@ export function MqsPrototype() {
           </Card>
         </section>
 
-        <section className="border-b px-8 py-7" aria-labelledby="now-playing-title">
+        <section
+          className="border-b px-8 py-7"
+          aria-labelledby="now-playing-title"
+        >
           <h2
             id="now-playing-title"
             className="mb-4 text-sm font-semibold tracking-[0.08em] uppercase"
@@ -679,6 +703,7 @@ export function MqsPrototype() {
               item={current}
               elapsed={elapsed}
               isPlaying={isPlaying}
+              onElapsedChange={setElapsed}
               onTogglePlaying={() => setIsPlaying((value) => !value)}
               onSkipUp={skipUp}
               onSkipDown={skipDown}
@@ -690,7 +715,10 @@ export function MqsPrototype() {
           )}
         </section>
 
-        <section className="border-b px-8 py-7" aria-labelledby="up-next-title">
+        <section
+          className="border-b px-8 py-7"
+          aria-labelledby="up-next-title"
+        >
           <h2
             id="up-next-title"
             className="mb-4 text-sm font-semibold tracking-[0.08em] uppercase"
@@ -773,7 +801,9 @@ export function MqsPrototype() {
               <DropdownMenuItem
                 disabled={upcoming.length < 2}
                 onSelect={() =>
-                  setUpcoming((items) => [...items].sort(() => Math.random() - 0.5))
+                  setUpcoming((items) =>
+                    [...items].sort(() => Math.random() - 0.5)
+                  )
                 }
               >
                 <Shuffle />
