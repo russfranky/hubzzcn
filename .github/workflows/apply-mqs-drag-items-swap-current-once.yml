@@ -1,0 +1,41 @@
+name: Apply MQS Drag Items Swap Current Once
+
+on:
+  push:
+    branches:
+      - feature/mqs-drag-items-swap-current
+    paths:
+      - .github/workflows/apply-mqs-drag-items-swap-current-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/mqs-drag-items-swap-current
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: python scripts/tmp-mqs-drag-items-swap-current.py
+      - run: pnpm exec prettier --write src/pages/MqsPrototype.tsx tests/mqs-prototype.spec.ts
+      - run: pnpm typecheck
+      - run: pnpm exec playwright install chromium
+      - run: pnpm exec playwright test tests/mqs-prototype.spec.ts --project=chromium
+      - name: Commit feature and remove temporary files
+        run: |
+          rm scripts/tmp-mqs-drag-items-swap-current.py .github/workflows/apply-mqs-drag-items-swap-current-once.yml
+          git config user.name "Russfranky"
+          git config user.email "90220424+russfranky@users.noreply.github.com"
+          git add src/pages/MqsPrototype.tsx tests/mqs-prototype.spec.ts scripts/tmp-mqs-drag-items-swap-current.py .github/workflows/apply-mqs-drag-items-swap-current-once.yml
+          git commit -m "fix: make Now Playing swap a drop target"
+          git push origin HEAD:feature/mqs-drag-items-swap-current
