@@ -800,8 +800,21 @@ export function MqsPrototype() {
     const sourceIndex = Number(rawIndex)
     if (!Number.isInteger(sourceIndex)) return
 
-    if (kind === "upcoming") moveUpcomingToInsertion(sourceIndex, targetIndex)
-    if (kind === "history") insertHistory(sourceIndex, targetIndex)
+    let handled = false
+    if (kind === "upcoming") {
+      moveUpcomingToInsertion(sourceIndex, targetIndex)
+      handled = true
+    }
+    if (kind === "history") {
+      insertHistory(sourceIndex, targetIndex)
+      handled = true
+    }
+
+    if (handled) {
+      setDragSource(null)
+      setRemoveTargetActive(false)
+      setQueueTailDropActive(false)
+    }
   }
 
   function skipDown() {
