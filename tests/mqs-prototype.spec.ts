@@ -36,39 +36,51 @@ test.describe("MQS final-layout prototype", () => {
     )
   })
 
-  test("uses the /cn Hubzz palette without local indigo overrides", async ({
-    page,
-  }) => {
-    const palette = await page
-      .getByTestId("mqs-container")
-      .evaluate((element) => {
-        const style = getComputedStyle(element)
-        const token = (name: string) => style.getPropertyValue(name).trim()
-        return {
-          background: token("--background"),
-          foreground: token("--foreground"),
-          card: token("--card"),
-          primary: token("--primary"),
-          muted: token("--muted"),
-          mutedForeground: token("--muted-foreground"),
-          border: token("--border"),
-          input: token("--input"),
-          ring: token("--ring"),
-        }
-      })
+  test("uses the literal Hubzz MQS palette", async ({ page }) => {
+    const container = page.getByTestId("mqs-container")
+    const modal = page.getByTestId("mqs-modal")
+    const mediaInput = page.getByRole("textbox", { name: "Media URL" })
+    const contributor = page.getByTestId("current-row").locator("a").first()
+    const lastPlayed = page.getByTestId("last-played-section")
+    const queueActions = page.getByRole("button", { name: "Queue actions" })
 
-    expect(palette).toEqual({
-      background: "oklch(22.1% .009 255.608)",
-      foreground: "oklch(99.4% .002 247.839)",
-      card: "oklch(26.9% .01 268.313)",
-      primary: "oklch(59.2% .221 283.18)",
-      muted: "oklch(30.2% .011 271.028)",
-      mutedForeground: "oklch(67.7% .015 238.128)",
-      border: "oklch(28.2% .011 278.154)",
-      input: "oklch(36.1% .012 252.962)",
-      ring: "oklch(59.2% .221 283.18)",
+    await expect(container).toHaveCSS("background-color", "rgb(13, 13, 15)")
+    await expect(modal).toHaveCSS("background-color", "rgb(20, 20, 22)")
+    await expect(mediaInput).toHaveCSS("background-color", "rgb(26, 29, 33)")
+    await expect(mediaInput).toHaveCSS(
+      "border-color",
+      "rgba(255, 255, 255, 0.06)"
+    )
+    await expect(contributor).toHaveCSS("color", "rgb(115, 95, 250)")
+    await expect(lastPlayed).toHaveCSS(
+      "border-bottom-color",
+      "rgba(255, 255, 255, 0.06)"
+    )
+
+    await queueActions.hover()
+    await expect(queueActions).toHaveCSS("background-color", "rgb(45, 48, 57)")
+
+    const status = await container.evaluate((element) => {
+      const resolve = (name: string) => {
+        const probe = document.createElement("span")
+        probe.style.color = `var(${name})`
+        element.appendChild(probe)
+        const value = getComputedStyle(probe).color
+        probe.remove()
+        return value
+      }
+      return {
+        success: resolve("--success"),
+        warning: resolve("--warning"),
+        destructive: resolve("--destructive"),
+      }
     })
 
+    expect(status).toEqual({
+      success: "rgb(76, 195, 138)",
+      warning: "rgb(229, 184, 73)",
+      destructive: "rgb(255, 90, 90)",
+    })
     await expect(page.locator('[class*="indigo"]')).toHaveCount(0)
   })
 
