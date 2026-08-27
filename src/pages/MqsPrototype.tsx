@@ -56,6 +56,14 @@ type PendingSetlist = {
   dropped: number
 }
 
+type SwapKind = "history" | "upcoming"
+
+type SwapTarget = {
+  kind: SwapKind
+  index: number
+  title: string
+}
+
 const HISTORY_LIMIT = 3
 const SETLIST_LIMIT = 500
 
@@ -307,17 +315,50 @@ function HistoryRow({
   item,
   index,
   onDragStart,
+  currentSwapActive,
+  isSwapTarget,
+  onSwapHover,
+  onSwapLeave,
+  onSwapDrop,
 }: {
   item: QueueItem
   index: number
   onDragStart: (event: React.DragEvent, source: string) => void
+  currentSwapActive: boolean
+  isSwapTarget: boolean
+  onSwapHover: (kind: SwapKind, index: number, title: string) => void
+  onSwapLeave: (kind: SwapKind, index: number) => void
+  onSwapDrop: (kind: SwapKind, index: number) => void
 }) {
   return (
     <div
       data-testid="history-row"
+      data-swap-target={isSwapTarget ? "true" : undefined}
       draggable
       onDragStart={(event) => onDragStart(event, `history:${index}`)}
-      className="grid min-h-16 grid-cols-[32px_minmax(0,1fr)_minmax(180px,280px)_96px] items-center gap-3 border-b border-border/60 px-3 py-2 opacity-55 last:border-b-0"
+      onDragOver={(event) => {
+        if (!currentSwapActive) return
+        event.preventDefault()
+        event.dataTransfer.dropEffect = "move"
+        onSwapHover("history", index, item.title)
+      }}
+      onDragLeave={(event) => {
+        if (!currentSwapActive) return
+        const nextTarget = event.relatedTarget as Node | null
+        if (nextTarget && event.currentTarget.contains(nextTarget)) return
+        onSwapLeave("history", index)
+      }}
+      onDrop={(event) => {
+        if (!currentSwapActive) return
+        event.preventDefault()
+        event.stopPropagation()
+        onSwapDrop("history", index)
+      }}
+      className={cn(
+        "relative grid min-h-16 grid-cols-[32px_minmax(0,1fr)_minmax(180px,280px)_96px] items-center gap-3 border-b border-border/60 px-3 py-2 opacity-55 transition-colors last:border-b-0",
+        isSwapTarget &&
+          "bg-indigo-400/10 !opacity-100 ring-1 ring-indigo-400/40 ring-inset"
+      )}
     >
       <DragHandle title={item.title} />
       <div className="min-w-0 truncate text-base font-medium">{item.title}</div>
@@ -335,12 +376,22 @@ function UpcomingRow({
   onMove,
   onDragStart,
   onDropSource,
+  currentSwapActive,
+  isSwapTarget,
+  onSwapHover,
+  onSwapLeave,
+  onSwapDrop,
 }: {
   item: QueueItem
   index: number
   onMove: (from: number, to: number) => void
   onDragStart: (event: React.DragEvent, source: string) => void
   onDropSource: (source: string, targetIndex: number) => void
+  currentSwapActive: boolean
+  isSwapTarget: boolean
+  onSwapHover: (kind: SwapKind, index: number, title: string) => void
+  onSwapLeave: (kind: SwapKind, index: number) => void
+  onSwapDrop: (kind: SwapKind, index: number) => void
 }) {
   const [dragging, setDragging] = React.useState(false)
   const [dropInsertionIndex, setDropInsertionIndex] = React.useState<
@@ -351,6 +402,7 @@ function UpcomingRow({
     <div
       data-testid="upcoming-row"
       data-queue-id={item.id}
+      data-swap-target={isSwapTarget ? "true" : undefined}
       draggable
       onDragStart={(event) => {
         setDragging(true)
@@ -361,6 +413,14 @@ function UpcomingRow({
         setDropInsertionIndex(null)
       }}
       onDragOver={(event) => {
+        if (currentSwapActive) {
+          event.preventDefault()
+          event.dataTransfer.dropEffect = "move"
+          setDropInsertionIndex(null)
+          onSwapHover("upcoming", index, item.title)
+          return
+        }
+
         event.preventDefault()
         event.dataTransfer.dropEffect = "move"
         const rect = event.currentTarget.getBoundingClientRect()
@@ -371,20 +431,29 @@ function UpcomingRow({
         const nextTarget = event.relatedTarget as Node | null
         if (nextTarget && event.currentTarget.contains(nextTarget)) return
         setDropInsertionIndex(null)
+        if (currentSwapActive) onSwapLeave("upcoming", index)
       }}
       onDrop={(event) => {
         event.preventDefault()
         event.stopPropagation()
+
+        if (currentSwapActive) {
+          setDropInsertionIndex(null)
+          onSwapDrop("upcoming", index)
+          return
+        }
+
         const targetIndex = dropInsertionIndex ?? index
         setDropInsertionIndex(null)
         onDropSource(event.dataTransfer.getData("text/plain"), targetIndex)
       }}
       className={cn(
         "relative grid min-h-16 grid-cols-[32px_minmax(0,1fr)_minmax(180px,280px)_96px] items-center gap-3 border-b border-border/60 px-3 py-2 transition-colors last:border-b-0 hover:bg-accent/25",
-        dragging && "opacity-45"
+        dragging && "opacity-45",
+        isSwapTarget && "bg-indigo-400/10 ring-1 ring-indigo-400/40 ring-inset"
       )}
     >
-      {dropInsertionIndex !== null ? (
+      {dropInsertionIndex !== null && !currentSwapActive ? (
         <span
           data-testid="queue-drop-indicator"
           data-position={dropInsertionIndex === index ? "before" : "after"}
@@ -429,6 +498,9 @@ function CurrentCard({
   onSkipUp,
   onSkipDown,
   canSkipUp,
+  onDragStart,
+  onDragEnd,
+  swapTargetTitle,
 }: {
   item: QueueItem
   elapsed: number
@@ -438,6 +510,9 @@ function CurrentCard({
   onSkipUp: () => void
   onSkipDown: () => void
   canSkipUp: boolean
+  onDragStart: (event: React.DragEvent<HTMLDivElement>) => void
+  onDragEnd: () => void
+  swapTargetTitle: string | null
 }) {
   const duration = item.durationSeconds ?? 0
   const hasDuration = duration > 0
@@ -458,8 +533,33 @@ function CurrentCard({
   return (
     <Card
       data-testid="current-row"
-      className="gap-0 rounded-xl bg-card py-0 ring-1 ring-foreground/15"
+      draggable
+      onDragStart={(event) => {
+        const target = event.target as HTMLElement
+        if (target.closest('button, [role="slider"], a')) {
+          event.preventDefault()
+          return
+        }
+        onDragStart(event)
+      }}
+      onDragEnd={onDragEnd}
+      className="relative gap-0 overflow-hidden rounded-xl bg-card py-0 ring-1 ring-foreground/15"
     >
+      {swapTargetTitle ? (
+        <div
+          data-testid="current-swap-overlay"
+          aria-live="polite"
+          className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center rounded-xl bg-card/75 px-8 text-center backdrop-blur-[1px]"
+        >
+          <span className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+            Swap with
+          </span>
+          <span className="mt-1 max-w-full truncate text-sm font-semibold text-foreground">
+            {swapTargetTitle}
+          </span>
+        </div>
+      ) : null}
+
       <CardContent className="grid min-h-44 grid-cols-[44px_minmax(0,1fr)_104px] gap-0 p-0">
         <div
           className="flex items-start justify-center pt-6"
@@ -637,6 +737,7 @@ export function MqsPrototype() {
   const [removeTargetActive, setRemoveTargetActive] = React.useState(false)
   const [inputFocused, setInputFocused] = React.useState(false)
   const [queueTailDropActive, setQueueTailDropActive] = React.useState(false)
+  const [swapTarget, setSwapTarget] = React.useState<SwapTarget | null>(null)
   const [pendingRevealId, setPendingRevealId] = React.useState<string | null>(
     null
   )
@@ -756,6 +857,48 @@ export function MqsPrototype() {
     setDragSource(source)
     setRemoveTargetActive(false)
     setQueueTailDropActive(false)
+    setSwapTarget(null)
+  }
+
+  function handleSwapHover(kind: SwapKind, index: number, title: string) {
+    setSwapTarget({ kind, index, title })
+  }
+
+  function handleSwapLeave(kind: SwapKind, index: number) {
+    setSwapTarget((target) =>
+      target?.kind === kind && target.index === index ? null : target
+    )
+  }
+
+  function swapCurrentWith(kind: SwapKind, index: number) {
+    if (!current) return
+
+    const target = kind === "history" ? played[index] : upcoming[index]
+    if (!target) return
+
+    if (kind === "history") {
+      setPlayed((items) => {
+        if (!items[index]) return items
+        const next = [...items]
+        next[index] = current
+        return next
+      })
+    } else {
+      setUpcoming((items) => {
+        if (!items[index]) return items
+        const next = [...items]
+        next[index] = current
+        return next
+      })
+    }
+
+    setCurrent(target)
+    setElapsed(0)
+    setIsPlaying(true)
+    setDragSource(null)
+    setRemoveTargetActive(false)
+    setQueueTailDropActive(false)
+    setSwapTarget(null)
   }
 
   function removeDraggedSource(source: string) {
@@ -797,6 +940,7 @@ export function MqsPrototype() {
     setRemoveTargetActive(false)
     setQueueTailDropActive(false)
     setDragSource(null)
+    setSwapTarget(null)
   }
 
   function handleDropSource(source: string, targetIndex: number) {
@@ -818,6 +962,7 @@ export function MqsPrototype() {
       setDragSource(null)
       setRemoveTargetActive(false)
       setQueueTailDropActive(false)
+      setSwapTarget(null)
     }
   }
 
@@ -909,6 +1054,7 @@ export function MqsPrototype() {
         setDragSource(null)
         setRemoveTargetActive(false)
         setQueueTailDropActive(false)
+        setSwapTarget(null)
       }}
     >
       <Card
@@ -953,6 +1099,13 @@ export function MqsPrototype() {
                   item={item}
                   index={index}
                   onDragStart={handleDragStart}
+                  currentSwapActive={dragSource === "current"}
+                  isSwapTarget={
+                    swapTarget?.kind === "history" && swapTarget.index === index
+                  }
+                  onSwapHover={handleSwapHover}
+                  onSwapLeave={handleSwapLeave}
+                  onSwapDrop={swapCurrentWith}
                 />
               ))}
             </Card>
@@ -979,6 +1132,14 @@ export function MqsPrototype() {
               onSkipUp={skipUp}
               onSkipDown={skipDown}
               canSkipUp={played.length > 0}
+              onDragStart={(event) => handleDragStart(event, "current")}
+              onDragEnd={() => {
+                setDragSource(null)
+                setRemoveTargetActive(false)
+                setQueueTailDropActive(false)
+                setSwapTarget(null)
+              }}
+              swapTargetTitle={swapTarget?.title ?? null}
             />
           ) : (
             <Card className="rounded-xl bg-card py-8 text-center text-muted-foreground ring-1 ring-foreground/10">
@@ -1004,20 +1165,25 @@ export function MqsPrototype() {
             onDragOver={(event) => {
               if (!dragSource) return
 
-              event.preventDefault()
-              event.dataTransfer.dropEffect = "move"
-
+              const row = (event.target as HTMLElement).closest(
+                '[data-testid="upcoming-row"]'
+              )
               const rect = event.currentTarget.getBoundingClientRect()
               const edge = Math.min(48, rect.height * 0.2)
+
               if (event.clientY <= rect.top + edge) {
                 event.currentTarget.scrollTop -= 24
               } else if (event.clientY >= rect.bottom - edge) {
                 event.currentTarget.scrollTop += 24
               }
 
-              const row = (event.target as HTMLElement).closest(
-                '[data-testid="upcoming-row"]'
-              )
+              if (dragSource === "current") {
+                setQueueTailDropActive(false)
+                return
+              }
+
+              event.preventDefault()
+              event.dataTransfer.dropEffect = "move"
               setQueueTailDropActive(!row)
             }}
             onDragLeave={(event) => {
@@ -1026,6 +1192,8 @@ export function MqsPrototype() {
               setQueueTailDropActive(false)
             }}
             onDrop={(event) => {
+              if (dragSource === "current") return
+
               if (
                 (event.target as HTMLElement).closest(
                   '[data-testid="upcoming-row"]'
@@ -1060,6 +1228,14 @@ export function MqsPrototype() {
                   onMove={moveUpcoming}
                   onDragStart={handleDragStart}
                   onDropSource={handleDropSource}
+                  currentSwapActive={dragSource === "current"}
+                  isSwapTarget={
+                    swapTarget?.kind === "upcoming" &&
+                    swapTarget.index === index
+                  }
+                  onSwapHover={handleSwapHover}
+                  onSwapLeave={handleSwapLeave}
+                  onSwapDrop={swapCurrentWith}
                 />
               ))
             ) : (
@@ -1080,7 +1256,7 @@ export function MqsPrototype() {
           }}
         >
           <div className="relative h-9 min-w-0 flex-1">
-            {dragSource ? (
+            {dragSource && dragSource !== "current" ? (
               <div
                 ref={removeTargetRef}
                 data-testid="remove-drop-target"
