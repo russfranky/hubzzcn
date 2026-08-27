@@ -204,6 +204,59 @@ test.describe("MQS final-layout prototype", () => {
     )
   })
 
+  test("swaps Now Playing only with whole media rows", async ({ page }) => {
+    const current = page.getByTestId("current-row")
+    const mediaInput = page.getByRole("textbox", { name: "Media URL" })
+    const upcoming = page.getByTestId("upcoming-row").first()
+
+    await expect(current).toContainText("Tomorrowland 2026 Mainstage W1")
+
+    const upcomingTransfer = await page.evaluateHandle(() => new DataTransfer())
+    await current.dispatchEvent("dragstart", { dataTransfer: upcomingTransfer })
+
+    await expect(mediaInput).toBeVisible()
+    await expect(page.getByTestId("remove-drop-target")).toHaveCount(0)
+    await expect(page.getByTestId("current-swap-overlay")).toHaveCount(0)
+
+    await upcoming.dispatchEvent("dragover", { dataTransfer: upcomingTransfer })
+
+    await expect(upcoming).toHaveAttribute("data-swap-target", "true")
+    await expect(page.getByTestId("current-swap-overlay")).toContainText(
+      "Swap with"
+    )
+    await expect(page.getByTestId("current-swap-overlay")).toContainText(
+      "Afterlife Tulum 2025"
+    )
+    await expect(page.getByTestId("queue-drop-indicator")).toHaveCount(0)
+    await expect(page.getByTestId("queue-tail-drop-indicator")).toHaveCount(0)
+
+    await upcoming.dispatchEvent("drop", { dataTransfer: upcomingTransfer })
+
+    await expect(current).toContainText("Afterlife Tulum 2025")
+    await expect(page.getByTestId("upcoming-row").first()).toContainText(
+      "Tomorrowland 2026 Mainstage W1"
+    )
+    await expect(page.getByTestId("current-swap-overlay")).toHaveCount(0)
+
+    const history = page.getByTestId("history-row").first()
+    const historyTransfer = await page.evaluateHandle(() => new DataTransfer())
+    await current.dispatchEvent("dragstart", { dataTransfer: historyTransfer })
+    await history.dispatchEvent("dragover", { dataTransfer: historyTransfer })
+
+    await expect(history).toHaveAttribute("data-swap-target", "true")
+    await expect(page.getByTestId("current-swap-overlay")).toContainText(
+      "Sunset Drive 2025"
+    )
+
+    await history.dispatchEvent("drop", { dataTransfer: historyTransfer })
+
+    await expect(current).toContainText("Sunset Drive 2025")
+    await expect(page.getByTestId("history-row").first()).toContainText(
+      "Afterlife Tulum 2025"
+    )
+    await expect(mediaInput).toBeVisible()
+  })
+
   test("previews the exact queue insertion point while dragging", async ({
     page,
   }) => {
