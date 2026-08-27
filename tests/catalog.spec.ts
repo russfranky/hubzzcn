@@ -105,6 +105,39 @@ test.describe("Component catalog", () => {
     await expect(root).toHaveClass(/\blight\b/)
   })
 
+  test("keeps working when local storage is unavailable", async ({ page }) => {
+    const pageErrors: string[] = []
+    page.on("pageerror", (error) => pageErrors.push(error.message))
+
+    await page.addInitScript(() => {
+      const failStorage = () => {
+        throw new DOMException("Storage is unavailable", "QuotaExceededError")
+      }
+
+      Object.defineProperty(Storage.prototype, "getItem", {
+        configurable: true,
+        value: failStorage,
+      })
+      Object.defineProperty(Storage.prototype, "setItem", {
+        configurable: true,
+        value: failStorage,
+      })
+    })
+
+    await page.reload()
+    await page.waitForLoadState("networkidle")
+
+    const root = page.locator("html")
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Hubzz UI" })
+    ).toBeVisible()
+    await expect(root).toHaveClass(/\bdark\b/)
+
+    await page.getByRole("button", { name: "Toggle color theme" }).click()
+    await expect(root).toHaveClass(/\blight\b/)
+    expect(pageErrors).toEqual([])
+  })
+
   test("source links point at the built revision", async ({ page }) => {
     const sourceRef = process.env.GITHUB_SHA ?? "main"
     const source = page
