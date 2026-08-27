@@ -170,6 +170,38 @@
  * shadcn primitives at modal scale instead of desktop-panel scale. The :has()
  * scope is specific to the MQS prototype and does not affect the catalog.
  */
+/*
+ * MQS production palette parity.
+ *
+ * /cn/ is the source of truth for the live Hubzz palette. Scope the earlier
+ * Hubzz semantic dark tokens to this prototype so the catalog-wide neutral
+ * shadcn foundation remains untouched.
+ */
+main:has(#now-playing-title) {
+  --background: oklch(0.221 0.009 255.608);
+  --foreground: oklch(0.994 0.002 247.839);
+  --card: oklch(0.269 0.01 268.313);
+  --card-foreground: oklch(0.994 0.002 247.839);
+  --popover: oklch(0.269 0.01 268.313);
+  --popover-foreground: oklch(0.994 0.002 247.839);
+  --primary: oklch(0.592 0.221 283.18);
+  --primary-foreground: oklch(0.994 0.002 247.839);
+  --secondary: oklch(0.302 0.011 271.028);
+  --secondary-foreground: oklch(0.779 0.021 243.496);
+  --muted: oklch(0.302 0.011 271.028);
+  --muted-foreground: oklch(0.677 0.015 238.128);
+  --accent: oklch(0.302 0.011 271.028);
+  --accent-foreground: oklch(0.722 0.148 288.272);
+  --destructive: oklch(0.576 0.209 29.482);
+  --destructive-foreground: oklch(0.994 0.002 247.839);
+  --border: oklch(0.282 0.011 278.154);
+  --input: oklch(0.361 0.012 252.962);
+  --input-background: oklch(0.361 0.012 252.962);
+  --ring: oklch(0.592 0.221 283.18);
+  --control-hover: oklch(0.361 0.012 252.962);
+  --pill-hover: oklch(0.31 0.017 270.822);
+}
+
 main:has(#now-playing-title) {
   display: flex;
   height: 100dvh;
