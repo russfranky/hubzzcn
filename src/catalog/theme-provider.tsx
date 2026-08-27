@@ -19,7 +19,6 @@ type ThemeProviderState = {
 
 const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)"
 const THEME_VALUES: Theme[] = ["dark", "light", "system"]
-let themeStorageUnavailable = false
 
 const ThemeProviderContext = React.createContext<
   ThemeProviderState | undefined
@@ -34,14 +33,9 @@ function isTheme(value: string | null): value is Theme {
 }
 
 function getThemeStorage() {
-  if (themeStorageUnavailable) {
-    return null
-  }
-
   try {
     return window.localStorage
   } catch {
-    themeStorageUnavailable = true
     return null
   }
 }
@@ -55,7 +49,6 @@ function readStoredTheme(storageKey: string) {
   try {
     return storage.getItem(storageKey)
   } catch {
-    themeStorageUnavailable = true
     return null
   }
 }
@@ -69,7 +62,7 @@ function writeStoredTheme(storageKey: string, theme: Theme) {
   try {
     storage.setItem(storageKey, theme)
   } catch {
-    themeStorageUnavailable = true
+    // Keep the in-memory theme when browser storage cannot accept a write.
   }
 }
 
