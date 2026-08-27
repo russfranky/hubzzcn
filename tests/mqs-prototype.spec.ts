@@ -202,15 +202,21 @@ test.describe("MQS final-layout prototype", () => {
     await page.waitForTimeout(650)
     await page.mouse.up()
 
-    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible()
-    await expect(page.getByTestId("current-loop-badge")).toBeVisible()
+    await expect(page.getByRole("button", { name: "Pause" })).toHaveAttribute(
+      "data-looping",
+      "true"
+    )
+    await expect(page.getByTestId("current-loop-badge")).toHaveCount(0)
     await expect(page.getByTestId("loop-feedback")).toHaveText("Loop on")
 
     await page.mouse.down()
     await page.waitForTimeout(650)
     await page.mouse.up()
 
-    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Pause" })).toHaveAttribute(
+      "data-looping",
+      "false"
+    )
     await expect(page.getByTestId("current-loop-badge")).toHaveCount(0)
     await expect(page.getByTestId("loop-feedback")).toHaveText("Loop off")
   })
@@ -234,7 +240,10 @@ test.describe("MQS final-layout prototype", () => {
     await page.mouse.up()
 
     await expect(page.getByTestId("current-loop-badge")).toHaveCount(0)
-    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Pause" })).toHaveAttribute(
+      "data-looping",
+      "false"
+    )
   })
 
   test("cancels a stale loop hold when the current item changes", async ({
@@ -260,7 +269,10 @@ test.describe("MQS final-layout prototype", () => {
     await page.mouse.up()
 
     await expect(page.getByTestId("current-loop-badge")).toHaveCount(0)
-    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Pause" })).toHaveAttribute(
+      "data-looping",
+      "false"
+    )
   })
 
   test("loops finite current media when playback reaches the end", async ({
@@ -270,7 +282,11 @@ test.describe("MQS final-layout prototype", () => {
     await page.getByRole("button", { name: "Queue actions" }).click()
     await page.getByRole("menuitem", { name: "Loop current item" }).click()
 
-    await expect(page.getByTestId("current-loop-badge")).toBeVisible()
+    await expect(page.getByRole("button", { name: "Play" })).toHaveAttribute(
+      "data-looping",
+      "true"
+    )
+    await expect(page.getByTestId("current-loop-badge")).toHaveCount(0)
 
     const slider = page.getByRole("slider", { name: "Playback position" })
     await slider.focus()
