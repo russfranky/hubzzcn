@@ -84,6 +84,33 @@ test.describe("MQS final-layout prototype", () => {
     await expect(page.locator('[class*="indigo"]')).toHaveCount(0)
   })
 
+  test("keeps drag grips visually passive on hover", async ({ page }) => {
+    const grip = page.getByTestId("upcoming-row").first().getByRole("button")
+    const before = await grip.evaluate((element) => {
+      const style = getComputedStyle(element)
+      return {
+        backgroundColor: style.backgroundColor,
+        color: style.color,
+      }
+    })
+
+    await grip.hover()
+
+    const after = await grip.evaluate((element) => {
+      const style = getComputedStyle(element)
+      return {
+        backgroundColor: style.backgroundColor,
+        color: style.color,
+      }
+    })
+
+    expect(after).toEqual(before)
+    await expect(page.getByTestId("upcoming-row").first()).toHaveAttribute(
+      "draggable",
+      "true"
+    )
+  })
+
   test("keeps play and pause between the vertical skip controls", async ({
     page,
   }) => {
