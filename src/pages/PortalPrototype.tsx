@@ -171,11 +171,11 @@ function SpaceCard({
   onBrowse?: () => void
 }) {
   return (
-    <div
-      className="relative aspect-[7/2] w-full cursor-pointer overflow-hidden rounded-[12px] bg-card"
-      style={{ background: space.gradient }}
-    >
-      <div className="absolute inset-0 bg-[rgba(0,0,0,0.36)] shadow-[0px_0px_0px_1px_rgba(0,0,0,0.2),0px_0px_2px_0px_rgba(0,0,0,0.08),0px_2px_6px_0px_rgba(0,0,0,0.1)]" />
+    <div className="relative aspect-[7/2] w-full cursor-pointer overflow-hidden rounded-[12px] bg-card">
+      <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
+        <div className="absolute inset-0" style={{ background: space.gradient }} />
+        <div className="absolute inset-0 bg-[rgba(0,0,0,0.36)] shadow-[0px_0px_0px_1px_rgba(0,0,0,0.2),0px_0px_2px_0px_rgba(0,0,0,0.08),0px_2px_6px_0px_rgba(0,0,0,0.1)]" />
+      </div>
       <span
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 rounded-[inherit]"
@@ -300,7 +300,7 @@ export function PortalPrototype() {
   return (
     <main className="min-h-svh bg-background text-foreground">
       <section
-        className="space-cards dark fixed inset-y-0 left-0 z-[200010] flex w-[min(92vw,28rem)] max-w-none flex-col overflow-hidden rounded-none bg-sidebar bg-clip-padding text-sm text-sidebar-foreground shadow-lg duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] sm:w-[350px] sm:max-w-[calc(100vw-1rem)] sm:shadow-[16px_0_32px_-16px_rgba(0,0,0,0.5)]"
+        className="space-cards dark fixed inset-y-0 left-0 z-[200010] flex w-[min(92vw,28rem)] max-w-none flex-col overflow-hidden rounded-none bg-sidebar bg-clip-padding text-sm text-sidebar-foreground shadow-lg duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] sm:w-[350px] sm:max-w-[calc(100vw-1rem)] sm:shadow-[16px_0_32px_-16px_rgba(0,0,0,0.5)] data-open:animate-in data-open:slide-in-from-left-[100%] data-closed:animate-out data-closed:slide-out-to-left-[100%]"
         aria-label="Hubzz Tower portal prototype"
       >
         <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-0 overflow-auto">
