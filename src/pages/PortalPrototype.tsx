@@ -14,9 +14,7 @@ type PortalSpace = {
 }
 
 type SpaceScope =
-  | { kind: "portal" }
-  | { kind: "all" }
-  | { kind: "hallway"; floor: number }
+  { kind: "portal" } | { kind: "all" } | { kind: "hallway"; floor: number }
 
 const PROFILE_PANEL_BUTTON_BASE =
   "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
@@ -137,7 +135,9 @@ function spacesForScope(scope: SpaceScope): PortalSpace[] {
   if (scope.kind === "all") return allSpaces
   if (scope.kind === "portal") return portalSpaces
 
-  const hallway = portalSpaces.find((space) => space.id === `hallway-${scope.floor}`)
+  const hallway = portalSpaces.find(
+    (space) => space.id === `hallway-${scope.floor}`
+  )
   return hallway ? [hallway, ...roomsForFloor(scope.floor)] : []
 }
 
@@ -357,11 +357,16 @@ function SpacesToolbar({
 
   return (
     <div className="flex flex-col gap-6 px-4 pt-10 pb-6">
-      <h1 className="text-[24px] leading-[32px] font-bold text-[#fcfdfe]">Spaces</h1>
+      <h1 className="text-[24px] leading-[32px] font-bold text-[#fcfdfe]">
+        Spaces
+      </h1>
 
       <div className="flex items-center gap-2">
         <label className="flex min-w-0 flex-1 items-center gap-3 rounded-[60px] bg-card px-4 py-3">
-          <Search className="size-5 shrink-0 text-[#fcfdfe]" aria-hidden="true" />
+          <Search
+            className="size-5 shrink-0 text-[#fcfdfe]"
+            aria-hidden="true"
+          />
           <input
             type="search"
             value={query}
@@ -438,7 +443,9 @@ export function PortalPrototype() {
   const scopedSpaces = spacesForScope(scope)
   const normalizedQuery = query.trim().toLowerCase()
   const visibleSpaces = normalizedQuery
-    ? scopedSpaces.filter((space) => space.title.toLowerCase().includes(normalizedQuery))
+    ? scopedSpaces.filter((space) =>
+        space.title.toLowerCase().includes(normalizedQuery)
+      )
     : scopedSpaces
 
   const openHallway = (floor: number) => {
@@ -462,8 +469,12 @@ export function PortalPrototype() {
 
           <div className="flex flex-col gap-4 px-4 pb-4">
             <div className="flex w-full items-start gap-[10px] text-[14px] leading-[20px] font-medium">
-              <p className="min-w-0 flex-1 text-[#adbac5]">{scopeLabel(scope)}</p>
-              <span className="shrink-0 text-[#adbac5]">{visibleSpaces.length}</span>
+              <p className="min-w-0 flex-1 text-[#adbac5]">
+                {scopeLabel(scope)}
+              </p>
+              <span className="shrink-0 text-[#adbac5]">
+                {visibleSpaces.length}
+              </span>
             </div>
 
             {visibleSpaces.length > 0 ? (
@@ -476,8 +487,12 @@ export function PortalPrototype() {
                   <SpaceCard
                     key={space.id}
                     space={space}
-                    browseLabel={canBrowse ? `+${space.attachedCount} Spaces` : undefined}
-                    onBrowse={canBrowse && floor ? () => openHallway(floor) : undefined}
+                    browseLabel={
+                      canBrowse ? `+${space.attachedCount} Spaces` : undefined
+                    }
+                    onBrowse={
+                      canBrowse && floor ? () => openHallway(floor) : undefined
+                    }
                   />
                 )
               })

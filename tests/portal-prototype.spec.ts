@@ -7,7 +7,9 @@ test("Portal opens Spaces as a filter and keeps discovery available", async ({
 
   await expect(page.getByRole("heading", { name: "Spaces" })).toBeVisible()
   await expect(page).toHaveURL(/portal=hubzz_tower_portal/)
-  await expect(page.getByText("Hubzz Tower Portal", { exact: true })).toBeVisible()
+  await expect(
+    page.getByText("Hubzz Tower Portal", { exact: true })
+  ).toBeVisible()
 
   await page.getByLabel("Search spaces").fill("Hallway 12")
   await expect(page.getByRole("heading", { name: "Hallway 12" })).toBeVisible()
