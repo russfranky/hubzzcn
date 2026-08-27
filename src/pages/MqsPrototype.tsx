@@ -428,6 +428,7 @@ function CurrentCard({
   onTogglePlaying,
   onSkipUp,
   onSkipDown,
+  canSkipUp,
 }: {
   item: QueueItem
   elapsed: number
@@ -436,6 +437,7 @@ function CurrentCard({
   onTogglePlaying: () => void
   onSkipUp: () => void
   onSkipDown: () => void
+  canSkipUp: boolean
 }) {
   const duration = item.durationSeconds ?? 0
   const hasDuration = duration > 0
@@ -530,6 +532,7 @@ function CurrentCard({
             size="icon-lg"
             aria-label="Skip up"
             title="Skip up"
+            disabled={!canSkipUp}
             onClick={onSkipUp}
           >
             <ChevronUp />
@@ -958,6 +961,7 @@ export function MqsPrototype() {
               onTogglePlaying={() => setIsPlaying((value) => !value)}
               onSkipUp={skipUp}
               onSkipDown={skipDown}
+              canSkipUp={played.length > 0}
             />
           ) : (
             <Card className="rounded-xl bg-card py-8 text-center text-muted-foreground ring-1 ring-foreground/10">
