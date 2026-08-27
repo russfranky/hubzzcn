@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Check, ListFilter, Search } from "lucide-react"
+import { ArrowLeft, Check, ListFilter, Search } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import "./portal-prealpha.css"
@@ -22,20 +22,22 @@ const PROFILE_PANEL_BUTTON_GHOST =
   "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50"
 const PROFILE_PANEL_BUTTON_XS =
   "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3"
+const PROFILE_PANEL_BUTTON_ICON = "size-8"
 
 function ProfilePanelButton({
   className,
+  size = "xs",
   ...props
-}: React.ComponentProps<"button">) {
+}: React.ComponentProps<"button"> & { size?: "xs" | "icon" }) {
   return (
     <button
       data-slot="button"
       data-variant="ghost"
-      data-size="xs"
+      data-size={size}
       className={cn(
         PROFILE_PANEL_BUTTON_BASE,
         PROFILE_PANEL_BUTTON_GHOST,
-        PROFILE_PANEL_BUTTON_XS,
+        size === "icon" ? PROFILE_PANEL_BUTTON_ICON : PROFILE_PANEL_BUTTON_XS,
         className
       )}
       {...props}
@@ -139,12 +141,6 @@ function spacesForScope(scope: SpaceScope): PortalSpace[] {
     (space) => space.id === `hallway-${scope.floor}`
   )
   return hallway ? [hallway, ...roomsForFloor(scope.floor)] : []
-}
-
-function scopeLabel(scope: SpaceScope) {
-  if (scope.kind === "all") return "All spaces"
-  if (scope.kind === "portal") return "Hubzz Tower Portal"
-  return `Hallway ${scope.floor}`
 }
 
 function CurrentAttendance() {
@@ -316,6 +312,34 @@ function SpaceCard({
   )
 }
 
+function ScreenHeader({
+  count,
+  onBack,
+}: {
+  count: number
+  onBack: () => void
+}) {
+  return (
+    <div className="flex items-center gap-3 px-4 pt-5 pb-4 max-[400px]:pr-12">
+      <ProfilePanelButton
+        type="button"
+        size="icon"
+        aria-label="Back"
+        onClick={onBack}
+        className="shrink-0 rounded-full bg-white/5 text-foreground hover:bg-white/10 hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+      </ProfilePanelButton>
+      <span className="text-lg font-bold text-foreground">Spaces</span>
+      <span className="ml-auto">
+        <span className="text-[15px] font-semibold text-muted-foreground">
+          {count}
+        </span>
+      </span>
+    </div>
+  )
+}
+
 function FilterOption({
   active,
   children,
@@ -356,11 +380,7 @@ function SpacesToolbar({
   }
 
   return (
-    <div className="flex flex-col gap-6 px-4 pt-10 pb-6">
-      <h1 className="text-[24px] leading-[32px] font-bold text-[#fcfdfe]">
-        Spaces
-      </h1>
-
+    <div className="px-4 pt-1 pb-4">
       <div className="flex items-center gap-2">
         <label className="flex min-w-0 flex-1 items-center gap-3 rounded-[60px] bg-card px-4 py-3">
           <Search
@@ -453,6 +473,16 @@ export function PortalPrototype() {
     setScope({ kind: "hallway", floor })
   }
 
+  const handleBack = () => {
+    if (scope.kind !== "portal") {
+      setQuery("")
+      setScope({ kind: "portal" })
+      return
+    }
+
+    window.history.back()
+  }
+
   return (
     <main className="hubzz-profile-panel-theme min-h-svh bg-background text-foreground">
       <section
@@ -460,6 +490,7 @@ export function PortalPrototype() {
         aria-label="Spaces filtered by Hubzz Tower Portal"
       >
         <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-0 overflow-auto">
+          <ScreenHeader count={visibleSpaces.length} onBack={handleBack} />
           <SpacesToolbar
             query={query}
             scope={scope}
@@ -467,16 +498,7 @@ export function PortalPrototype() {
             onScopeChange={setScope}
           />
 
-          <div className="flex flex-col gap-4 px-4 pb-4">
-            <div className="flex w-full items-start gap-[10px] text-[14px] leading-[20px] font-medium">
-              <p className="min-w-0 flex-1 text-[#adbac5]">
-                {scopeLabel(scope)}
-              </p>
-              <span className="shrink-0 text-[#adbac5]">
-                {visibleSpaces.length}
-              </span>
-            </div>
-
+          <div className="flex flex-col gap-4 px-4 pt-1 pb-4">
             {visibleSpaces.length > 0 ? (
               visibleSpaces.map((space) => {
                 const floorMatch = /^hallway-(\d+)$/.exec(space.id)
