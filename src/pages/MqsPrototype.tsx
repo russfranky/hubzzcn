@@ -453,20 +453,49 @@ function CurrentCard({
   onSwapDragLeave: (event: React.DragEvent<HTMLDivElement>) => void
   onSwapDrop: (event: React.DragEvent<HTMLDivElement>) => void
 }) {
+  const [scrubSeconds, setScrubSeconds] = React.useState<number | null>(null)
   const duration = item.durationSeconds ?? 0
   const hasDuration = duration > 0
+  const displayedElapsed = scrubSeconds ?? elapsed
   const progress = hasDuration
-    ? Math.min(100, Math.max(0, (elapsed / duration) * 100))
+    ? Math.min(100, Math.max(0, (displayedElapsed / duration) * 100))
     : 0
 
-  function seekFromPointer(event: React.PointerEvent<HTMLDivElement>) {
-    if (!hasDuration) return
-    const rect = event.currentTarget.getBoundingClientRect()
-    const ratio = Math.min(
-      1,
-      Math.max(0, (event.clientX - rect.left) / rect.width)
-    )
-    onElapsedChange(Math.round(duration * ratio))
+  function secondsFromPointer(clientX: number, element: HTMLElement) {
+    if (!hasDuration) return null
+    const rect = element.getBoundingClientRect()
+    if (rect.width <= 0) return null
+    const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width))
+    return Math.round(duration * ratio)
+  }
+
+  function beginScrub(event: React.PointerEvent<HTMLDivElement>) {
+    const next = secondsFromPointer(event.clientX, event.currentTarget)
+    if (next === null) return
+    event.preventDefault()
+    event.currentTarget.setPointerCapture(event.pointerId)
+    setScrubSeconds(next)
+  }
+
+  function moveScrub(event: React.PointerEvent<HTMLDivElement>) {
+    if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
+    const next = secondsFromPointer(event.clientX, event.currentTarget)
+    if (next !== null) setScrubSeconds(next)
+  }
+
+  function endScrub(event: React.PointerEvent<HTMLDivElement>) {
+    if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
+    const next = secondsFromPointer(event.clientX, event.currentTarget)
+    event.currentTarget.releasePointerCapture(event.pointerId)
+    setScrubSeconds(null)
+    if (next !== null) onElapsedChange(next)
+  }
+
+  function cancelScrub(event: React.PointerEvent<HTMLDivElement>) {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+    setScrubSeconds(null)
   }
 
   return (
@@ -496,15 +525,8 @@ function CurrentCard({
         </div>
       ) : null}
 
-      <CardContent className="grid min-h-44 grid-cols-[44px_minmax(0,1fr)_104px] gap-0 p-0">
-        <div
-          className="flex items-start justify-center pt-6"
-          aria-hidden="true"
-        >
-          <GripVertical className="size-4 text-muted-foreground/70" />
-        </div>
-
-        <div className="min-w-0 px-1 py-6 pr-6">
+      <CardContent className="grid min-h-44 grid-cols-[minmax(0,1fr)_104px] gap-0 p-0">
+        <div className="min-w-0 px-5 py-6 pr-6">
           <div className="truncate text-xl font-semibold tracking-tight">
             {item.title}
           </div>
@@ -513,54 +535,69 @@ function CurrentCard({
           </div>
 
           <div data-testid="playback-progress" className="mt-8">
-            <div
-              className={cn("relative h-10", hasDuration && "cursor-pointer")}
-              role="slider"
-              tabIndex={hasDuration ? 0 : -1}
-              aria-label="Playback position"
-              aria-valuemin={0}
-              aria-valuemax={hasDuration ? duration : 0}
-              aria-valuenow={hasDuration ? Math.min(duration, elapsed) : 0}
-              onPointerDown={seekFromPointer}
-              onKeyDown={(event) => {
-                if (!hasDuration) return
-                if (event.key === "ArrowLeft") {
-                  event.preventDefault()
-                  onElapsedChange(Math.max(0, elapsed - 5))
-                }
-                if (event.key === "ArrowRight") {
-                  event.preventDefault()
-                  onElapsedChange(Math.min(duration, elapsed + 5))
-                }
-              }}
-            >
-              <div className="absolute top-1/2 right-0 left-0 h-1 -translate-y-1/2 overflow-hidden rounded-full bg-muted">
-                {hasDuration ? (
+            {hasDuration ? (
+              <div
+                data-testid="playback-rail"
+                className="relative h-10 cursor-ew-resize touch-none"
+                role="slider"
+                tabIndex={0}
+                aria-label="Playback position"
+                aria-valuemin={0}
+                aria-valuemax={duration}
+                aria-valuenow={Math.min(duration, displayedElapsed)}
+                aria-valuetext={formatTime(displayedElapsed)}
+                onPointerDown={beginScrub}
+                onPointerMove={moveScrub}
+                onPointerUp={endScrub}
+                onPointerCancel={cancelScrub}
+                onKeyDown={(event) => {
+                  if (event.key === "ArrowLeft") {
+                    event.preventDefault()
+                    onElapsedChange(Math.max(0, elapsed - 5))
+                  } else if (event.key === "ArrowRight") {
+                    event.preventDefault()
+                    onElapsedChange(Math.min(duration, elapsed + 5))
+                  } else if (event.key === "Home") {
+                    event.preventDefault()
+                    onElapsedChange(0)
+                  } else if (event.key === "End") {
+                    event.preventDefault()
+                    onElapsedChange(duration)
+                  }
+                }}
+              >
+                <div className="absolute top-1/2 right-0 left-0 h-1 -translate-y-1/2 overflow-hidden rounded-full bg-muted">
                   <div
                     className="h-full rounded-full bg-indigo-400"
                     style={{ width: `${progress}%` }}
                   />
-                ) : null}
-              </div>
-              {hasDuration ? (
+                </div>
                 <span
                   aria-hidden="true"
                   className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-400 ring-4 ring-card"
                   style={{ left: `${progress}%` }}
                 />
-              ) : null}
-            </div>
+              </div>
+            ) : (
+              <div
+                data-testid="playback-rail"
+                className="relative h-10"
+                aria-hidden="true"
+              >
+                <div className="absolute top-1/2 right-0 left-0 h-1 -translate-y-1/2 rounded-full bg-muted" />
+              </div>
+            )}
 
             <div
               data-testid="playback-times"
               className="mt-1 flex items-center justify-between text-base text-muted-foreground tabular-nums"
             >
               <span data-testid="elapsed-time">
-                {hasDuration ? formatTime(elapsed) : "LIVE"}
+                {hasDuration ? formatTime(displayedElapsed) : "LIVE"}
               </span>
-              <span data-testid="total-time">
-                {hasDuration ? formatTime(duration) : "LIVE"}
-              </span>
+              {hasDuration ? (
+                <span data-testid="total-time">{formatTime(duration)}</span>
+              ) : null}
             </div>
           </div>
         </div>

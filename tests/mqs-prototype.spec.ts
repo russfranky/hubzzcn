@@ -19,6 +19,9 @@ test.describe("MQS final-layout prototype", () => {
 
     await expect(page.getByTestId("history-row")).toHaveCount(3)
     await expect(page.getByTestId("current-row")).toHaveCount(1)
+    await expect(
+      page.getByTestId("current-row").locator("svg.lucide-grip-vertical")
+    ).toHaveCount(0)
     await expect(page.getByTestId("upcoming-row")).toHaveCount(5)
     await expect(page.locator("img")).toHaveCount(0)
 
@@ -68,6 +71,63 @@ test.describe("MQS final-layout prototype", () => {
     expect(
       Math.abs(totalBox.x + totalBox.width - (sliderBox.x + sliderBox.width))
     ).toBeLessThan(2)
+  })
+
+  test("scrubs finite media with pre-alpha seek semantics and keeps LIVE non-seekable", async ({
+    page,
+  }) => {
+    await page.getByRole("button", { name: "Pause" }).click()
+
+    const slider = page.getByRole("slider", { name: "Playback position" })
+    const sliderBox = await slider.boundingBox()
+    if (!sliderBox) throw new Error("Playback slider has no bounding box")
+
+    const initial = Number(await slider.getAttribute("aria-valuenow"))
+    await page.mouse.move(
+      sliderBox.x + sliderBox.width * 0.25,
+      sliderBox.y + sliderBox.height / 2
+    )
+    await page.mouse.down()
+    await page.mouse.move(
+      sliderBox.x + sliderBox.width * 0.75,
+      sliderBox.y + sliderBox.height / 2
+    )
+
+    const preview = Number(await slider.getAttribute("aria-valuenow"))
+    expect(preview).toBeGreaterThan(initial)
+    expect(Math.abs(preview - Math.round(4542 * 0.75))).toBeLessThan(8)
+    await page.mouse.up()
+
+    const committed = Number(await slider.getAttribute("aria-valuenow"))
+    expect(Math.abs(committed - preview)).toBeLessThanOrEqual(1)
+
+    await slider.focus()
+    await slider.press("Home")
+    await expect(slider).toHaveAttribute("aria-valuenow", "0")
+    await slider.press("ArrowRight")
+    await expect(slider).toHaveAttribute("aria-valuenow", "5")
+    await slider.press("End")
+    await expect(slider).toHaveAttribute("aria-valuenow", "4542")
+    await slider.press("ArrowLeft")
+    await expect(slider).toHaveAttribute("aria-valuenow", "4537")
+
+    const input = page.getByRole("textbox", { name: "Media URL" })
+    await input.fill("https://twitch.tv/example-live")
+    await input.press("Enter")
+
+    const current = page.getByTestId("current-row")
+    const liveRow = page.getByTestId("upcoming-row").last()
+    const dataTransfer = await page.evaluateHandle(() => new DataTransfer())
+    await liveRow.dispatchEvent("dragstart", { dataTransfer })
+    await current.dispatchEvent("dragover", { dataTransfer })
+    await current.dispatchEvent("drop", { dataTransfer })
+
+    await expect(current).toContainText("https://twitch.tv/example-live")
+    await expect(
+      page.getByRole("slider", { name: "Playback position" })
+    ).toHaveCount(0)
+    await expect(page.getByTestId("elapsed-time")).toHaveText("LIVE")
+    await expect(page.getByTestId("total-time")).toHaveCount(0)
   })
 
   test("disables skip up when there is no Last Played history", async ({
