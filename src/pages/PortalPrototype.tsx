@@ -173,7 +173,10 @@ function SpaceCard({
   return (
     <div className="relative aspect-[7/2] w-full cursor-pointer overflow-hidden rounded-[12px] bg-card">
       <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
-        <div className="absolute inset-0" style={{ background: space.gradient }} />
+        <div
+          className="absolute inset-0"
+          style={{ background: space.gradient }}
+        />
         <div className="absolute inset-0 bg-[rgba(0,0,0,0.36)] shadow-[0px_0px_0px_1px_rgba(0,0,0,0.2),0px_0px_2px_0px_rgba(0,0,0,0.08),0px_2px_6px_0px_rgba(0,0,0,0.1)]" />
       </div>
       <span
@@ -248,7 +251,9 @@ function ScreenHeader({
       ) : null}
       <span className="text-lg font-bold text-foreground">{title}</span>
       <span className="ml-auto">
-        <span className="text-[15px] font-semibold text-muted-foreground">{count}</span>
+        <span className="text-[15px] font-semibold text-muted-foreground">
+          {count}
+        </span>
       </span>
     </div>
   )
