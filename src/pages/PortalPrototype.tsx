@@ -194,9 +194,9 @@ function SpaceCard({
               size="icon-xs"
               onClick={onBrowse}
               aria-label={`View ${space.title} and ${space.attachedCount ?? 0} attached spaces`}
-              className="shrink-0 rounded-full bg-white/5 text-[#fcfdfe] hover:bg-white/10 hover:text-[#fcfdfe]"
+              className="shrink-0 rounded-full text-muted-foreground hover:bg-white/[0.04] hover:text-[#fcfdfe]"
             >
-              <ChevronRight className="size-4" />
+              <ChevronRight className="size-4 shrink-0" />
             </Button>
           ) : space.current ? (
             <TimeInSpace />
@@ -293,7 +293,7 @@ export function PortalPrototype() {
   return (
     <main className="min-h-svh bg-background text-foreground">
       <section
-        className="space-cards dark flex h-svh w-[min(92vw,28rem)] max-w-none flex-col overflow-hidden rounded-none bg-sidebar bg-clip-padding text-sm text-sidebar-foreground duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] sm:w-[350px] sm:max-w-[calc(100vw-1rem)] sm:shadow-[16px_0_32px_-16px_rgba(0,0,0,0.5)]"
+        className="space-cards dark flex h-svh w-[min(92vw,28rem)] max-w-none flex-col overflow-hidden rounded-none bg-sidebar bg-clip-padding text-sm text-sidebar-foreground shadow-lg duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] sm:w-[350px] sm:max-w-[calc(100vw-1rem)] sm:shadow-[16px_0_32px_-16px_rgba(0,0,0,0.5)]"
         aria-label="Hubzz Tower portal prototype"
       >
         <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-0 overflow-auto">
