@@ -1,0 +1,143 @@
+name: Apply MQS long-press loop patch
+
+on:
+  push:
+    branches:
+      - feat/mqs-long-press-loop
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: true
+
+      - name: Apply feature patch
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(text: str, old: str, new: str, label: str) -> str:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{label}: expected one match, found {count}")
+              return text.replace(old, new, 1)
+
+          source_path = Path("src/pages/MqsPrototype.tsx")
+          source = source_path.read_text()
+
+          source = replace_once(
+              source,
+              '  Play,\n  Send,\n',
+              '  Play,\n  Repeat2,\n  Send,\n',
+              'Repeat2 import',
+          )
+          source = replace_once(
+              source,
+              '  durationSeconds?: number\n}\n',
+              '  durationSeconds?: number\n  looping?: boolean\n}\n',
+              'QueueItem loop state',
+          )
+          source = replace_once(
+              source,
+              'const HISTORY_LIMIT = 3\nconst SETLIST_LIMIT = 500\n',
+              'const HISTORY_LIMIT = 3\nconst SETLIST_LIMIT = 500\nconst LOOP_HOLD_MS = 600\n',
+              'long press constant',
+          )
+          source = replace_once(
+              source,
+              '  onTogglePlaying,\n  onSkipUp,\n',
+              '  onTogglePlaying,\n  onToggleLooping,\n  onSkipUp,\n',
+              'CurrentCard loop callback argument',
+          )
+          source = replace_once(
+              source,
+              '  onTogglePlaying: () => void\n  onSkipUp: () => void\n',
+              '  onTogglePlaying: () => void\n  onToggleLooping: () => void\n  onSkipUp: () => void\n',
+              'CurrentCard loop callback type',
+          )
+          source = replace_once(
+              source,
+              '  const [scrubSeconds, setScrubSeconds] = React.useState<number | null>(null)\n  const duration = item.durationSeconds ?? 0\n',
+              '''  const [scrubSeconds, setScrubSeconds] = React.useState<number | null>(null)\n  const [loopHoldProgress, setLoopHoldProgress] = React.useState(0)\n  const [loopNotice, setLoopNotice] = React.useState<string | null>(null)\n  const loopHoldTimerRef = React.useRef<number | null>(null)\n  const loopHoldFrameRef = React.useRef<number | null>(null)\n  const loopHoldStartRef = React.useRef(0)\n  const suppressPlaybackClickRef = React.useRef(false)\n  const loopNoticeTimerRef = React.useRef<number | null>(null)\n  const duration = item.durationSeconds ?? 0\n''',
+              'CurrentCard hold state',
+          )
+          source = replace_once(
+              source,
+              '''  const progress = hasDuration\n    ? Math.min(100, Math.max(0, (displayedElapsed / duration) * 100))\n    : 0\n\n  function secondsFromPointer(clientX: number, element: HTMLElement) {\n''',
+              '''  const progress = hasDuration\n    ? Math.min(100, Math.max(0, (displayedElapsed / duration) * 100))\n    : 0\n\n  function clearLoopHold() {\n    if (loopHoldTimerRef.current !== null) {\n      window.clearTimeout(loopHoldTimerRef.current)\n      loopHoldTimerRef.current = null\n    }\n    if (loopHoldFrameRef.current !== null) {\n      window.cancelAnimationFrame(loopHoldFrameRef.current)\n      loopHoldFrameRef.current = null\n    }\n    setLoopHoldProgress(0)\n  }\n\n  function updateLoopHoldProgress() {\n    const next = Math.min(\n      1,\n      (window.performance.now() - loopHoldStartRef.current) / LOOP_HOLD_MS\n    )\n    setLoopHoldProgress(next)\n    if (next < 1 && loopHoldTimerRef.current !== null) {\n      loopHoldFrameRef.current = window.requestAnimationFrame(\n        updateLoopHoldProgress\n      )\n    }\n  }\n\n  function beginLoopHold(event: React.PointerEvent<HTMLButtonElement>) {\n    if (event.pointerType === "mouse" && event.button !== 0) return\n    if (loopHoldTimerRef.current !== null) return\n\n    suppressPlaybackClickRef.current = false\n    loopHoldStartRef.current = window.performance.now()\n    setLoopHoldProgress(0.01)\n\n    if (!event.currentTarget.hasPointerCapture(event.pointerId)) {\n      event.currentTarget.setPointerCapture(event.pointerId)\n    }\n\n    loopHoldFrameRef.current = window.requestAnimationFrame(\n      updateLoopHoldProgress\n    )\n    loopHoldTimerRef.current = window.setTimeout(() => {\n      loopHoldTimerRef.current = null\n      if (loopHoldFrameRef.current !== null) {\n        window.cancelAnimationFrame(loopHoldFrameRef.current)\n        loopHoldFrameRef.current = null\n      }\n      setLoopHoldProgress(1)\n      suppressPlaybackClickRef.current = true\n      onToggleLooping()\n      navigator.vibrate?.(18)\n      setLoopNotice(item.looping ? "Loop off" : "Loop on")\n      if (loopNoticeTimerRef.current !== null) {\n        window.clearTimeout(loopNoticeTimerRef.current)\n      }\n      loopNoticeTimerRef.current = window.setTimeout(() => {\n        setLoopNotice(null)\n        loopNoticeTimerRef.current = null\n      }, 1000)\n    }, LOOP_HOLD_MS)\n  }\n\n  function endLoopHold(event: React.PointerEvent<HTMLButtonElement>) {\n    if (event.currentTarget.hasPointerCapture(event.pointerId)) {\n      event.currentTarget.releasePointerCapture(event.pointerId)\n    }\n    clearLoopHold()\n  }\n\n  React.useEffect(() => {\n    return () => {\n      if (loopHoldTimerRef.current !== null) {\n        window.clearTimeout(loopHoldTimerRef.current)\n      }\n      if (loopHoldFrameRef.current !== null) {\n        window.cancelAnimationFrame(loopHoldFrameRef.current)\n      }\n      if (loopNoticeTimerRef.current !== null) {\n        window.clearTimeout(loopNoticeTimerRef.current)\n      }\n    }\n  }, [])\n\n  function secondsFromPointer(clientX: number, element: HTMLElement) {\n''',
+              'CurrentCard hold behavior',
+          )
+          source = replace_once(
+              source,
+              '        <div className="flex flex-col items-center justify-center gap-3 border-l border-border/70 px-4">\n',
+              '        <div className="relative flex flex-col items-center justify-center gap-3 border-l border-border/70 px-4">\n',
+              'playback control position context',
+          )
+          source = replace_once(
+              source,
+              '''          <Button\n            type="button"\n            variant="outline"\n            size="icon-lg"\n            className="rounded-full bg-card"\n            aria-label={isPlaying ? "Pause" : "Play"}\n            title={isPlaying ? "Pause" : "Play"}\n            onClick={onTogglePlaying}\n          >\n            {isPlaying ? <Pause /> : <Play />}\n          </Button>\n''',
+              '''          <Button\n            type="button"\n            variant="outline"\n            size="icon-lg"\n            className="relative rounded-full bg-card touch-none"\n            data-looping={item.looping ? "true" : "false"}\n            aria-label={isPlaying ? "Pause" : "Play"}\n            title={`${isPlaying ? "Pause" : "Play"} · Hold to toggle loop`}\n            onPointerDown={beginLoopHold}\n            onPointerUp={endLoopHold}\n            onPointerCancel={endLoopHold}\n            onContextMenu={(event) => event.preventDefault()}\n            onClick={() => {\n              if (suppressPlaybackClickRef.current) {\n                suppressPlaybackClickRef.current = false\n                return\n              }\n              onTogglePlaying()\n            }}\n          >\n            {loopHoldProgress > 0 ? (\n              <svg\n                data-testid="loop-hold-progress"\n                aria-hidden="true"\n                viewBox="0 0 48 48"\n                className="pointer-events-none absolute -inset-1 size-[calc(100%+0.5rem)] -rotate-90 overflow-visible text-primary"\n              >\n                <circle\n                  cx="24"\n                  cy="24"\n                  r="20"\n                  pathLength="100"\n                  fill="none"\n                  stroke="currentColor"\n                  strokeWidth="2"\n                  strokeLinecap="round"\n                  strokeDasharray="100"\n                  strokeDashoffset={100 - loopHoldProgress * 100}\n                />\n              </svg>\n            ) : null}\n            {isPlaying ? <Pause /> : <Play />}\n            {item.looping ? (\n              <span\n                data-testid="current-loop-badge"\n                aria-hidden="true"\n                className="pointer-events-none absolute -right-1 -bottom-1 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground ring-2 ring-card"\n              >\n                <Repeat2 className="size-3" />\n              </span>\n            ) : null}\n          </Button>\n          {loopNotice ? (\n            <span\n              data-testid="loop-feedback"\n              role="status"\n              className="pointer-events-none absolute top-1/2 right-full mr-3 -translate-y-1/2 whitespace-nowrap rounded-md border border-border bg-popover px-2 py-1 text-xs font-medium text-popover-foreground shadow-md"\n            >\n              {loopNotice}\n            </span>\n          ) : null}\n''',
+              'playback long press control',
+          )
+          source = replace_once(
+              source,
+              '''      setElapsed((value) =>\n        Math.min(current.durationSeconds ?? value, value + 1)\n      )\n''',
+              '''      setElapsed((value) => {\n        const duration = current.durationSeconds ?? value\n        const next = value + 1\n        if (current.looping && next >= duration) return 0\n        return Math.min(duration, next)\n      })\n''',
+              'loop playback behavior',
+          )
+          source = replace_once(
+              source,
+              '  function addUrl(mode: "tail" | "next") {\n',
+              '''  function toggleCurrentLoop() {\n    setCurrent((item) =>\n      item ? { ...item, looping: !item.looping } : item\n    )\n  }\n\n  function addUrl(mode: "tail" | "next") {\n''',
+              'loop state toggle',
+          )
+          source = replace_once(
+              source,
+              '              onTogglePlaying={() => setIsPlaying((value) => !value)}\n              onSkipUp={skipUp}\n',
+              '              onTogglePlaying={() => setIsPlaying((value) => !value)}\n              onToggleLooping={toggleCurrentLoop}\n              onSkipUp={skipUp}\n',
+              'CurrentCard loop callback',
+          )
+          source = replace_once(
+              source,
+              '''                <DropdownMenuItem\n                  onSelect={() => setLocalMuted((value) => !value)}\n                >\n''',
+              '''                <DropdownMenuItem\n                  disabled={!current}\n                  onSelect={toggleCurrentLoop}\n                >\n                  <Repeat2 />\n                  {current?.looping\n                    ? "Turn off current loop"\n                    : "Loop current item"}\n                </DropdownMenuItem>\n                <DropdownMenuItem\n                  onSelect={() => setLocalMuted((value) => !value)}\n                >\n''',
+              'Loop menu action',
+          )
+
+          source_path.write_text(source)
+
+          test_path = Path("tests/mqs-prototype.spec.ts")
+          tests = test_path.read_text()
+          anchor = '''  test("places elapsed and total time under the playback bar", async ({\n    page,\n  }) => {\n'''
+          new_tests = '''  test("toggles the current item loop with a long press without pausing", async ({\n    page,\n  }) => {\n    const pause = page.getByRole("button", { name: "Pause" })\n    const box = await pause.boundingBox()\n    if (!box) throw new Error("Pause control has no bounding box")\n\n    const center = {\n      x: box.x + box.width / 2,\n      y: box.y + box.height / 2,\n    }\n\n    await page.mouse.move(center.x, center.y)\n    await page.mouse.down()\n    await expect(page.getByTestId("loop-hold-progress")).toBeVisible()\n    await page.waitForTimeout(650)\n    await page.mouse.up()\n\n    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible()\n    await expect(page.getByTestId("current-loop-badge")).toBeVisible()\n    await expect(page.getByTestId("loop-feedback")).toHaveText("Loop on")\n\n    await page.mouse.down()\n    await page.waitForTimeout(650)\n    await page.mouse.up()\n\n    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible()\n    await expect(page.getByTestId("current-loop-badge")).toHaveCount(0)\n    await expect(page.getByTestId("loop-feedback")).toHaveText("Loop off")\n  })\n\n  test("loops finite current media when playback reaches the end", async ({\n    page,\n  }) => {\n    await page.getByRole("button", { name: "Pause" }).click()\n    await page.getByRole("button", { name: "Queue actions" }).click()\n    await page.getByRole("menuitem", { name: "Loop current item" }).click()\n\n    await expect(page.getByTestId("current-loop-badge")).toBeVisible()\n\n    const slider = page.getByRole("slider", { name: "Playback position" })\n    await slider.focus()\n    await slider.press("End")\n    await expect(slider).toHaveAttribute("aria-valuenow", "4542")\n\n    await page.getByRole("button", { name: "Play" }).click()\n    await expect\n      .poll(async () => Number(await slider.getAttribute("aria-valuenow")), {\n        timeout: 2500,\n      })\n      .toBeLessThan(5)\n  })\n\n'''
+          tests = replace_once(
+              tests,
+              anchor,
+              new_tests + anchor,
+              'loop interaction tests',
+          )
+          test_path.write_text(tests)
+          PY
+
+      - name: Commit patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          if git diff --quiet; then
+            echo "Patch already applied."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/MqsPrototype.tsx tests/mqs-prototype.spec.ts
+          git commit -m "feat: add long-press loop shortcut to MQS"
+          git push origin HEAD:feat/mqs-long-press-loop
