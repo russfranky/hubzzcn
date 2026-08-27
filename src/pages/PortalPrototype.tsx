@@ -2,7 +2,6 @@ import * as React from "react"
 import { ArrowLeft, ChevronRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 
 type PortalSpace = {
   id: string
@@ -165,7 +164,7 @@ function PortalOverview({ onOpenHallway }: { onOpenHallway: (floor: number) => v
   )
 }
 
-function HallwayView({ floor, onBack }: { floor: number; onBack: () => void }) {
+function HallwayView({ floor }: { floor: number }) {
   const hallway = portalSpaces.find((space) => space.id === `hallway-${floor}`)
   const rooms = roomsForFloor(floor)
 
@@ -214,11 +213,11 @@ export function PortalPrototype() {
             </div>
           </header>
 
-          <div className={cn("pb-8", floor === null ? "" : "") }>
+          <div className="pb-8">
             {floor === null ? (
               <PortalOverview onOpenHallway={setFloor} />
             ) : (
-              <HallwayView floor={floor} onBack={() => setFloor(null)} />
+              <HallwayView floor={floor} />
             )}
           </div>
         </section>
