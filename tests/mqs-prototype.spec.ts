@@ -215,6 +215,54 @@ test.describe("MQS final-layout prototype", () => {
     await expect(page.getByTestId("loop-feedback")).toHaveText("Loop off")
   })
 
+  test("cancels the loop hold when the pointer moves", async ({ page }) => {
+    const pause = page.getByRole("button", { name: "Pause" })
+    const box = await pause.boundingBox()
+    if (!box) throw new Error("Pause control has no bounding box")
+
+    const center = {
+      x: box.x + box.width / 2,
+      y: box.y + box.height / 2,
+    }
+
+    await page.mouse.move(center.x, center.y)
+    await page.mouse.down()
+    await expect(page.getByTestId("loop-hold-progress")).toBeVisible()
+    await page.mouse.move(center.x + 18, center.y)
+    await expect(page.getByTestId("loop-hold-progress")).toHaveCount(0)
+    await page.waitForTimeout(650)
+    await page.mouse.up()
+
+    await expect(page.getByTestId("current-loop-badge")).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible()
+  })
+
+  test("cancels a stale loop hold when the current item changes", async ({
+    page,
+  }) => {
+    const pause = page.getByRole("button", { name: "Pause" })
+    const box = await pause.boundingBox()
+    if (!box) throw new Error("Pause control has no bounding box")
+
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+    await page.mouse.down()
+    await expect(page.getByTestId("loop-hold-progress")).toBeVisible()
+
+    await page
+      .getByRole("button", { name: "Skip down" })
+      .evaluate((element) => (element as HTMLButtonElement).click())
+    await expect(page.getByTestId("current-row")).toContainText(
+      "Afterlife Tulum 2025"
+    )
+    await expect(page.getByTestId("loop-hold-progress")).toHaveCount(0)
+
+    await page.waitForTimeout(650)
+    await page.mouse.up()
+
+    await expect(page.getByTestId("current-loop-badge")).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible()
+  })
+
   test("loops finite current media when playback reaches the end", async ({
     page,
   }) => {
