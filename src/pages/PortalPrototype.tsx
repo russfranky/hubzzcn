@@ -73,7 +73,9 @@ function CurrentAttendance() {
               <span
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-[-3px] rounded-[35px] border-3 border-solid border-[#24262b]"
-                style={{ opacity: index === CURRENT_AVATAR_COLORS.length - 1 ? 0 : 1 }}
+                style={{
+                  opacity: index === CURRENT_AVATAR_COLORS.length - 1 ? 0 : 1,
+                }}
               />
             </span>
           ))}
