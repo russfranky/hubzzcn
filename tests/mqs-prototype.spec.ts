@@ -760,7 +760,7 @@ test.describe("MQS final-layout prototype", () => {
       mimeType: "application/json",
       buffer: Buffer.from(JSON.stringify(file)),
     })
-    await page.getByRole("button", { name: "Replace queue" }).click()
+    await page.getByRole("button", { name: "Load setlist" }).click()
 
     const metrics = await page.evaluate(() => {
       const container = document.querySelector(
@@ -828,26 +828,53 @@ test.describe("MQS final-layout prototype", () => {
     await expect(added).toBeInViewport()
   })
 
-  test("previews a setlist and replaces the queue in paused state", async ({
+  test("uses coarse server-authoritative setlist preview and auto-starts replace imports", async ({
     page,
   }) => {
+    await page.getByRole("button", { name: "Queue actions" }).click()
+    await page.getByRole("menuitem", { name: "Load setlist" }).click()
+
+    await expect(
+      page.getByRole("heading", { name: "Load prepared setlist" })
+    ).toBeVisible()
+    await expect(page.getByTestId("setlist-dropzone")).toContainText(
+      "Drop a .json setlist here"
+    )
+    await expect(
+      page.getByRole("button", { name: "Browse file" })
+    ).toBeVisible()
+    await expect(page.getByText("Append to queue")).toHaveCount(0)
+
+    await page.getByLabel("Setlist JSON file").setInputFiles({
+      name: "broken.json",
+      mimeType: "application/json",
+      buffer: Buffer.from("{not-json"),
+    })
+    await expect(page.getByRole("alert")).toContainText(
+      "That file is not valid setlist JSON."
+    )
+
     const file = {
       version: "1.0",
       name: "Friday",
+      exportedAt: "2026-08-27T00:00:00.000Z",
       segments: [
         {
           title: "Opening",
+          type: "youtube",
           url: "https://youtu.be/example",
           platform: "YouTube",
           duration: 5,
         },
         {
-          title: "Bad segment",
+          title: "Unsafe but still visible to coarse inspection",
+          type: "website",
           url: "javascript:alert(1)",
           duration: 2,
         },
         {
           title: "Second",
+          type: "twitch",
           url: "https://twitch.tv/example",
           platform: "Twitch",
           duration: 10,
@@ -861,18 +888,59 @@ test.describe("MQS final-layout prototype", () => {
       buffer: Buffer.from(JSON.stringify(file)),
     })
 
+    const preview = page.getByTestId("setlist-preview")
+    await expect(preview).toContainText("friday.json")
+    await expect(preview).toContainText("3 segments · 17m")
     await expect(
-      page.getByRole("heading", { name: "Load setlist" })
-    ).toBeVisible()
+      page.getByText(/valid segments|invalid or capped/)
+    ).toHaveCount(0)
     await expect(
-      page.getByText("2 valid segments · 1 invalid or capped")
+      page.getByText(/replace the live queue and start from its first segment/i)
     ).toBeVisible()
-    await page.getByRole("button", { name: "Replace queue" }).click()
+    await expect(page.getByText("Append to queue")).toHaveCount(0)
+
+    await page.getByRole("button", { name: "Load setlist" }).click()
 
     await expect(page.getByTestId("current-row")).toContainText("Opening")
     await expect(page.getByTestId("upcoming-row")).toHaveCount(1)
-    await expect(page.getByRole("button", { name: "Play" })).toBeVisible()
+    await expect(page.getByTestId("upcoming-row").first()).toContainText(
+      "Second"
+    )
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible()
     await expect(page.getByTestId("history-row")).toHaveCount(0)
+  })
+
+  test("shows the server 500-segment cap without pretending to validate rows", async ({
+    page,
+  }) => {
+    const file = {
+      version: "1.0",
+      name: "Oversized",
+      exportedAt: "2026-08-27T00:00:00.000Z",
+      segments: Array.from({ length: 501 }, (_, index) => ({
+        title: `Segment ${index + 1}`,
+        type: "website",
+        url: `https://example.com/${index + 1}`,
+        duration: 1,
+      })),
+    }
+
+    await page.getByRole("button", { name: "Queue actions" }).click()
+    await page.getByRole("menuitem", { name: "Load setlist" }).click()
+    await page.getByLabel("Setlist JSON file").setInputFiles({
+      name: "oversized.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify(file)),
+    })
+
+    const preview = page.getByTestId("setlist-preview")
+    await expect(preview).toContainText("501 segments · 8h 21m")
+    await expect(preview).toContainText(
+      "The live import is capped at the first 500 segments."
+    )
+    await expect(
+      page.getByText(/valid segments|invalid or capped/)
+    ).toHaveCount(0)
   })
 
   test("keeps destructive stop behind confirmation", async ({ page }) => {
