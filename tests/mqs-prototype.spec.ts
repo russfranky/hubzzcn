@@ -217,6 +217,31 @@ test.describe("MQS final-layout prototype", () => {
     )
   })
 
+  test("supports the same Loop hold from the keyboard", async ({ page }) => {
+    const pause = page.getByRole("button", { name: "Pause" })
+    await pause.focus()
+    await expect(pause).toHaveAttribute(
+      "aria-description",
+      "Hold Space or Enter to toggle Loop. Loop is off."
+    )
+
+    await page.keyboard.down("Space")
+    await page.waitForTimeout(650)
+    await page.keyboard.up("Space")
+
+    await expect(page.getByRole("button", { name: "Pause" })).toHaveAttribute(
+      "data-looping",
+      "true"
+    )
+    await expect(page.getByRole("button", { name: "Pause" })).toHaveAttribute(
+      "aria-description",
+      "Hold Space or Enter to toggle Loop. Loop is on."
+    )
+
+    await page.keyboard.press("Enter")
+    await expect(page.getByRole("button", { name: "Play" })).toBeVisible()
+  })
+
   test("cancels the loop hold when the pointer moves", async ({ page }) => {
     const pause = page.getByRole("button", { name: "Pause" })
     const box = await pause.boundingBox()

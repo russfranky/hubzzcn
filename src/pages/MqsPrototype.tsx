@@ -506,6 +506,12 @@ function CurrentCard({
   const loopHoldTargetRef = React.useRef<HTMLButtonElement | null>(null)
   const loopHoldCanceledRef = React.useRef(false)
   const suppressPlaybackClickRef = React.useRef(false)
+  const loopKeyTimerRef = React.useRef<number | null>(null)
+  const loopKeyRef = React.useRef<{
+    key: string
+    itemId: string
+    toggled: boolean
+  } | null>(null)
   const latestItemIdRef = React.useRef(item.id)
   const previousItemIdRef = React.useRef(item.id)
   const duration = item.durationSeconds ?? 0
@@ -614,6 +620,55 @@ function CurrentCard({
     clearLoopHold(false)
   }
 
+  function clearLoopKeyHold() {
+    if (loopKeyTimerRef.current !== null) {
+      window.clearTimeout(loopKeyTimerRef.current)
+      loopKeyTimerRef.current = null
+    }
+    loopKeyRef.current = null
+  }
+
+  function beginLoopKeyHold(event: React.KeyboardEvent<HTMLButtonElement>) {
+    if (event.key !== " " && event.key !== "Enter") return
+    if (event.repeat || loopKeyRef.current !== null) return
+
+    event.preventDefault()
+    const hold = { key: event.key, itemId: item.id, toggled: false }
+    loopKeyRef.current = hold
+    loopKeyTimerRef.current = window.setTimeout(() => {
+      if (
+        loopKeyRef.current !== hold ||
+        latestItemIdRef.current !== hold.itemId
+      ) {
+        return
+      }
+
+      loopKeyTimerRef.current = null
+      hold.toggled = true
+      onToggleLooping(hold.itemId)
+    }, LOOP_HOLD_MS)
+  }
+
+  function endLoopKeyHold(event: React.KeyboardEvent<HTMLButtonElement>) {
+    const hold = loopKeyRef.current
+    if (!hold || hold.key !== event.key) return
+
+    event.preventDefault()
+    if (loopKeyTimerRef.current !== null) {
+      window.clearTimeout(loopKeyTimerRef.current)
+      loopKeyTimerRef.current = null
+    }
+    loopKeyRef.current = null
+
+    if (!hold.toggled && latestItemIdRef.current === hold.itemId) {
+      onTogglePlaying()
+    }
+  }
+
+  function loseLoopKeyFocus() {
+    clearLoopKeyHold()
+  }
+
   function loseLoopPointerCapture(
     event: React.PointerEvent<HTMLButtonElement>
   ) {
@@ -625,6 +680,10 @@ function CurrentCard({
   React.useEffect(() => {
     if (previousItemIdRef.current === item.id) return
     previousItemIdRef.current = item.id
+
+    if (loopKeyRef.current !== null) {
+      clearLoopKeyHold()
+    }
 
     if (loopHoldPointerRef.current === null) return
 
@@ -640,6 +699,9 @@ function CurrentCard({
     return () => {
       if (loopHoldTimerRef.current !== null) {
         window.clearTimeout(loopHoldTimerRef.current)
+      }
+      if (loopKeyTimerRef.current !== null) {
+        window.clearTimeout(loopKeyTimerRef.current)
       }
     }
   }, [])
@@ -804,7 +866,11 @@ function CurrentCard({
             className="touch-manipulation rounded-full bg-card"
             data-looping={item.looping ? "true" : "false"}
             aria-label={isPlaying ? "Pause" : "Play"}
+            aria-description={`Hold Space or Enter to toggle Loop. Loop is ${item.looping ? "on" : "off"}.`}
             title={isPlaying ? "Pause" : "Play"}
+            onKeyDown={beginLoopKeyHold}
+            onKeyUp={endLoopKeyHold}
+            onBlur={loseLoopKeyFocus}
             onPointerDown={beginLoopHold}
             onPointerMove={moveLoopHold}
             onPointerUp={endLoopHold}
