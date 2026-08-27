@@ -48,6 +48,28 @@ test.describe("MQS final-layout prototype", () => {
     await expect(page.getByRole("button", { name: "Skip down" })).toBeVisible()
   })
 
+  test("places elapsed and total time under the playback bar", async ({
+    page,
+  }) => {
+    const slider = page.getByRole("slider", { name: "Playback position" })
+    const elapsed = page.getByTestId("elapsed-time")
+    const total = page.getByTestId("total-time")
+
+    const sliderBox = await slider.boundingBox()
+    const elapsedBox = await elapsed.boundingBox()
+    const totalBox = await total.boundingBox()
+    if (!sliderBox || !elapsedBox || !totalBox) {
+      throw new Error("Playback geometry is unavailable")
+    }
+
+    expect(elapsedBox.y).toBeGreaterThanOrEqual(sliderBox.y + sliderBox.height)
+    expect(totalBox.y).toBeGreaterThanOrEqual(sliderBox.y + sliderBox.height)
+    expect(Math.abs(elapsedBox.x - sliderBox.x)).toBeLessThan(2)
+    expect(
+      Math.abs(totalBox.x + totalBox.width - (sliderBox.x + sliderBox.width))
+    ).toBeLessThan(2)
+  })
+
   test("disables skip up when there is no Last Played history", async ({
     page,
   }) => {

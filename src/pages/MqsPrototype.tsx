@@ -476,11 +476,7 @@ function CurrentCard({
             <QueueMeta item={item} />
           </div>
 
-          <div className="mt-8 grid grid-cols-[64px_minmax(0,1fr)_84px] items-center gap-3">
-            <span className="text-base text-muted-foreground tabular-nums">
-              {hasDuration ? formatTime(elapsed) : "LIVE"}
-            </span>
-
+          <div data-testid="playback-progress" className="mt-8">
             <div
               className={cn("relative h-10", hasDuration && "cursor-pointer")}
               role="slider"
@@ -519,9 +515,17 @@ function CurrentCard({
               ) : null}
             </div>
 
-            <span className="justify-self-end text-base text-muted-foreground tabular-nums">
-              {hasDuration ? formatTime(duration) : "LIVE"}
-            </span>
+            <div
+              data-testid="playback-times"
+              className="mt-1 flex items-center justify-between text-base text-muted-foreground tabular-nums"
+            >
+              <span data-testid="elapsed-time">
+                {hasDuration ? formatTime(elapsed) : "LIVE"}
+              </span>
+              <span data-testid="total-time">
+                {hasDuration ? formatTime(duration) : "LIVE"}
+              </span>
+            </div>
           </div>
         </div>
 
