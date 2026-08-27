@@ -9,7 +9,9 @@ export function App() {
   const prototype = new URLSearchParams(window.location.search).get("prototype")
   const pathname = window.location.pathname.replace(/\/+$/, "")
   const portalPrototype =
-    pathname === "/cn/portal" || pathname === "/portal" || prototype === "portal"
+    pathname === "/cn/portal" ||
+    pathname === "/portal" ||
+    prototype === "portal"
 
   return (
     <>

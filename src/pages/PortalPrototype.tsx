@@ -64,16 +64,19 @@ function SpaceCard({
 }) {
   const body = (
     <>
-      <div className="absolute inset-0" style={{ background: space.gradient }} />
+      <div
+        className="absolute inset-0"
+        style={{ background: space.gradient }}
+      />
       <div className="absolute inset-0 bg-black/36 shadow-[0_0_0_1px_rgba(0,0,0,0.2),0_0_2px_rgba(0,0,0,0.08),0_2px_6px_rgba(0,0,0,0.1)]" />
 
       <div className="relative z-10 flex h-full w-full flex-col justify-between overflow-hidden">
         <div className="flex min-w-0 items-center gap-3 p-3">
-          <h2 className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-bold leading-5 text-[#fcfdfe]">
+          <h2 className="min-w-0 flex-1 overflow-hidden text-sm leading-5 font-bold text-ellipsis whitespace-nowrap text-[#fcfdfe]">
             {space.title}
           </h2>
           {browseLabel ? (
-            <span className="shrink-0 text-[13px] font-medium leading-5 text-[#a294fc]">
+            <span className="shrink-0 text-[13px] leading-5 font-medium text-[#a294fc]">
               {browseLabel}
             </span>
           ) : null}
@@ -87,16 +90,16 @@ function SpaceCard({
                   <span className="relative z-20 block size-[26px] rounded-full bg-[#4c5663] shadow-[0_0_0_2px_rgba(24,27,31,0.9)]" />
                   <span className="relative z-10 -ml-1.5 block size-[26px] rounded-full bg-[#6a584d] shadow-[0_0_0_2px_rgba(24,27,31,0.9)]" />
                 </div>
-                <span className="truncate text-[13px] font-medium leading-5 text-[#fcfdfe]/70">
+                <span className="truncate text-[13px] leading-5 font-medium text-[#fcfdfe]/70">
                   Current location
                 </span>
               </>
             ) : space.underConstruction ? (
-              <span className="truncate text-[13px] font-medium leading-5 text-[#fcfdfe]/70">
+              <span className="truncate text-[13px] leading-5 font-medium text-[#fcfdfe]/70">
                 Under construction
               </span>
             ) : (
-              <span className="truncate text-[13px] font-medium leading-5 text-[#fcfdfe]/70">
+              <span className="truncate text-[13px] leading-5 font-medium text-[#fcfdfe]/70">
                 Nobody&apos;s here
               </span>
             )}
@@ -144,7 +147,11 @@ function SpaceCard({
   )
 }
 
-function PortalOverview({ onOpenHallway }: { onOpenHallway: (floor: number) => void }) {
+function PortalOverview({
+  onOpenHallway,
+}: {
+  onOpenHallway: (floor: number) => void
+}) {
   return (
     <div className="space-y-4 p-4">
       {portalSpaces.map((space) => {
@@ -204,10 +211,10 @@ export function PortalPrototype() {
               </Button>
             ) : null}
             <div className="min-w-0">
-              <h1 className="truncate text-[15px] font-semibold leading-5 text-[#fcfdfe]">
+              <h1 className="truncate text-[15px] leading-5 font-semibold text-[#fcfdfe]">
                 {floor === null ? "Hubzz Tower" : `Hallway ${floor}`}
               </h1>
-              <p className="text-[11px] font-medium leading-4 text-[#7c878e]">
+              <p className="text-[11px] leading-4 font-medium text-[#7c878e]">
                 {floor === null ? "Portal" : "15 attached spaces"}
               </p>
             </div>
