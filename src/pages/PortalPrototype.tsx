@@ -1,7 +1,8 @@
 import * as React from "react"
 import { ArrowLeft } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import "./portal-prealpha.css"
 
 type PortalSpace = {
   id: string
@@ -10,6 +11,35 @@ type PortalSpace = {
   attachedCount?: number
   underConstruction?: boolean
   current?: boolean
+}
+
+const PROFILE_PANEL_BUTTON_BASE =
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+const PROFILE_PANEL_BUTTON_GHOST =
+  "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50"
+const PROFILE_PANEL_BUTTON_XS =
+  "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3"
+const PROFILE_PANEL_BUTTON_ICON = "size-8"
+
+function ProfilePanelButton({
+  className,
+  size,
+  ...props
+}: React.ComponentProps<"button"> & { size: "xs" | "icon" }) {
+  return (
+    <button
+      data-slot="button"
+      data-variant="ghost"
+      data-size={size}
+      className={cn(
+        PROFILE_PANEL_BUTTON_BASE,
+        PROFILE_PANEL_BUTTON_GHOST,
+        size === "xs" ? PROFILE_PANEL_BUTTON_XS : PROFILE_PANEL_BUTTON_ICON,
+        className
+      )}
+      {...props}
+    />
+  )
 }
 
 const FLOOR_GRADIENTS = [
@@ -211,14 +241,13 @@ function SpaceCard({
           {space.current ? (
             <TimeInSpace />
           ) : !space.underConstruction ? (
-            <Button
+            <ProfilePanelButton
               type="button"
               size="xs"
-              variant="ghost"
               className="shrink-0 rounded-full bg-gradient-to-b from-[#9a77ff] to-[#735ffa] px-3.5 text-[12px] font-semibold text-[#fcfdfe] hover:text-[#fcfdfe] hover:opacity-90"
             >
               Join
-            </Button>
+            </ProfilePanelButton>
           ) : null}
         </div>
       </div>
@@ -238,16 +267,15 @@ function ScreenHeader({
   return (
     <div className="flex items-center gap-3 px-4 pt-5 pb-4 max-[400px]:pr-12">
       {onBack ? (
-        <Button
+        <ProfilePanelButton
           type="button"
-          variant="ghost"
           size="icon"
           aria-label="Back"
           onClick={onBack}
           className="shrink-0 rounded-full bg-white/5 text-foreground hover:bg-white/10 hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-        </Button>
+        </ProfilePanelButton>
       ) : null}
       <span className="text-lg font-bold text-foreground">{title}</span>
       <span className="ml-auto">
@@ -303,7 +331,7 @@ export function PortalPrototype() {
   const [floor, setFloor] = React.useState<number | null>(null)
 
   return (
-    <main className="min-h-svh bg-background text-foreground">
+    <main className="hubzz-profile-panel-theme min-h-svh bg-background text-foreground">
       <section
         className="space-cards dark fixed inset-y-0 left-0 z-[200010] flex w-[min(92vw,28rem)] max-w-none flex-col overflow-hidden rounded-none bg-sidebar bg-clip-padding text-sm text-sidebar-foreground shadow-lg duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] sm:w-[350px] sm:max-w-[calc(100vw-1rem)] sm:shadow-[16px_0_32px_-16px_rgba(0,0,0,0.5)] data-open:animate-in data-open:slide-in-from-left-[100%] data-closed:animate-out data-closed:slide-out-to-left-[100%]"
         aria-label="Hubzz Tower portal prototype"
