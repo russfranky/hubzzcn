@@ -12,8 +12,11 @@ import {
   Play,
   Send,
   Shuffle,
+  SkipForward,
   Trash2,
   Upload,
+  Volume2,
+  VolumeX,
   WifiOff,
 } from "lucide-react"
 
@@ -747,6 +750,10 @@ export function MqsPrototype() {
   const [pendingSetlist, setPendingSetlist] =
     React.useState<PendingSetlist | null>(null)
   const [stopOpen, setStopOpen] = React.useState(false)
+  const [localMuted, setLocalMuted] = React.useState(false)
+  const [localVolume, setLocalVolume] = React.useState(100)
+  const [volumeOpen, setVolumeOpen] = React.useState(false)
+  const [volumeDraft, setVolumeDraft] = React.useState(100)
   const [dragSource, setDragSource] = React.useState<string | null>(null)
   const [removeTargetActive, setRemoveTargetActive] = React.useState(false)
   const [inputFocused, setInputFocused] = React.useState(false)
@@ -1105,6 +1112,17 @@ export function MqsPrototype() {
     setStopOpen(false)
   }
 
+  function openLocalVolume() {
+    setVolumeDraft(localVolume)
+    setVolumeOpen(true)
+  }
+
+  function applyLocalVolume() {
+    const next = Math.max(0, Math.min(100, Math.round(volumeDraft)))
+    setLocalVolume(next)
+    setVolumeOpen(false)
+  }
+
   if (!windowOpen) return null
 
   return (
@@ -1121,6 +1139,8 @@ export function MqsPrototype() {
       <Card
         data-testid="mqs-modal"
         data-connection-state={connectionState}
+        data-local-muted={localMuted ? "true" : "false"}
+        data-local-volume={localVolume}
         aria-busy={connectionBlocked || undefined}
         className="relative mx-auto flex min-h-0 w-full max-w-[1028px] flex-1 flex-col gap-0 overflow-hidden rounded-3xl bg-card py-0 shadow-2xl ring-1 ring-border"
       >
@@ -1429,24 +1449,20 @@ export function MqsPrototype() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem
-                  disabled={!url.trim()}
-                  onSelect={() => addUrl("tail")}
-                >
-                  Add pasted URL
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={!url.trim()}
-                  onSelect={() => addUrl("next")}
-                >
-                  Play pasted URL next
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                {url.trim() ? (
+                  <>
+                    <DropdownMenuItem onSelect={() => addUrl("next")}>
+                      <SkipForward />
+                      Play pasted URL next
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                ) : null}
                 <DropdownMenuItem
                   onSelect={() => fileInputRef.current?.click()}
                 >
                   <Upload />
-                  Upload setlist
+                  Load setlist
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   disabled={upcoming.length < 2}
@@ -1459,8 +1475,19 @@ export function MqsPrototype() {
                   <Shuffle />
                   Shuffle upcoming
                 </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => setLocalMuted((value) => !value)}
+                >
+                  {localMuted ? <Volume2 /> : <VolumeX />}
+                  {localMuted ? "Unmute local audio" : "Mute local audio"}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={openLocalVolume}>
+                  <Volume2 />
+                  Set local volume…
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
+                  variant="destructive"
                   disabled={upcoming.length === 0}
                   onSelect={() => setUpcoming([])}
                 >
@@ -1527,6 +1554,53 @@ export function MqsPrototype() {
               Cancel
             </Button>
             <Button onClick={replaceWithSetlist}>Replace queue</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={volumeOpen}
+        onOpenChange={(open) => {
+          setVolumeOpen(open)
+          if (open) setVolumeDraft(localVolume)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Local audio volume</DialogTitle>
+            <DialogDescription>
+              This changes MQS audio on this device only. It does not affect
+              room volume.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-3 py-2">
+            <Volume2
+              className="size-4 shrink-0 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <input
+              data-testid="local-volume-slider"
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={volumeDraft}
+              aria-label="Local audio volume"
+              onChange={(event) => setVolumeDraft(Number(event.target.value))}
+              className="h-2 min-w-0 flex-1 cursor-pointer accent-primary"
+            />
+            <span
+              data-testid="local-volume-value"
+              className="w-10 text-right text-sm text-muted-foreground tabular-nums"
+            >
+              {volumeDraft}%
+            </span>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setVolumeOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={applyLocalVolume}>Apply volume</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
