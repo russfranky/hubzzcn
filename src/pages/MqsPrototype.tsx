@@ -506,7 +506,7 @@ function CurrentCard({
       onDragLeave={onSwapDragLeave}
       onDrop={onSwapDrop}
       className={cn(
-        "relative gap-0 overflow-hidden rounded-xl bg-card py-0 ring-1 ring-foreground/15 transition-colors",
+        "relative gap-0 overflow-hidden rounded-xl bg-card py-0 ring-1 ring-border transition-colors",
         swapSourceTitle && "ring-primary/60"
       )}
     >
@@ -1072,7 +1072,7 @@ export function MqsPrototype() {
       <Card
         data-testid="mqs-modal"
         className={cn(
-          "mx-auto flex min-h-0 w-full flex-1 flex-col gap-0 overflow-hidden rounded-3xl bg-card py-0 shadow-2xl ring-1 ring-foreground/15 transition-[max-width]",
+          "mx-auto flex min-h-0 w-full flex-1 flex-col gap-0 overflow-hidden rounded-3xl bg-card py-0 shadow-2xl ring-1 ring-border transition-[max-width]",
           expanded ? "max-w-[1320px]" : "max-w-[1028px]"
         )}
       >
@@ -1104,7 +1104,7 @@ export function MqsPrototype() {
             >
               Last Played
             </h2>
-            <Card className="gap-0 rounded-xl bg-card py-0 ring-1 ring-foreground/10">
+            <Card className="gap-0 rounded-xl bg-card py-0 ring-1 ring-border">
               {played.map((item, index) => (
                 <HistoryRow
                   key={item.id}
@@ -1143,7 +1143,7 @@ export function MqsPrototype() {
               onSwapDrop={handleCurrentSwapDrop}
             />
           ) : (
-            <Card className="rounded-xl bg-card py-8 text-center text-muted-foreground ring-1 ring-foreground/10">
+            <Card className="rounded-xl bg-card py-8 text-center text-muted-foreground ring-1 ring-border">
               Nothing is playing.
             </Card>
           )}
@@ -1162,7 +1162,7 @@ export function MqsPrototype() {
           </h2>
           <Card
             data-testid="up-next-scroll"
-            className="relative min-h-0 flex-1 gap-0 overflow-y-auto rounded-xl bg-card py-0 ring-1 ring-foreground/10"
+            className="relative min-h-0 flex-1 gap-0 overflow-y-auto rounded-xl bg-card py-0 ring-1 ring-border"
             onDragOver={(event) => {
               if (!dragSource) return
 
@@ -1309,7 +1309,7 @@ export function MqsPrototype() {
                   aria-label="Media URL"
                   aria-keyshortcuts="/"
                   placeholder="Paste YouTube or Twitch URL"
-                  className="h-9 rounded-md bg-transparent pl-9 text-sm"
+                  className="h-9 rounded-md border-border bg-secondary pl-9 text-sm dark:bg-secondary"
                 />
               </>
             )}
