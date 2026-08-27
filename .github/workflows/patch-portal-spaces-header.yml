@@ -1,0 +1,101 @@
+name: Patch Portal Spaces header
+
+on:
+  push:
+    branches:
+      - demo/portal-prealpha-spaces-header
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: demo/portal-prealpha-spaces-header
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply header parity patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/pages/PortalPrototype.tsx')
+          text = path.read_text()
+
+          text = text.replace(
+              'import { Check, ListFilter, Search } from "lucide-react"',
+              'import { ArrowLeft, Check, ListFilter, Search } from "lucide-react"',
+          )
+
+          old = '''const PROFILE_PANEL_BUTTON_XS =\n  "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*=\'size-\'])]:size-3"\n\nfunction ProfilePanelButton({\n  className,\n  ...props\n}: React.ComponentProps<"button">) {\n  return (\n    <button\n      data-slot="button"\n      data-variant="ghost"\n      data-size="xs"\n      className={cn(\n        PROFILE_PANEL_BUTTON_BASE,\n        PROFILE_PANEL_BUTTON_GHOST,\n        PROFILE_PANEL_BUTTON_XS,\n        className\n      )}\n      {...props}\n    />\n  )\n}\n'''
+          new = '''const PROFILE_PANEL_BUTTON_XS =\n  "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*=\'size-\'])]:size-3"\nconst PROFILE_PANEL_BUTTON_ICON = "size-8"\n\nfunction ProfilePanelButton({\n  className,\n  size = "xs",\n  ...props\n}: React.ComponentProps<"button"> & { size?: "xs" | "icon" }) {\n  return (\n    <button\n      data-slot="button"\n      data-variant="ghost"\n      data-size={size}\n      className={cn(\n        PROFILE_PANEL_BUTTON_BASE,\n        PROFILE_PANEL_BUTTON_GHOST,\n        size === "icon" ? PROFILE_PANEL_BUTTON_ICON : PROFILE_PANEL_BUTTON_XS,\n        className\n      )}\n      {...props}\n    />\n  )\n}\n'''
+          if old not in text:
+              raise SystemExit('ProfilePanelButton block not found')
+          text = text.replace(old, new)
+
+          old = '''function scopeLabel(scope: SpaceScope) {\n  if (scope.kind === "all") return "All spaces"\n  if (scope.kind === "portal") return "Hubzz Tower Portal"\n  return `Hallway ${scope.floor}`\n}\n\n'''
+          if old not in text:
+              raise SystemExit('scopeLabel block not found')
+          text = text.replace(old, '')
+
+          marker = 'function FilterOption({\n'
+          header = '''function ScreenHeader({\n  count,\n  onBack,\n}: {\n  count: number\n  onBack: () => void\n}) {\n  return (\n    <div className="flex items-center gap-3 px-4 pb-4 pt-5 max-[400px]:pr-12">\n      <ProfilePanelButton\n        type="button"\n        size="icon"\n        aria-label="Back"\n        onClick={onBack}\n        className="shrink-0 rounded-full bg-white/5 text-foreground hover:bg-white/10 hover:text-foreground"\n      >\n        <ArrowLeft className="size-4" />\n      </ProfilePanelButton>\n      <span className="text-lg font-bold text-foreground">Spaces</span>\n      <span className="ml-auto">\n        <span className="text-[15px] font-semibold text-muted-foreground">\n          {count}\n        </span>\n      </span>\n    </div>\n  )\n}\n\n'''
+          if marker not in text:
+              raise SystemExit('FilterOption marker not found')
+          text = text.replace(marker, header + marker, 1)
+
+          old = '''  return (\n    <div className="flex flex-col gap-6 px-4 pt-10 pb-6">\n      <h1 className="text-[24px] leading-[32px] font-bold text-[#fcfdfe]">\n        Spaces\n      </h1>\n\n      <div className="flex items-center gap-2">\n'''
+          new = '''  return (\n    <div className="px-4 pb-4 pt-1">\n      <div className="flex items-center gap-2">\n'''
+          if old not in text:
+              raise SystemExit('SpacesToolbar header block not found')
+          text = text.replace(old, new, 1)
+
+          old = '''  const openHallway = (floor: number) => {\n    setQuery("")\n    setScope({ kind: "hallway", floor })\n  }\n\n  return (\n'''
+          new = '''  const openHallway = (floor: number) => {\n    setQuery("")\n    setScope({ kind: "hallway", floor })\n  }\n\n  const handleBack = () => {\n    if (scope.kind !== "portal") {\n      setQuery("")\n      setScope({ kind: "portal" })\n      return\n    }\n\n    window.history.back()\n  }\n\n  return (\n'''
+          if old not in text:
+              raise SystemExit('openHallway block not found')
+          text = text.replace(old, new, 1)
+
+          old = '''        <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-0 overflow-auto">\n          <SpacesToolbar\n'''
+          new = '''        <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-0 overflow-auto">\n          <ScreenHeader count={visibleSpaces.length} onBack={handleBack} />\n          <SpacesToolbar\n'''
+          if old not in text:
+              raise SystemExit('render toolbar marker not found')
+          text = text.replace(old, new, 1)
+
+          old = '''          <div className="flex flex-col gap-4 px-4 pb-4">\n            <div className="flex w-full items-start gap-[10px] text-[14px] leading-[20px] font-medium">\n              <p className="min-w-0 flex-1 text-[#adbac5]">\n                {scopeLabel(scope)}\n              </p>\n              <span className="shrink-0 text-[#adbac5]">\n                {visibleSpaces.length}\n              </span>\n            </div>\n\n            {visibleSpaces.length > 0 ? (\n'''
+          new = '''          <div className="flex flex-col gap-4 px-4 pb-4 pt-1">\n            {visibleSpaces.length > 0 ? (\n'''
+          if old not in text:
+              raise SystemExit('scope label/list block not found')
+          text = text.replace(old, new, 1)
+
+          path.write_text(text)
+
+          test_path = Path('tests/portal-prototype.spec.ts')
+          test = test_path.read_text()
+          test = test.replace(
+              'await expect(page.getByRole("heading", { name: "Spaces" })).toBeVisible()',
+              'await expect(page.getByText("Spaces", { exact: true })).toBeVisible()\n  await expect(page.getByRole("button", { name: "Back" })).toBeVisible()',
+          )
+          old = '''  await expect(page).toHaveURL(/attachedTo=hallway-12/)\n  await expect(page.getByText("12-01", { exact: true })).toBeVisible()\n\n  await page.getByRole("button", { name: "Filter spaces" }).click()\n'''
+          new = '''  await expect(page).toHaveURL(/attachedTo=hallway-12/)\n  await expect(page.getByText("12-01", { exact: true })).toBeVisible()\n\n  await page.getByRole("button", { name: "Back" }).click()\n  await expect(page).toHaveURL(/portal=hubzz_tower_portal/)\n  await expect(page.getByRole("heading", { name: "Hallway 12" })).toBeVisible()\n\n  await page.getByRole("button", { name: "Filter spaces" }).click()\n'''
+          if old not in test:
+              raise SystemExit('test hallway block not found')
+          test = test.replace(old, new, 1)
+          test_path.write_text(test)
+          PY
+      - run: pnpm exec prettier --write src/pages/PortalPrototype.tsx tests/portal-prototype.spec.ts
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/PortalPrototype.tsx tests/portal-prototype.spec.ts
+          git commit -m "Align Portal Spaces header with pre-alpha"
+          git push
