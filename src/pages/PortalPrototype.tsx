@@ -20,6 +20,7 @@ const FLOOR_GRADIENTS = [
 ]
 
 const CURRENT_AVATAR_COLORS = ["#4c5663", "#6a584d", "#485a52"]
+const CARD_PHOTO_LINE = "inset 0 0 0 0.5px rgba(252,253,254,0.14)"
 
 const portalSpaces: PortalSpace[] = [
   {
@@ -171,55 +172,62 @@ function SpaceCard({
   onBrowse?: () => void
 }) {
   return (
-    <div className="relative aspect-[7/2] w-full cursor-pointer overflow-hidden rounded-[12px]">
-      <div
-        className="absolute inset-0"
-        style={{ background: space.gradient }}
-      />
-      <div
-        className="absolute inset-0 bg-[rgba(0,0,0,0.36)]"
-        style={{
-          boxShadow:
-            "inset 0 0 0 1px rgba(252,253,254,0.14), 0px 0px 0px 1px rgba(0,0,0,0.2), 0px 0px 2px 0px rgba(0,0,0,0.08), 0px 2px 6px 0px rgba(0,0,0,0.1)",
-        }}
-      />
+    <div
+      className="relative aspect-[7/2] w-full cursor-pointer rounded-[12px] bg-card"
+      style={{
+        boxShadow:
+          "0px 0px 2px 0px rgba(0,0,0,0.08), 0px 2px 6px 0px rgba(0,0,0,0.1)",
+      }}
+    >
+      <div className="relative size-full overflow-hidden rounded-[inherit]">
+        <div
+          className="absolute inset-0"
+          style={{ background: space.gradient }}
+        />
+        <div className="absolute inset-0 bg-[rgba(0,0,0,0.36)]" />
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 rounded-[inherit]"
+          style={{ boxShadow: CARD_PHOTO_LINE }}
+        />
 
-      <div className="relative z-10 flex h-full w-full flex-col justify-between overflow-hidden">
-        <div className="flex items-start justify-between p-3">
-          <div className="flex min-w-0 flex-1 items-center justify-start">
-            <h2 className="min-w-0 overflow-hidden text-sm leading-5 font-bold text-ellipsis whitespace-nowrap text-[#fcfdfe]">
-              {space.title}
-            </h2>
+        <div className="relative z-10 flex h-full w-full flex-col justify-between overflow-hidden">
+          <div className="flex items-start justify-between p-3">
+            <div className="flex min-w-0 flex-1 items-center justify-start">
+              <h2 className="min-w-0 overflow-hidden text-sm leading-5 font-bold text-ellipsis whitespace-nowrap text-[#fcfdfe]">
+                {space.title}
+              </h2>
+            </div>
+
+            {browseLabel && onBrowse ? (
+              <button
+                type="button"
+                onClick={onBrowse}
+                aria-label={`View ${space.title} and ${space.attachedCount ?? 0} attached spaces`}
+                className="ml-3 inline-flex shrink-0 cursor-pointer items-center gap-1 border-none bg-transparent p-0 text-[13px] leading-[20px] font-medium text-[#fcfdfe] opacity-50 transition-opacity hover:opacity-80"
+              >
+                <span>{browseLabel}</span>
+                <ChevronRight className="size-4 shrink-0" />
+              </button>
+            ) : null}
           </div>
 
-          {browseLabel && onBrowse ? (
-            <button
-              type="button"
-              onClick={onBrowse}
-              aria-label={`View ${space.title} and ${space.attachedCount ?? 0} attached spaces`}
-              className="ml-3 inline-flex shrink-0 cursor-pointer items-center gap-1 border-none bg-transparent p-0 text-[13px] leading-[20px] font-medium text-[#fcfdfe] opacity-50 transition-opacity hover:opacity-80"
-            >
-              <span>{browseLabel}</span>
-              <ChevronRight className="size-4 shrink-0" />
-            </button>
-          ) : null}
-        </div>
+          <div className="flex w-full items-center justify-between px-3 pb-3">
+            <SpaceAttendance space={space} />
 
-        <div className="flex w-full items-center justify-between px-3 pb-3">
-          <SpaceAttendance space={space} />
-
-          {space.current ? (
-            <TimeInSpace />
-          ) : !space.underConstruction ? (
-            <Button
-              type="button"
-              size="xs"
-              variant="ghost"
-              className="shrink-0 rounded-full bg-gradient-to-b from-[#9a77ff] to-[#735ffa] px-3.5 text-[12px] font-semibold text-[#fcfdfe] hover:text-[#fcfdfe] hover:opacity-90"
-            >
-              Join
-            </Button>
-          ) : null}
+            {space.current ? (
+              <TimeInSpace />
+            ) : !space.underConstruction ? (
+              <Button
+                type="button"
+                size="xs"
+                variant="ghost"
+                className="shrink-0 rounded-full bg-gradient-to-b from-[#9a77ff] to-[#735ffa] px-3.5 text-[12px] font-semibold text-[#fcfdfe] hover:text-[#fcfdfe] hover:opacity-90"
+              >
+                Join
+              </Button>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>
