@@ -10,7 +10,6 @@ import {
   X,
   Pause,
   Play,
-  Repeat2,
   Send,
   Shuffle,
   SkipForward,
@@ -48,7 +47,6 @@ type QueueItem = {
   platform: string
   addedBy: string
   durationSeconds?: number
-  looping?: boolean
 }
 
 type SetlistSegment = {
@@ -75,8 +73,6 @@ type DraggedMedia = {
 
 const HISTORY_LIMIT = 3
 const SETLIST_LIMIT = 500
-const LOOP_HOLD_MS = 600
-const LOOP_MOVE_TOLERANCE_PX = 12
 
 const INITIAL_PLAYED: QueueItem[] = [
   {
@@ -476,7 +472,6 @@ function CurrentCard({
   isPlaying,
   onElapsedChange,
   onTogglePlaying,
-  onToggleLooping,
   onSkipUp,
   onSkipDown,
   canSkipUp,
@@ -490,7 +485,6 @@ function CurrentCard({
   isPlaying: boolean
   onElapsedChange: (value: number) => void
   onTogglePlaying: () => void
-  onToggleLooping: (itemId: string) => void
   onSkipUp: () => void
   onSkipDown: () => void
   canSkipUp: boolean
@@ -500,192 +494,12 @@ function CurrentCard({
   onSwapDrop: (event: React.DragEvent<HTMLDivElement>) => void
 }) {
   const [scrubSeconds, setScrubSeconds] = React.useState<number | null>(null)
-  const [loopHoldActive, setLoopHoldActive] = React.useState(false)
-  const [loopNotice, setLoopNotice] = React.useState<string | null>(null)
-  const loopHoldTimerRef = React.useRef<number | null>(null)
-  const loopHoldPointerRef = React.useRef<number | null>(null)
-  const loopHoldOriginRef = React.useRef<{ x: number; y: number } | null>(null)
-  const loopHoldItemRef = React.useRef<string | null>(null)
-  const loopHoldTargetRef = React.useRef<HTMLButtonElement | null>(null)
-  const loopHoldCanceledRef = React.useRef(false)
-  const latestItemIdRef = React.useRef(item.id)
-  const previousItemIdRef = React.useRef(item.id)
-  const suppressPlaybackClickRef = React.useRef(false)
-  const loopNoticeTimerRef = React.useRef<number | null>(null)
   const duration = item.durationSeconds ?? 0
   const hasDuration = duration > 0
   const displayedElapsed = scrubSeconds ?? elapsed
   const progress = hasDuration
     ? Math.min(100, Math.max(0, (displayedElapsed / duration) * 100))
     : 0
-
-  latestItemIdRef.current = item.id
-
-  function resetLoopHold(releasePointer = true) {
-    if (loopHoldTimerRef.current !== null) {
-      window.clearTimeout(loopHoldTimerRef.current)
-      loopHoldTimerRef.current = null
-    }
-
-    const target = loopHoldTargetRef.current
-    const pointerId = loopHoldPointerRef.current
-    if (releasePointer && target && pointerId !== null) {
-      try {
-        if (target.hasPointerCapture(pointerId)) {
-          target.releasePointerCapture(pointerId)
-        }
-      } catch {
-        // The browser can release capture before React receives the event.
-      }
-    }
-
-    loopHoldPointerRef.current = null
-    loopHoldOriginRef.current = null
-    loopHoldItemRef.current = null
-    loopHoldTargetRef.current = null
-    loopHoldCanceledRef.current = false
-    setLoopHoldActive(false)
-  }
-
-  function showLoopNotice(nextLooping: boolean) {
-    setLoopNotice(nextLooping ? "Loop on" : "Loop off")
-    if (loopNoticeTimerRef.current !== null) {
-      window.clearTimeout(loopNoticeTimerRef.current)
-    }
-    loopNoticeTimerRef.current = window.setTimeout(() => {
-      setLoopNotice(null)
-      loopNoticeTimerRef.current = null
-    }, 1000)
-  }
-
-  function beginLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
-    if (event.pointerType === "mouse" && event.button !== 0) return
-
-    resetLoopHold()
-    suppressPlaybackClickRef.current = false
-    loopHoldPointerRef.current = event.pointerId
-    loopHoldOriginRef.current = { x: event.clientX, y: event.clientY }
-    loopHoldItemRef.current = item.id
-    loopHoldTargetRef.current = event.currentTarget
-    loopHoldCanceledRef.current = false
-    setLoopHoldActive(true)
-
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId)
-    } catch {
-      // Pointer capture is optional. The hold still works without it.
-    }
-
-    const pressedItemId = item.id
-    const nextLooping = !item.looping
-    loopHoldTimerRef.current = window.setTimeout(() => {
-      if (
-        loopHoldPointerRef.current !== event.pointerId ||
-        loopHoldCanceledRef.current ||
-        loopHoldItemRef.current !== pressedItemId ||
-        latestItemIdRef.current !== pressedItemId
-      ) {
-        return
-      }
-
-      loopHoldTimerRef.current = null
-      setLoopHoldActive(false)
-      suppressPlaybackClickRef.current = true
-      onToggleLooping(pressedItemId)
-      showLoopNotice(nextLooping)
-
-      try {
-        navigator.vibrate?.(18)
-      } catch {
-        // Haptic feedback is optional.
-      }
-    }, LOOP_HOLD_MS)
-  }
-
-  function moveLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
-    if (loopHoldPointerRef.current !== event.pointerId) return
-    if (loopHoldCanceledRef.current) return
-
-    const origin = loopHoldOriginRef.current
-    if (!origin) return
-
-    const distance = Math.hypot(
-      event.clientX - origin.x,
-      event.clientY - origin.y
-    )
-    if (distance <= LOOP_MOVE_TOLERANCE_PX) return
-
-    loopHoldCanceledRef.current = true
-    if (loopHoldTimerRef.current !== null) {
-      window.clearTimeout(loopHoldTimerRef.current)
-      loopHoldTimerRef.current = null
-    }
-    setLoopHoldActive(false)
-  }
-
-  function endLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
-    if (loopHoldPointerRef.current !== event.pointerId) return
-    if (loopHoldCanceledRef.current) {
-      suppressPlaybackClickRef.current = true
-    }
-    resetLoopHold()
-  }
-
-  function cancelLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
-    if (loopHoldPointerRef.current !== event.pointerId) return
-    suppressPlaybackClickRef.current = false
-    resetLoopHold(false)
-  }
-
-  function loseLoopPointerCapture(
-    event: React.PointerEvent<HTMLButtonElement>
-  ) {
-    if (loopHoldPointerRef.current !== event.pointerId) return
-    suppressPlaybackClickRef.current = false
-    resetLoopHold(false)
-  }
-
-  React.useEffect(() => {
-    if (previousItemIdRef.current === item.id) return
-    previousItemIdRef.current = item.id
-
-    if (loopHoldTimerRef.current !== null) {
-      window.clearTimeout(loopHoldTimerRef.current)
-      loopHoldTimerRef.current = null
-    }
-    if (loopHoldPointerRef.current !== null) {
-      loopHoldCanceledRef.current = true
-    }
-    setLoopHoldActive(false)
-    setLoopNotice(null)
-    if (loopNoticeTimerRef.current !== null) {
-      window.clearTimeout(loopNoticeTimerRef.current)
-      loopNoticeTimerRef.current = null
-    }
-  }, [item.id])
-
-  React.useEffect(() => {
-    return () => {
-      if (loopHoldTimerRef.current !== null) {
-        window.clearTimeout(loopHoldTimerRef.current)
-      }
-      if (loopNoticeTimerRef.current !== null) {
-        window.clearTimeout(loopNoticeTimerRef.current)
-      }
-
-      const target = loopHoldTargetRef.current
-      const pointerId = loopHoldPointerRef.current
-      if (target && pointerId !== null) {
-        try {
-          if (target.hasPointerCapture(pointerId)) {
-            target.releasePointerCapture(pointerId)
-          }
-        } catch {
-          // The element can disappear before cleanup runs.
-        }
-      }
-    }
-  }, [])
 
   function secondsFromPointer(clientX: number, element: HTMLElement) {
     if (!hasDuration) return null
@@ -828,7 +642,7 @@ function CurrentCard({
           </div>
         </div>
 
-        <div className="relative flex flex-col items-center justify-center gap-3 border-l border-border/70 px-4">
+        <div className="flex flex-col items-center justify-center gap-3 border-l border-border/70 px-4">
           <Button
             type="button"
             variant="ghost"
@@ -844,68 +658,13 @@ function CurrentCard({
             type="button"
             variant="outline"
             size="icon-lg"
-            className={cn(
-              "relative touch-manipulation rounded-full bg-card",
-              item.looping &&
-                "border-primary/60 bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
-            )}
-            data-looping={item.looping ? "true" : "false"}
+            className="rounded-full bg-card"
             aria-label={isPlaying ? "Pause" : "Play"}
-            title={`${isPlaying ? "Pause" : "Play"} · Hold to ${item.looping ? "turn loop off" : "turn loop on"}`}
-            onPointerDown={beginLoopHold}
-            onPointerMove={moveLoopHold}
-            onPointerUp={endLoopHold}
-            onPointerCancel={cancelLoopHold}
-            onLostPointerCapture={loseLoopPointerCapture}
-            onContextMenu={(event) => {
-              if (loopHoldPointerRef.current !== null) {
-                event.preventDefault()
-              }
-            }}
-            onClick={() => {
-              if (suppressPlaybackClickRef.current) {
-                suppressPlaybackClickRef.current = false
-                return
-              }
-              onTogglePlaying()
-            }}
+            title={isPlaying ? "Pause" : "Play"}
+            onClick={onTogglePlaying}
           >
-            {loopHoldActive ? (
-              <svg
-                data-testid="loop-hold-progress"
-                aria-hidden="true"
-                viewBox="0 0 44 44"
-                className="pointer-events-none absolute -inset-0.5 size-11 -rotate-90 overflow-visible text-primary"
-              >
-                <circle
-                  cx="22"
-                  cy="22"
-                  r="20"
-                  pathLength="100"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeDasharray="100"
-                  strokeDashoffset="100"
-                >
-                  <animate
-                    attributeName="stroke-dashoffset"
-                    from="100"
-                    to="0"
-                    dur={`${LOOP_HOLD_MS}ms`}
-                    fill="freeze"
-                  />
-                </circle>
-              </svg>
-            ) : null}
             {isPlaying ? <Pause /> : <Play />}
           </Button>
-          {loopNotice ? (
-            <span data-testid="loop-feedback" role="status" className="sr-only">
-              {loopNotice}
-            </span>
-          ) : null}
           <Button
             type="button"
             variant="ghost"
@@ -1047,12 +806,9 @@ export function MqsPrototype() {
     if (!isPlaying || !current?.durationSeconds) return
 
     const timer = window.setInterval(() => {
-      setElapsed((value) => {
-        const duration = current.durationSeconds ?? value
-        const next = value + 1
-        if (current.looping && next >= duration) return 0
-        return Math.min(duration, next)
-      })
+      setElapsed((value) =>
+        Math.min(current.durationSeconds ?? value, value + 1)
+      )
     }, 1000)
 
     return () => window.clearInterval(timer)
@@ -1327,16 +1083,6 @@ export function MqsPrototype() {
     setIsPlaying(true)
   }
 
-  function toggleCurrentLoop() {
-    setCurrent((item) => (item ? { ...item, looping: !item.looping } : item))
-  }
-
-  function toggleCurrentLoopForItem(itemId: string) {
-    setCurrent((item) =>
-      item?.id === itemId ? { ...item, looping: !item.looping } : item
-    )
-  }
-
   function addUrl(mode: "tail" | "next") {
     const trimmed = url.trim()
     if (!trimmed) {
@@ -1540,7 +1286,6 @@ export function MqsPrototype() {
               isPlaying={isPlaying}
               onElapsedChange={setElapsed}
               onTogglePlaying={() => setIsPlaying((value) => !value)}
-              onToggleLooping={toggleCurrentLoopForItem}
               onSkipUp={skipUp}
               onSkipDown={skipDown}
               canSkipUp={played.length > 0}
@@ -1791,15 +1536,6 @@ export function MqsPrototype() {
                 >
                   <Shuffle />
                   Shuffle upcoming
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={!current}
-                  onSelect={toggleCurrentLoop}
-                >
-                  <Repeat2 />
-                  {current?.looping
-                    ? "Turn off current loop"
-                    : "Loop current item"}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() => setLocalMuted((value) => !value)}
