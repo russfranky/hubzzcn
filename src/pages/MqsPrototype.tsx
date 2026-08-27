@@ -76,6 +76,7 @@ type DraggedMedia = {
 const HISTORY_LIMIT = 3
 const SETLIST_LIMIT = 500
 const LOOP_HOLD_MS = 600
+const LOOP_MOVE_TOLERANCE_PX = 12
 
 const INITIAL_PLAYED: QueueItem[] = [
   {
@@ -489,7 +490,7 @@ function CurrentCard({
   isPlaying: boolean
   onElapsedChange: (value: number) => void
   onTogglePlaying: () => void
-  onToggleLooping: () => void
+  onToggleLooping: (itemId: string) => void
   onSkipUp: () => void
   onSkipDown: () => void
   canSkipUp: boolean
@@ -499,11 +500,16 @@ function CurrentCard({
   onSwapDrop: (event: React.DragEvent<HTMLDivElement>) => void
 }) {
   const [scrubSeconds, setScrubSeconds] = React.useState<number | null>(null)
-  const [loopHoldProgress, setLoopHoldProgress] = React.useState(0)
+  const [loopHoldActive, setLoopHoldActive] = React.useState(false)
   const [loopNotice, setLoopNotice] = React.useState<string | null>(null)
   const loopHoldTimerRef = React.useRef<number | null>(null)
-  const loopHoldFrameRef = React.useRef<number | null>(null)
-  const loopHoldStartRef = React.useRef(0)
+  const loopHoldPointerRef = React.useRef<number | null>(null)
+  const loopHoldOriginRef = React.useRef<{ x: number; y: number } | null>(null)
+  const loopHoldItemRef = React.useRef<string | null>(null)
+  const loopHoldTargetRef = React.useRef<HTMLButtonElement | null>(null)
+  const loopHoldCanceledRef = React.useRef(false)
+  const latestItemIdRef = React.useRef(item.id)
+  const previousItemIdRef = React.useRef(item.id)
   const suppressPlaybackClickRef = React.useRef(false)
   const loopNoticeTimerRef = React.useRef<number | null>(null)
   const duration = item.durationSeconds ?? 0
@@ -513,84 +519,170 @@ function CurrentCard({
     ? Math.min(100, Math.max(0, (displayedElapsed / duration) * 100))
     : 0
 
-  function clearLoopHold() {
+  latestItemIdRef.current = item.id
+
+  function resetLoopHold(releasePointer = true) {
     if (loopHoldTimerRef.current !== null) {
       window.clearTimeout(loopHoldTimerRef.current)
       loopHoldTimerRef.current = null
     }
-    if (loopHoldFrameRef.current !== null) {
-      window.cancelAnimationFrame(loopHoldFrameRef.current)
-      loopHoldFrameRef.current = null
+
+    const target = loopHoldTargetRef.current
+    const pointerId = loopHoldPointerRef.current
+    if (releasePointer && target && pointerId !== null) {
+      try {
+        if (target.hasPointerCapture(pointerId)) {
+          target.releasePointerCapture(pointerId)
+        }
+      } catch {
+        // The browser can release capture before React receives the event.
+      }
     }
-    setLoopHoldProgress(0)
+
+    loopHoldPointerRef.current = null
+    loopHoldOriginRef.current = null
+    loopHoldItemRef.current = null
+    loopHoldTargetRef.current = null
+    loopHoldCanceledRef.current = false
+    setLoopHoldActive(false)
   }
 
-  function updateLoopHoldProgress() {
-    const next = Math.min(
-      1,
-      (window.performance.now() - loopHoldStartRef.current) / LOOP_HOLD_MS
-    )
-    setLoopHoldProgress(next)
-    if (next < 1 && loopHoldTimerRef.current !== null) {
-      loopHoldFrameRef.current = window.requestAnimationFrame(
-        updateLoopHoldProgress
-      )
+  function showLoopNotice(nextLooping: boolean) {
+    setLoopNotice(nextLooping ? "Loop on" : "Loop off")
+    if (loopNoticeTimerRef.current !== null) {
+      window.clearTimeout(loopNoticeTimerRef.current)
     }
+    loopNoticeTimerRef.current = window.setTimeout(() => {
+      setLoopNotice(null)
+      loopNoticeTimerRef.current = null
+    }, 1000)
   }
 
   function beginLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
     if (event.pointerType === "mouse" && event.button !== 0) return
-    if (loopHoldTimerRef.current !== null) return
 
+    resetLoopHold()
     suppressPlaybackClickRef.current = false
-    loopHoldStartRef.current = window.performance.now()
-    setLoopHoldProgress(0.01)
+    loopHoldPointerRef.current = event.pointerId
+    loopHoldOriginRef.current = { x: event.clientX, y: event.clientY }
+    loopHoldItemRef.current = item.id
+    loopHoldTargetRef.current = event.currentTarget
+    loopHoldCanceledRef.current = false
+    setLoopHoldActive(true)
 
-    if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+    try {
       event.currentTarget.setPointerCapture(event.pointerId)
+    } catch {
+      // Pointer capture is optional. The hold still works without it.
     }
 
-    loopHoldFrameRef.current = window.requestAnimationFrame(
-      updateLoopHoldProgress
-    )
+    const pressedItemId = item.id
+    const nextLooping = !item.looping
     loopHoldTimerRef.current = window.setTimeout(() => {
+      if (
+        loopHoldPointerRef.current !== event.pointerId ||
+        loopHoldCanceledRef.current ||
+        loopHoldItemRef.current !== pressedItemId ||
+        latestItemIdRef.current !== pressedItemId
+      ) {
+        return
+      }
+
       loopHoldTimerRef.current = null
-      if (loopHoldFrameRef.current !== null) {
-        window.cancelAnimationFrame(loopHoldFrameRef.current)
-        loopHoldFrameRef.current = null
-      }
-      setLoopHoldProgress(1)
+      setLoopHoldActive(false)
       suppressPlaybackClickRef.current = true
-      onToggleLooping()
-      navigator.vibrate?.(18)
-      setLoopNotice(item.looping ? "Loop off" : "Loop on")
-      if (loopNoticeTimerRef.current !== null) {
-        window.clearTimeout(loopNoticeTimerRef.current)
+      onToggleLooping(pressedItemId)
+      showLoopNotice(nextLooping)
+
+      try {
+        navigator.vibrate?.(18)
+      } catch {
+        // Haptic feedback is optional.
       }
-      loopNoticeTimerRef.current = window.setTimeout(() => {
-        setLoopNotice(null)
-        loopNoticeTimerRef.current = null
-      }, 1000)
     }, LOOP_HOLD_MS)
   }
 
-  function endLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId)
+  function moveLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
+    if (loopHoldPointerRef.current !== event.pointerId) return
+    if (loopHoldCanceledRef.current) return
+
+    const origin = loopHoldOriginRef.current
+    if (!origin) return
+
+    const distance = Math.hypot(
+      event.clientX - origin.x,
+      event.clientY - origin.y
+    )
+    if (distance <= LOOP_MOVE_TOLERANCE_PX) return
+
+    loopHoldCanceledRef.current = true
+    if (loopHoldTimerRef.current !== null) {
+      window.clearTimeout(loopHoldTimerRef.current)
+      loopHoldTimerRef.current = null
     }
-    clearLoopHold()
+    setLoopHoldActive(false)
   }
+
+  function endLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
+    if (loopHoldPointerRef.current !== event.pointerId) return
+    if (loopHoldCanceledRef.current) {
+      suppressPlaybackClickRef.current = true
+    }
+    resetLoopHold()
+  }
+
+  function cancelLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
+    if (loopHoldPointerRef.current !== event.pointerId) return
+    suppressPlaybackClickRef.current = false
+    resetLoopHold(false)
+  }
+
+  function loseLoopPointerCapture(
+    event: React.PointerEvent<HTMLButtonElement>
+  ) {
+    if (loopHoldPointerRef.current !== event.pointerId) return
+    suppressPlaybackClickRef.current = false
+    resetLoopHold(false)
+  }
+
+  React.useEffect(() => {
+    if (previousItemIdRef.current === item.id) return
+    previousItemIdRef.current = item.id
+
+    if (loopHoldTimerRef.current !== null) {
+      window.clearTimeout(loopHoldTimerRef.current)
+      loopHoldTimerRef.current = null
+    }
+    if (loopHoldPointerRef.current !== null) {
+      loopHoldCanceledRef.current = true
+    }
+    setLoopHoldActive(false)
+    setLoopNotice(null)
+    if (loopNoticeTimerRef.current !== null) {
+      window.clearTimeout(loopNoticeTimerRef.current)
+      loopNoticeTimerRef.current = null
+    }
+  }, [item.id])
 
   React.useEffect(() => {
     return () => {
       if (loopHoldTimerRef.current !== null) {
         window.clearTimeout(loopHoldTimerRef.current)
       }
-      if (loopHoldFrameRef.current !== null) {
-        window.cancelAnimationFrame(loopHoldFrameRef.current)
-      }
       if (loopNoticeTimerRef.current !== null) {
         window.clearTimeout(loopNoticeTimerRef.current)
+      }
+
+      const target = loopHoldTargetRef.current
+      const pointerId = loopHoldPointerRef.current
+      if (target && pointerId !== null) {
+        try {
+          if (target.hasPointerCapture(pointerId)) {
+            target.releasePointerCapture(pointerId)
+          }
+        } catch {
+          // The element can disappear before cleanup runs.
+        }
       }
     }
   }, [])
@@ -752,14 +844,20 @@ function CurrentCard({
             type="button"
             variant="outline"
             size="icon-lg"
-            className="relative touch-none rounded-full bg-card"
+            className="relative touch-manipulation rounded-full bg-card"
             data-looping={item.looping ? "true" : "false"}
             aria-label={isPlaying ? "Pause" : "Play"}
             title={`${isPlaying ? "Pause" : "Play"} · Hold to toggle loop`}
             onPointerDown={beginLoopHold}
+            onPointerMove={moveLoopHold}
             onPointerUp={endLoopHold}
-            onPointerCancel={endLoopHold}
-            onContextMenu={(event) => event.preventDefault()}
+            onPointerCancel={cancelLoopHold}
+            onLostPointerCapture={loseLoopPointerCapture}
+            onContextMenu={(event) => {
+              if (loopHoldPointerRef.current !== null) {
+                event.preventDefault()
+              }
+            }}
             onClick={() => {
               if (suppressPlaybackClickRef.current) {
                 suppressPlaybackClickRef.current = false
@@ -768,25 +866,33 @@ function CurrentCard({
               onTogglePlaying()
             }}
           >
-            {loopHoldProgress > 0 ? (
+            {loopHoldActive ? (
               <svg
                 data-testid="loop-hold-progress"
                 aria-hidden="true"
-                viewBox="0 0 48 48"
-                className="pointer-events-none absolute -inset-1 size-[calc(100%+0.5rem)] -rotate-90 overflow-visible text-primary"
+                viewBox="0 0 56 56"
+                className="pointer-events-none absolute top-1/2 left-1/2 size-14 -translate-x-1/2 -translate-y-1/2 -rotate-90 overflow-visible text-primary"
               >
                 <circle
-                  cx="24"
-                  cy="24"
-                  r="20"
+                  cx="28"
+                  cy="28"
+                  r="24"
                   pathLength="100"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeDasharray="100"
-                  strokeDashoffset={100 - loopHoldProgress * 100}
-                />
+                  strokeDashoffset="100"
+                >
+                  <animate
+                    attributeName="stroke-dashoffset"
+                    from="100"
+                    to="0"
+                    dur={`${LOOP_HOLD_MS}ms`}
+                    fill="freeze"
+                  />
+                </circle>
               </svg>
             ) : null}
             {isPlaying ? <Pause /> : <Play />}
@@ -794,6 +900,7 @@ function CurrentCard({
               <span
                 data-testid="current-loop-badge"
                 aria-hidden="true"
+                title="Loop on"
                 className="pointer-events-none absolute -right-1 -bottom-1 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground ring-2 ring-card"
               >
                 <Repeat2 className="size-3" />
@@ -801,11 +908,7 @@ function CurrentCard({
             ) : null}
           </Button>
           {loopNotice ? (
-            <span
-              data-testid="loop-feedback"
-              role="status"
-              className="pointer-events-none absolute top-1/2 right-full mr-3 -translate-y-1/2 rounded-md border border-border bg-popover px-2 py-1 text-xs font-medium whitespace-nowrap text-popover-foreground shadow-md"
-            >
+            <span data-testid="loop-feedback" role="status" className="sr-only">
               {loopNotice}
             </span>
           ) : null}
@@ -1234,6 +1337,12 @@ export function MqsPrototype() {
     setCurrent((item) => (item ? { ...item, looping: !item.looping } : item))
   }
 
+  function toggleCurrentLoopForItem(itemId: string) {
+    setCurrent((item) =>
+      item?.id === itemId ? { ...item, looping: !item.looping } : item
+    )
+  }
+
   function addUrl(mode: "tail" | "next") {
     const trimmed = url.trim()
     if (!trimmed) {
@@ -1437,7 +1546,7 @@ export function MqsPrototype() {
               isPlaying={isPlaying}
               onElapsedChange={setElapsed}
               onTogglePlaying={() => setIsPlaying((value) => !value)}
-              onToggleLooping={toggleCurrentLoop}
+              onToggleLooping={toggleCurrentLoopForItem}
               onSkipUp={skipUp}
               onSkipDown={skipDown}
               canSkipUp={played.length > 0}
