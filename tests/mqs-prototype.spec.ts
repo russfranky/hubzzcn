@@ -25,15 +25,31 @@ test.describe("MQS final-layout prototype", () => {
     await expect(page.getByTestId("upcoming-row")).toHaveCount(5)
     await expect(page.locator("img")).toHaveCount(0)
 
+    await expect(page.getByRole("button", { name: "Close" })).toBeVisible()
     await expect(
-      page.getByRole("button", { name: "Expand queue" })
-    ).toBeVisible()
+      page.getByRole("button", { name: /Expand queue|Restore queue/ })
+    ).toHaveCount(0)
     await expect(
       page.getByRole("button", { name: "Queue actions" })
     ).toBeVisible()
     await expect(page.getByRole("button", { name: /Mute|Unmute/ })).toHaveCount(
       0
     )
+  })
+
+  test("closes the MQS popout instead of resizing it", async ({ page }) => {
+    const modal = page.getByTestId("mqs-modal")
+    const close = page.getByRole("button", { name: "Close" })
+
+    await expect(modal).toBeVisible()
+    await expect(
+      page.getByRole("button", { name: /Expand queue|Restore queue/ })
+    ).toHaveCount(0)
+
+    await close.click()
+
+    await expect(modal).toHaveCount(0)
+    await expect(page.getByTestId("mqs-container")).toHaveCount(0)
   })
 
   test("uses the literal Hubzz MQS palette", async ({ page }) => {

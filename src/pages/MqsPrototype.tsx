@@ -4,9 +4,8 @@ import {
   ChevronUp,
   GripVertical,
   Link2,
-  Maximize2,
-  Minimize2,
   MoreVertical,
+  X,
   Pause,
   Play,
   Send,
@@ -700,7 +699,7 @@ export function MqsPrototype() {
   const [upcoming, setUpcoming] = React.useState(INITIAL_UPCOMING)
   const [elapsed, setElapsed] = React.useState(1938)
   const [isPlaying, setIsPlaying] = React.useState(true)
-  const [expanded, setExpanded] = React.useState(false)
+  const [windowOpen, setWindowOpen] = React.useState(true)
   const [url, setUrl] = React.useState("")
   const [error, setError] = React.useState<string | null>(null)
   const [pendingSetlist, setPendingSetlist] =
@@ -1058,6 +1057,8 @@ export function MqsPrototype() {
     setStopOpen(false)
   }
 
+  if (!windowOpen) return null
+
   return (
     <main
       data-testid="mqs-container"
@@ -1071,10 +1072,7 @@ export function MqsPrototype() {
     >
       <Card
         data-testid="mqs-modal"
-        className={cn(
-          "mx-auto flex min-h-0 w-full flex-1 flex-col gap-0 overflow-hidden rounded-3xl bg-card py-0 shadow-2xl ring-1 ring-border transition-[max-width]",
-          expanded ? "max-w-[1320px]" : "max-w-[1028px]"
-        )}
+        className="mx-auto flex min-h-0 w-full max-w-[1028px] flex-1 flex-col gap-0 overflow-hidden rounded-3xl bg-card py-0 shadow-2xl ring-1 ring-border"
       >
         <CardHeader className="flex min-h-24 flex-row items-center justify-between border-b px-8 py-6">
           <CardTitle className="text-3xl font-semibold tracking-tight">
@@ -1083,12 +1081,13 @@ export function MqsPrototype() {
           <Button
             type="button"
             variant="ghost"
-            size="icon-lg"
-            aria-label={expanded ? "Restore queue" : "Expand queue"}
-            title={expanded ? "Restore queue" : "Expand queue"}
-            onClick={() => setExpanded((value) => !value)}
+            size="icon"
+            className="size-8"
+            aria-label="Close"
+            title="Close"
+            onClick={() => setWindowOpen(false)}
           >
-            {expanded ? <Minimize2 /> : <Maximize2 />}
+            <X />
           </Button>
         </CardHeader>
 

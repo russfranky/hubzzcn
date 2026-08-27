@@ -243,10 +243,6 @@ main:has(#now-playing-title) > [data-slot="card"] {
   box-shadow: 0 14px 36px rgb(0 0 0 / 0.28);
 }
 
-main:has(#now-playing-title) > [data-slot="card"][class*="max-w-[1320px]"] {
-  max-width: 40rem;
-}
-
 main:has(#now-playing-title) > [data-slot="card"] > [data-slot="card-header"] {
   min-height: 3.5rem;
   padding: 0.75rem 1rem;
