@@ -138,6 +138,51 @@ test.describe("Component catalog", () => {
     expect(pageErrors).toEqual([])
   })
 
+  test("retries theme storage after a temporary write failure", async ({
+    page,
+  }) => {
+    const pageErrors: string[] = []
+    page.on("pageerror", (error) => pageErrors.push(error.message))
+
+    await page.evaluate((storageKey) => {
+      localStorage.removeItem(storageKey)
+      const originalSetItem = Storage.prototype.setItem
+      let shouldFail = true
+
+      Object.defineProperty(Storage.prototype, "setItem", {
+        configurable: true,
+        value: function (this: Storage, key: string, value: string) {
+          if (shouldFail) {
+            shouldFail = false
+            throw new DOMException("Storage is full", "QuotaExceededError")
+          }
+
+          return originalSetItem.call(this, key, value)
+        },
+      })
+    }, THEME_STORAGE_KEY)
+
+    const root = page.locator("html")
+    const toggle = page.getByRole("button", { name: "Toggle color theme" })
+
+    await toggle.click()
+    await expect(root).toHaveClass(/\blight\b/)
+    await expect
+      .poll(() =>
+        page.evaluate((key) => localStorage.getItem(key), THEME_STORAGE_KEY)
+      )
+      .toBeNull()
+
+    await toggle.click()
+    await expect(root).toHaveClass(/\bdark\b/)
+    await expect
+      .poll(() =>
+        page.evaluate((key) => localStorage.getItem(key), THEME_STORAGE_KEY)
+      )
+      .toBe("dark")
+    expect(pageErrors).toEqual([])
+  })
+
   test("source links point at the built revision", async ({ page }) => {
     const sourceRef = process.env.GITHUB_SHA ?? "main"
     const source = page
