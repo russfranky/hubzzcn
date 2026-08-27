@@ -19,6 +19,8 @@ const FLOOR_GRADIENTS = [
   "linear-gradient(135deg, #2a211d 0%, #3b2d25 48%, #181719 100%)",
 ]
 
+const CURRENT_AVATAR_COLORS = ["#4c5663", "#6a584d", "#485a52"]
+
 const portalSpaces: PortalSpace[] = [
   {
     id: "rooftop",
@@ -53,6 +55,104 @@ function roomsForFloor(floor: number): PortalSpace[] {
   }))
 }
 
+function CurrentAttendance() {
+  return (
+    <div className="flex shrink-0 items-center gap-2">
+      <div className="flex items-center">
+        <div className="flex pr-[6px]">
+          {CURRENT_AVATAR_COLORS.map((color, index) => {
+            const gapMask =
+              index < CURRENT_AVATAR_COLORS.length - 1
+                ? "radial-gradient(circle 16px at 33px 13px, transparent 15.6px, black 16.4px)"
+                : undefined
+
+            return (
+              <span
+                key={color}
+                className="relative shrink-0 rounded-[32px]"
+                style={{ height: 26, width: 26, marginRight: -6 }}
+              >
+                <span
+                  className="block size-full rounded-full"
+                  style={{
+                    background: color,
+                    WebkitMaskImage: gapMask,
+                    maskImage: gapMask,
+                  }}
+                />
+              </span>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TimeInSpace() {
+  return (
+    <span className="flex shrink-0 items-center gap-1.5 self-end px-3.5 text-[13px] leading-[16px] font-medium text-[#7c878e] tabular-nums">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 12 12"
+        fill="none"
+        className="shrink-0 opacity-60"
+        aria-hidden="true"
+      >
+        <circle cx="6" cy="6" r="5" fill="#7c878e" />
+        <circle cx="6" cy="6" r="4" fill="#24262b" />
+        <rect x="5.5" y="3" width="1" height="3.5" rx="0.5" fill="#7c878e" />
+        <rect x="5.5" y="5.5" width="2.5" height="1" rx="0.5" fill="#7c878e" />
+      </svg>
+      00:42
+    </span>
+  )
+}
+
+function SpaceAttendance({ space }: { space: PortalSpace }) {
+  if (space.current) return <CurrentAttendance />
+
+  if (space.underConstruction) {
+    return (
+      <div className="flex shrink-0 items-center gap-2">
+        <p className="text-[13px] leading-[20px] font-medium text-[#fcfdfe] opacity-70">
+          Under construction
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex shrink-0 items-center gap-2 opacity-60">
+      <div className="relative flex size-[20px] items-center justify-center">
+        <div className="absolute inset-0 animate-spin rounded-full border-2 border-dashed border-[#fcfdfe] opacity-50 [animation-duration:12s]" />
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 18 18"
+          fill="none"
+          className="relative opacity-50"
+          aria-hidden="true"
+        >
+          <circle cx="6" cy="6.5" r="1.3" fill="#fcfdfe" />
+          <circle cx="12" cy="6.5" r="1.3" fill="#fcfdfe" />
+          <path
+            d="M5.5 13.5C6.8 11.5 11.2 11.5 12.5 13.5"
+            stroke="#fcfdfe"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </svg>
+      </div>
+      <p className="text-[13px] leading-[20px] font-medium text-[#fcfdfe] opacity-70">
+        Nobody&apos;s here
+      </p>
+    </div>
+  )
+}
+
 function SpaceCard({
   space,
   browseLabel,
@@ -62,57 +162,45 @@ function SpaceCard({
   browseLabel?: string
   onBrowse?: () => void
 }) {
-  const body = (
-    <>
+  return (
+    <div className="relative aspect-[7/2] w-full cursor-pointer overflow-hidden rounded-[12px]">
       <div
         className="absolute inset-0"
         style={{ background: space.gradient }}
       />
-      <div className="absolute inset-0 bg-black/36 shadow-[0_0_0_1px_rgba(0,0,0,0.2),0_0_2px_rgba(0,0,0,0.08),0_2px_6px_rgba(0,0,0,0.1)]" />
+      <div className="absolute inset-0 bg-[rgba(0,0,0,0.36)] shadow-[0px_0px_0px_1px_rgba(0,0,0,0.2),0px_0px_2px_0px_rgba(0,0,0,0.08),0px_2px_6px_0px_rgba(0,0,0,0.1)]" />
 
       <div className="relative z-10 flex h-full w-full flex-col justify-between overflow-hidden">
-        <div className="flex min-w-0 items-center gap-3 p-3">
-          <h2 className="min-w-0 flex-1 overflow-hidden text-sm leading-5 font-bold text-ellipsis whitespace-nowrap text-[#fcfdfe]">
-            {space.title}
-          </h2>
-          {browseLabel ? (
-            <span className="shrink-0 text-[13px] leading-5 font-medium text-[#a294fc]">
-              {browseLabel}
-            </span>
-          ) : null}
+        <div className="flex items-start justify-between p-3">
+          <div className="flex min-w-0 flex-1 items-center justify-start">
+            <h2 className="min-w-0 overflow-hidden text-sm leading-5 font-bold text-ellipsis whitespace-nowrap text-[#fcfdfe]">
+              {space.title}
+            </h2>
+            {browseLabel ? (
+              <span className="ml-2 shrink-0 text-[13px] leading-[20px] font-medium text-[#a294fc]">
+                {browseLabel}
+              </span>
+            ) : null}
+          </div>
         </div>
 
         <div className="flex w-full items-center justify-between px-3 pb-3">
-          <div className="flex min-w-0 items-center gap-2">
-            {space.current ? (
-              <>
-                <div className="flex shrink-0 items-center">
-                  <span className="relative z-20 block size-[26px] rounded-full bg-[#4c5663] shadow-[0_0_0_2px_rgba(24,27,31,0.9)]" />
-                  <span className="relative z-10 -ml-1.5 block size-[26px] rounded-full bg-[#6a584d] shadow-[0_0_0_2px_rgba(24,27,31,0.9)]" />
-                </div>
-                <span className="truncate text-[13px] leading-5 font-medium text-[#fcfdfe]/70">
-                  Current location
-                </span>
-              </>
-            ) : space.underConstruction ? (
-              <span className="truncate text-[13px] leading-5 font-medium text-[#fcfdfe]/70">
-                Under construction
-              </span>
-            ) : (
-              <span className="truncate text-[13px] leading-5 font-medium text-[#fcfdfe]/70">
-                Nobody&apos;s here
-              </span>
-            )}
-          </div>
+          <SpaceAttendance space={space} />
 
           {onBrowse ? (
-            <span
-              aria-hidden="true"
-              className="flex size-8 shrink-0 items-center justify-center rounded-full text-[#fcfdfe] transition-colors group-hover:bg-white/10"
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              onClick={onBrowse}
+              aria-label={`View ${space.title} and ${space.attachedCount ?? 0} attached spaces`}
+              className="shrink-0 rounded-full bg-white/5 text-[#fcfdfe] hover:bg-white/10 hover:text-[#fcfdfe]"
             >
-              <ChevronRight className="size-5" />
-            </span>
-          ) : !space.current && !space.underConstruction ? (
+              <ChevronRight className="size-4" />
+            </Button>
+          ) : space.current ? (
+            <TimeInSpace />
+          ) : !space.underConstruction ? (
             <Button
               type="button"
               size="xs"
@@ -124,25 +212,37 @@ function SpaceCard({
           ) : null}
         </div>
       </div>
-    </>
+    </div>
   )
+}
 
-  if (onBrowse) {
-    return (
-      <button
-        type="button"
-        onClick={onBrowse}
-        className="group relative aspect-[7/2] w-full cursor-pointer overflow-hidden rounded-[12px] text-left outline-none focus-visible:ring-2 focus-visible:ring-[#a294fc] focus-visible:ring-offset-2 focus-visible:ring-offset-[#181b1f]"
-        aria-label={`View ${space.title} and ${space.attachedCount ?? 0} attached spaces`}
-      >
-        {body}
-      </button>
-    )
-  }
-
+function ScreenHeader({
+  title,
+  count,
+  onBack,
+}: {
+  title: string
+  count: number
+  onBack?: () => void
+}) {
   return (
-    <div className="relative aspect-[7/2] w-full overflow-hidden rounded-[12px]">
-      {body}
+    <div className="flex items-center gap-3 px-4 pt-5 pb-4 max-[400px]:pr-12">
+      {onBack ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label="Back"
+          onClick={onBack}
+          className="shrink-0 rounded-full bg-white/5 text-foreground hover:bg-white/10 hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+        </Button>
+      ) : null}
+      <span className="text-lg font-bold text-foreground">{title}</span>
+      <span className="ml-auto text-[15px] font-semibold text-muted-foreground">
+        {count}
+      </span>
     </div>
   )
 }
@@ -153,7 +253,7 @@ function PortalOverview({
   onOpenHallway: (floor: number) => void
 }) {
   return (
-    <div className="space-y-4 p-4">
+    <div className="flex flex-col gap-4 px-4 pt-1 pb-4">
       {portalSpaces.map((space) => {
         const floorMatch = /^hallway-(\d+)$/.exec(space.id)
         const floor = floorMatch ? Number(floorMatch[1]) : null
@@ -178,7 +278,7 @@ function HallwayView({ floor }: { floor: number }) {
   if (!hallway) return null
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="flex flex-col gap-4 px-4 pt-1 pb-4">
       <SpaceCard space={hallway} />
       {rooms.map((room) => (
         <SpaceCard key={room.id} space={room} />
@@ -191,44 +291,25 @@ export function PortalPrototype() {
   const [floor, setFloor] = React.useState<number | null>(null)
 
   return (
-    <main className="min-h-screen bg-[#0f1115] text-[#fcfdfe]">
-      <div className="min-h-screen bg-[radial-gradient(circle_at_72%_18%,rgba(86,78,128,0.16),transparent_32%),radial-gradient(circle_at_70%_78%,rgba(34,66,84,0.14),transparent_30%)]">
-        <section
-          className="min-h-screen w-full border-r border-white/6 bg-[#181b1f] sm:max-w-[390px]"
-          aria-label="Hubzz Tower portal prototype"
-        >
-          <header className="sticky top-0 z-30 flex h-14 items-center border-b border-white/6 bg-[#181b1f]/95 px-3 backdrop-blur">
-            {floor !== null ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => setFloor(null)}
-                className="mr-1 shrink-0 text-[#adbac5] hover:bg-white/5 hover:text-[#fcfdfe]"
-                aria-label="Back to Hubzz Tower"
-              >
-                <ArrowLeft className="size-4" />
-              </Button>
-            ) : null}
-            <div className="min-w-0">
-              <h1 className="truncate text-[15px] leading-5 font-semibold text-[#fcfdfe]">
-                {floor === null ? "Hubzz Tower" : `Hallway ${floor}`}
-              </h1>
-              <p className="text-[11px] leading-4 font-medium text-[#7c878e]">
-                {floor === null ? "Portal" : "15 attached spaces"}
-              </p>
-            </div>
-          </header>
+    <main className="min-h-svh bg-background text-foreground">
+      <section
+        className="space-cards dark flex h-svh w-[min(92vw,28rem)] max-w-none flex-col overflow-hidden rounded-none bg-sidebar bg-clip-padding text-sm text-sidebar-foreground duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] sm:w-[350px] sm:max-w-[calc(100vw-1rem)] sm:shadow-[16px_0_32px_-16px_rgba(0,0,0,0.5)]"
+        aria-label="Hubzz Tower portal prototype"
+      >
+        <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-0 overflow-auto">
+          <ScreenHeader
+            title={floor === null ? "Hubzz Tower" : `Hallway ${floor}`}
+            count={floor === null ? portalSpaces.length : 15}
+            onBack={floor === null ? undefined : () => setFloor(null)}
+          />
 
-          <div className="pb-8">
-            {floor === null ? (
-              <PortalOverview onOpenHallway={setFloor} />
-            ) : (
-              <HallwayView floor={floor} />
-            )}
-          </div>
-        </section>
-      </div>
+          {floor === null ? (
+            <PortalOverview onOpenHallway={setFloor} />
+          ) : (
+            <HallwayView floor={floor} />
+          )}
+        </div>
+      </section>
     </main>
   )
 }
