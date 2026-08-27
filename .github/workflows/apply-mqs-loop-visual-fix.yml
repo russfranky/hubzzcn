@@ -1,0 +1,42 @@
+name: Apply MQS loop visual cleanup
+
+on:
+  push:
+    branches:
+      - fix/mqs-loop-visuals
+    paths:
+      - .github/workflows/apply-mqs-loop-visual-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/mqs-loop-visuals
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: python scripts/apply_mqs_loop_visual_fix.py
+      - run: pnpm exec prettier --write src/pages/MqsPrototype.tsx tests/mqs-prototype.spec.ts
+
+      - name: Commit visual cleanup and remove helper files
+        shell: bash
+        run: |
+          rm scripts/apply_mqs_loop_visual_fix.py
+          rm .github/workflows/apply-mqs-loop-visual-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/MqsPrototype.tsx tests/mqs-prototype.spec.ts scripts/apply_mqs_loop_visual_fix.py .github/workflows/apply-mqs-loop-visual-fix.yml
+          git commit -m "fix: integrate MQS loop state into playback control"
+          git push origin HEAD:fix/mqs-loop-visuals
