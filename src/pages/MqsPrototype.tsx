@@ -47,6 +47,7 @@ type QueueItem = {
   platform: string
   addedBy: string
   durationSeconds?: number
+  looping?: boolean
 }
 
 type SetlistSegment = {
@@ -73,6 +74,8 @@ type DraggedMedia = {
 
 const HISTORY_LIMIT = 3
 const SETLIST_LIMIT = 500
+const LOOP_HOLD_MS = 600
+const LOOP_MOVE_TOLERANCE_PX = 12
 
 const INITIAL_PLAYED: QueueItem[] = [
   {
@@ -472,6 +475,7 @@ function CurrentCard({
   isPlaying,
   onElapsedChange,
   onTogglePlaying,
+  onToggleLooping,
   onSkipUp,
   onSkipDown,
   canSkipUp,
@@ -485,6 +489,7 @@ function CurrentCard({
   isPlaying: boolean
   onElapsedChange: (value: number) => void
   onTogglePlaying: () => void
+  onToggleLooping: (itemId: string) => void
   onSkipUp: () => void
   onSkipDown: () => void
   canSkipUp: boolean
@@ -494,12 +499,133 @@ function CurrentCard({
   onSwapDrop: (event: React.DragEvent<HTMLDivElement>) => void
 }) {
   const [scrubSeconds, setScrubSeconds] = React.useState<number | null>(null)
+  const loopHoldTimerRef = React.useRef<number | null>(null)
+  const loopHoldPointerRef = React.useRef<number | null>(null)
+  const loopHoldOriginRef = React.useRef<{ x: number; y: number } | null>(null)
+  const loopHoldItemRef = React.useRef<string | null>(null)
+  const loopHoldTargetRef = React.useRef<HTMLButtonElement | null>(null)
+  const suppressPlaybackClickRef = React.useRef(false)
+  const latestItemIdRef = React.useRef(item.id)
+  const previousItemIdRef = React.useRef(item.id)
   const duration = item.durationSeconds ?? 0
   const hasDuration = duration > 0
   const displayedElapsed = scrubSeconds ?? elapsed
   const progress = hasDuration
     ? Math.min(100, Math.max(0, (displayedElapsed / duration) * 100))
     : 0
+
+  latestItemIdRef.current = item.id
+
+  function clearLoopHold(releasePointer = true) {
+    if (loopHoldTimerRef.current !== null) {
+      window.clearTimeout(loopHoldTimerRef.current)
+      loopHoldTimerRef.current = null
+    }
+
+    const target = loopHoldTargetRef.current
+    const pointerId = loopHoldPointerRef.current
+    if (releasePointer && target && pointerId !== null) {
+      try {
+        if (target.hasPointerCapture(pointerId)) {
+          target.releasePointerCapture(pointerId)
+        }
+      } catch {
+        // Pointer capture can end before React receives the event.
+      }
+    }
+
+    loopHoldPointerRef.current = null
+    loopHoldOriginRef.current = null
+    loopHoldItemRef.current = null
+    loopHoldTargetRef.current = null
+  }
+
+  function beginLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
+    if (event.pointerType === "mouse" && event.button !== 0) return
+
+    clearLoopHold()
+    suppressPlaybackClickRef.current = false
+    loopHoldPointerRef.current = event.pointerId
+    loopHoldOriginRef.current = { x: event.clientX, y: event.clientY }
+    loopHoldItemRef.current = item.id
+    loopHoldTargetRef.current = event.currentTarget
+
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId)
+    } catch {
+      // Pointer capture is optional.
+    }
+
+    const pressedItemId = item.id
+    loopHoldTimerRef.current = window.setTimeout(() => {
+      if (
+        loopHoldPointerRef.current !== event.pointerId ||
+        loopHoldItemRef.current !== pressedItemId ||
+        latestItemIdRef.current !== pressedItemId
+      ) {
+        return
+      }
+
+      loopHoldTimerRef.current = null
+      suppressPlaybackClickRef.current = true
+      onToggleLooping(pressedItemId)
+    }, LOOP_HOLD_MS)
+  }
+
+  function moveLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
+    if (loopHoldPointerRef.current !== event.pointerId) return
+    const origin = loopHoldOriginRef.current
+    if (!origin) return
+
+    const distance = Math.hypot(
+      event.clientX - origin.x,
+      event.clientY - origin.y
+    )
+    if (distance <= LOOP_MOVE_TOLERANCE_PX) return
+
+    suppressPlaybackClickRef.current = true
+    clearLoopHold()
+  }
+
+  function endLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
+    if (loopHoldPointerRef.current !== event.pointerId) return
+    clearLoopHold()
+  }
+
+  function cancelLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
+    if (loopHoldPointerRef.current !== event.pointerId) return
+    suppressPlaybackClickRef.current = false
+    clearLoopHold(false)
+  }
+
+  function loseLoopPointerCapture(
+    event: React.PointerEvent<HTMLButtonElement>
+  ) {
+    if (loopHoldPointerRef.current !== event.pointerId) return
+    suppressPlaybackClickRef.current = false
+    clearLoopHold(false)
+  }
+
+  React.useEffect(() => {
+    if (previousItemIdRef.current === item.id) return
+    previousItemIdRef.current = item.id
+
+    if (
+      loopHoldTimerRef.current !== null ||
+      loopHoldPointerRef.current !== null
+    ) {
+      suppressPlaybackClickRef.current = true
+    }
+    clearLoopHold()
+  }, [item.id])
+
+  React.useEffect(() => {
+    return () => {
+      if (loopHoldTimerRef.current !== null) {
+        window.clearTimeout(loopHoldTimerRef.current)
+      }
+    }
+  }, [])
 
   function secondsFromPointer(clientX: number, element: HTMLElement) {
     if (!hasDuration) return null
@@ -658,10 +784,25 @@ function CurrentCard({
             type="button"
             variant="outline"
             size="icon-lg"
-            className="rounded-full bg-card"
+            className="touch-manipulation rounded-full bg-card"
+            data-looping={item.looping ? "true" : "false"}
             aria-label={isPlaying ? "Pause" : "Play"}
             title={isPlaying ? "Pause" : "Play"}
-            onClick={onTogglePlaying}
+            onPointerDown={beginLoopHold}
+            onPointerMove={moveLoopHold}
+            onPointerUp={endLoopHold}
+            onPointerCancel={cancelLoopHold}
+            onLostPointerCapture={loseLoopPointerCapture}
+            onContextMenu={(event) => {
+              if (loopHoldPointerRef.current !== null) event.preventDefault()
+            }}
+            onClick={() => {
+              if (suppressPlaybackClickRef.current) {
+                suppressPlaybackClickRef.current = false
+                return
+              }
+              onTogglePlaying()
+            }}
           >
             {isPlaying ? <Pause /> : <Play />}
           </Button>
@@ -806,9 +947,12 @@ export function MqsPrototype() {
     if (!isPlaying || !current?.durationSeconds) return
 
     const timer = window.setInterval(() => {
-      setElapsed((value) =>
-        Math.min(current.durationSeconds ?? value, value + 1)
-      )
+      setElapsed((value) => {
+        const duration = current.durationSeconds ?? value
+        const next = value + 1
+        if (current.looping && next >= duration) return 0
+        return Math.min(duration, next)
+      })
     }, 1000)
 
     return () => window.clearInterval(timer)
@@ -1083,6 +1227,12 @@ export function MqsPrototype() {
     setIsPlaying(true)
   }
 
+  function toggleCurrentLoopForItem(itemId: string) {
+    setCurrent((item) =>
+      item?.id === itemId ? { ...item, looping: !item.looping } : item
+    )
+  }
+
   function addUrl(mode: "tail" | "next") {
     const trimmed = url.trim()
     if (!trimmed) {
@@ -1286,6 +1436,7 @@ export function MqsPrototype() {
               isPlaying={isPlaying}
               onElapsedChange={setElapsed}
               onTogglePlaying={() => setIsPlaying((value) => !value)}
+              onToggleLooping={toggleCurrentLoopForItem}
               onSkipUp={skipUp}
               onSkipDown={skipDown}
               canSkipUp={played.length > 0}
