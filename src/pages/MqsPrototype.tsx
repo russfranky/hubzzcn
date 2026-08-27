@@ -752,7 +752,7 @@ function CurrentCard({
             type="button"
             variant="outline"
             size="icon-lg"
-            className="relative rounded-full bg-card touch-none"
+            className="relative touch-none rounded-full bg-card"
             data-looping={item.looping ? "true" : "false"}
             aria-label={isPlaying ? "Pause" : "Play"}
             title={`${isPlaying ? "Pause" : "Play"} · Hold to toggle loop`}
@@ -804,7 +804,7 @@ function CurrentCard({
             <span
               data-testid="loop-feedback"
               role="status"
-              className="pointer-events-none absolute top-1/2 right-full mr-3 -translate-y-1/2 whitespace-nowrap rounded-md border border-border bg-popover px-2 py-1 text-xs font-medium text-popover-foreground shadow-md"
+              className="pointer-events-none absolute top-1/2 right-full mr-3 -translate-y-1/2 rounded-md border border-border bg-popover px-2 py-1 text-xs font-medium whitespace-nowrap text-popover-foreground shadow-md"
             >
               {loopNotice}
             </span>
@@ -1231,9 +1231,7 @@ export function MqsPrototype() {
   }
 
   function toggleCurrentLoop() {
-    setCurrent((item) =>
-      item ? { ...item, looping: !item.looping } : item
-    )
+    setCurrent((item) => (item ? { ...item, looping: !item.looping } : item))
   }
 
   function addUrl(mode: "tail" | "next") {
