@@ -83,7 +83,9 @@ function CurrentAttendance() {
                   <span
                     aria-hidden="true"
                     className="pointer-events-none absolute inset-0 rounded-full"
-                    style={{ boxShadow: "inset 0 0 0 1px rgba(252,253,254,0.42)" }}
+                    style={{
+                      boxShadow: "inset 0 0 0 1px rgba(252,253,254,0.42)",
+                    }}
                   />
                 </span>
               </span>
