@@ -1,7 +1,8 @@
 import * as React from "react"
-import { ArrowLeft } from "lucide-react"
+import { Check, ListFilter, Search } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import "./portal-prealpha.css"
 
 type PortalSpace = {
   id: string
@@ -10,6 +11,36 @@ type PortalSpace = {
   attachedCount?: number
   underConstruction?: boolean
   current?: boolean
+}
+
+type SpaceScope =
+  { kind: "portal" } | { kind: "all" } | { kind: "hallway"; floor: number }
+
+const PROFILE_PANEL_BUTTON_BASE =
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+const PROFILE_PANEL_BUTTON_GHOST =
+  "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50"
+const PROFILE_PANEL_BUTTON_XS =
+  "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3"
+
+function ProfilePanelButton({
+  className,
+  ...props
+}: React.ComponentProps<"button">) {
+  return (
+    <button
+      data-slot="button"
+      data-variant="ghost"
+      data-size="xs"
+      className={cn(
+        PROFILE_PANEL_BUTTON_BASE,
+        PROFILE_PANEL_BUTTON_GHOST,
+        PROFILE_PANEL_BUTTON_XS,
+        className
+      )}
+      {...props}
+    />
+  )
 }
 
 const FLOOR_GRADIENTS = [
@@ -46,6 +77,31 @@ const portalSpaces: PortalSpace[] = [
   },
 ]
 
+const exploreSpaces: PortalSpace[] = [
+  {
+    id: "the-lounge",
+    title: "The Lounge",
+    gradient: "linear-gradient(135deg, #20283a 0%, #283650 48%, #171b25 100%)",
+  },
+  {
+    id: "dev-workshop",
+    title: "Dev Workshop",
+    gradient: "linear-gradient(135deg, #1c2f2a 0%, #29463d 48%, #151d1b 100%)",
+  },
+  {
+    id: "main-stage",
+    title: "Main Stage",
+    gradient: "linear-gradient(135deg, #342033 0%, #4a2b47 48%, #1d161d 100%)",
+  },
+  {
+    id: "chill-zone",
+    title: "Chill Zone",
+    gradient: "linear-gradient(135deg, #202d38 0%, #284253 48%, #151b20 100%)",
+  },
+]
+
+const allSpaces = [...portalSpaces, ...exploreSpaces]
+
 function roomsForFloor(floor: number): PortalSpace[] {
   return Array.from({ length: 15 }, (_, index) => ({
     id: `${floor}-${String(index + 1).padStart(2, "0")}`,
@@ -53,6 +109,42 @@ function roomsForFloor(floor: number): PortalSpace[] {
     gradient: FLOOR_GRADIENTS[(floor + index) % FLOOR_GRADIENTS.length],
     underConstruction: true,
   }))
+}
+
+function initialScope(): SpaceScope {
+  if (typeof window === "undefined") return { kind: "portal" }
+
+  const params = new URLSearchParams(window.location.search)
+  const attachedTo = params.get("attachedTo")
+  const hallwayMatch = attachedTo ? /^hallway-(\d+)$/.exec(attachedTo) : null
+
+  if (hallwayMatch) {
+    return { kind: "hallway", floor: Number(hallwayMatch[1]) }
+  }
+
+  if (params.get("scope") === "all") return { kind: "all" }
+  return { kind: "portal" }
+}
+
+function initialQuery() {
+  if (typeof window === "undefined") return ""
+  return new URLSearchParams(window.location.search).get("q") ?? ""
+}
+
+function spacesForScope(scope: SpaceScope): PortalSpace[] {
+  if (scope.kind === "all") return allSpaces
+  if (scope.kind === "portal") return portalSpaces
+
+  const hallway = portalSpaces.find(
+    (space) => space.id === `hallway-${scope.floor}`
+  )
+  return hallway ? [hallway, ...roomsForFloor(scope.floor)] : []
+}
+
+function scopeLabel(scope: SpaceScope) {
+  if (scope.kind === "all") return "All spaces"
+  if (scope.kind === "portal") return "Hubzz Tower Portal"
+  return `Hallway ${scope.floor}`
 }
 
 function CurrentAttendance() {
@@ -211,14 +303,12 @@ function SpaceCard({
           {space.current ? (
             <TimeInSpace />
           ) : !space.underConstruction ? (
-            <Button
+            <ProfilePanelButton
               type="button"
-              size="xs"
-              variant="ghost"
               className="shrink-0 rounded-full bg-gradient-to-b from-[#9a77ff] to-[#735ffa] px-3.5 text-[12px] font-semibold text-[#fcfdfe] hover:text-[#fcfdfe] hover:opacity-90"
             >
               Join
-            </Button>
+            </ProfilePanelButton>
           ) : null}
         </div>
       </div>
@@ -226,100 +316,192 @@ function SpaceCard({
   )
 }
 
-function ScreenHeader({
-  title,
-  count,
-  onBack,
+function FilterOption({
+  active,
+  children,
+  onClick,
 }: {
-  title: string
-  count: number
-  onBack?: () => void
+  active: boolean
+  children: React.ReactNode
+  onClick: () => void
 }) {
   return (
-    <div className="flex items-center gap-3 px-4 pt-5 pb-4 max-[400px]:pr-12">
-      {onBack ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label="Back"
-          onClick={onBack}
-          className="shrink-0 rounded-full bg-white/5 text-foreground hover:bg-white/10 hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-        </Button>
-      ) : null}
-      <span className="text-lg font-bold text-foreground">{title}</span>
-      <span className="ml-auto">
-        <span className="text-[15px] font-semibold text-muted-foreground">
-          {count}
-        </span>
-      </span>
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-left text-[13px] leading-[20px] font-medium text-[#fcfdfe] transition-colors hover:bg-muted"
+    >
+      <span>{children}</span>
+      {active ? <Check className="size-4 text-[#a294fc]" /> : null}
+    </button>
   )
 }
 
-function PortalOverview({
-  onOpenHallway,
+function SpacesToolbar({
+  query,
+  scope,
+  onQueryChange,
+  onScopeChange,
 }: {
-  onOpenHallway: (floor: number) => void
+  query: string
+  scope: SpaceScope
+  onQueryChange: (value: string) => void
+  onScopeChange: (scope: SpaceScope) => void
 }) {
-  return (
-    <div className="flex flex-col gap-4 px-4 pt-1 pb-4">
-      {portalSpaces.map((space) => {
-        const floorMatch = /^hallway-(\d+)$/.exec(space.id)
-        const floor = floorMatch ? Number(floorMatch[1]) : null
+  const [filterOpen, setFilterOpen] = React.useState(false)
 
-        return (
-          <SpaceCard
-            key={space.id}
-            space={space}
-            browseLabel={floor ? `+${space.attachedCount} Spaces` : undefined}
-            onBrowse={floor ? () => onOpenHallway(floor) : undefined}
+  const chooseScope = (next: SpaceScope) => {
+    onScopeChange(next)
+    setFilterOpen(false)
+  }
+
+  return (
+    <div className="flex flex-col gap-6 px-4 pt-10 pb-6">
+      <h1 className="text-[24px] leading-[32px] font-bold text-[#fcfdfe]">
+        Spaces
+      </h1>
+
+      <div className="flex items-center gap-2">
+        <label className="flex min-w-0 flex-1 items-center gap-3 rounded-[60px] bg-card px-4 py-3">
+          <Search
+            className="size-5 shrink-0 text-[#fcfdfe]"
+            aria-hidden="true"
           />
-        )
-      })}
-    </div>
-  )
-}
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            placeholder="Search spaces"
+            aria-label="Search spaces"
+            className="min-w-0 flex-1 border-none bg-transparent p-0 text-[14px] leading-[20px] font-normal text-[#fcfdfe] outline-none placeholder:text-[#adbac5]"
+          />
+        </label>
 
-function HallwayView({ floor }: { floor: number }) {
-  const hallway = portalSpaces.find((space) => space.id === `hallway-${floor}`)
-  const rooms = roomsForFloor(floor)
+        <div className="relative shrink-0">
+          <button
+            type="button"
+            aria-label="Filter spaces"
+            aria-expanded={filterOpen}
+            onClick={() => setFilterOpen((open) => !open)}
+            className="flex size-11 items-center justify-center rounded-full border-none bg-card text-[#fcfdfe] shadow-[0px_16px_16px_-4px_rgba(0,0,0,0.1)] transition-colors hover:bg-muted"
+          >
+            <ListFilter className="size-5" />
+          </button>
 
-  if (!hallway) return null
-
-  return (
-    <div className="flex flex-col gap-4 px-4 pt-1 pb-4">
-      <SpaceCard space={hallway} />
-      {rooms.map((room) => (
-        <SpaceCard key={room.id} space={room} />
-      ))}
+          {filterOpen ? (
+            <div className="absolute top-full right-0 z-30 mt-2 w-[220px] rounded-[12px] border border-white/5 bg-card p-1 shadow-[0px_16px_32px_-8px_rgba(0,0,0,0.45)]">
+              {scope.kind === "hallway" ? (
+                <FilterOption active onClick={() => chooseScope(scope)}>
+                  Hallway {scope.floor}
+                </FilterOption>
+              ) : null}
+              <FilterOption
+                active={scope.kind === "portal"}
+                onClick={() => chooseScope({ kind: "portal" })}
+              >
+                Hubzz Tower Portal
+              </FilterOption>
+              <FilterOption
+                active={scope.kind === "all"}
+                onClick={() => chooseScope({ kind: "all" })}
+              >
+                All spaces
+              </FilterOption>
+            </div>
+          ) : null}
+        </div>
+      </div>
     </div>
   )
 }
 
 export function PortalPrototype() {
-  const [floor, setFloor] = React.useState<number | null>(null)
+  const [scope, setScope] = React.useState<SpaceScope>(initialScope)
+  const [query, setQuery] = React.useState(initialQuery)
+
+  React.useEffect(() => {
+    const params = new URLSearchParams()
+
+    if (scope.kind === "portal") {
+      params.set("portal", "hubzz_tower_portal")
+    } else if (scope.kind === "hallway") {
+      params.set("attachedTo", `hallway-${scope.floor}`)
+    } else {
+      params.set("scope", "all")
+    }
+
+    if (query) params.set("q", query)
+
+    const search = params.toString()
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${search ? `?${search}` : ""}`
+    )
+  }, [query, scope])
+
+  const scopedSpaces = spacesForScope(scope)
+  const normalizedQuery = query.trim().toLowerCase()
+  const visibleSpaces = normalizedQuery
+    ? scopedSpaces.filter((space) =>
+        space.title.toLowerCase().includes(normalizedQuery)
+      )
+    : scopedSpaces
+
+  const openHallway = (floor: number) => {
+    setQuery("")
+    setScope({ kind: "hallway", floor })
+  }
 
   return (
-    <main className="min-h-svh bg-background text-foreground">
+    <main className="hubzz-profile-panel-theme min-h-svh bg-background text-foreground">
       <section
         className="space-cards dark fixed inset-y-0 left-0 z-[200010] flex w-[min(92vw,28rem)] max-w-none flex-col overflow-hidden rounded-none bg-sidebar bg-clip-padding text-sm text-sidebar-foreground shadow-lg duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] sm:w-[350px] sm:max-w-[calc(100vw-1rem)] sm:shadow-[16px_0_32px_-16px_rgba(0,0,0,0.5)] data-open:animate-in data-open:slide-in-from-left-[100%] data-closed:animate-out data-closed:slide-out-to-left-[100%]"
-        aria-label="Hubzz Tower portal prototype"
+        aria-label="Spaces filtered by Hubzz Tower Portal"
       >
         <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-0 overflow-auto">
-          <ScreenHeader
-            title={floor === null ? "Hubzz Tower" : `Hallway ${floor}`}
-            count={floor === null ? portalSpaces.length : 15}
-            onBack={floor === null ? undefined : () => setFloor(null)}
+          <SpacesToolbar
+            query={query}
+            scope={scope}
+            onQueryChange={setQuery}
+            onScopeChange={setScope}
           />
 
-          {floor === null ? (
-            <PortalOverview onOpenHallway={setFloor} />
-          ) : (
-            <HallwayView floor={floor} />
-          )}
+          <div className="flex flex-col gap-4 px-4 pb-4">
+            <div className="flex w-full items-start gap-[10px] text-[14px] leading-[20px] font-medium">
+              <p className="min-w-0 flex-1 text-[#adbac5]">
+                {scopeLabel(scope)}
+              </p>
+              <span className="shrink-0 text-[#adbac5]">
+                {visibleSpaces.length}
+              </span>
+            </div>
+
+            {visibleSpaces.length > 0 ? (
+              visibleSpaces.map((space) => {
+                const floorMatch = /^hallway-(\d+)$/.exec(space.id)
+                const floor = floorMatch ? Number(floorMatch[1]) : null
+                const canBrowse = scope.kind !== "hallway" && floor !== null
+
+                return (
+                  <SpaceCard
+                    key={space.id}
+                    space={space}
+                    browseLabel={
+                      canBrowse ? `+${space.attachedCount} Spaces` : undefined
+                    }
+                    onBrowse={
+                      canBrowse && floor ? () => openHallway(floor) : undefined
+                    }
+                  />
+                )
+              })
+            ) : (
+              <div className="rounded-[12px] bg-card px-4 py-6 text-center text-[13px] leading-[20px] font-medium text-muted-foreground">
+                No spaces match this search.
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </main>
