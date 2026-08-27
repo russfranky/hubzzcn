@@ -1,0 +1,41 @@
+name: Apply MQS Now Playing Swap Once
+
+on:
+  push:
+    branches:
+      - feature/mqs-now-playing-swap
+    paths:
+      - .github/workflows/apply-mqs-now-playing-swap-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/mqs-now-playing-swap
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: python scripts/tmp-mqs-now-playing-swap.py
+      - run: pnpm exec prettier --write src/pages/MqsPrototype.tsx tests/mqs-prototype.spec.ts
+      - run: pnpm typecheck
+      - run: pnpm exec playwright install chromium
+      - run: pnpm exec playwright test tests/mqs-prototype.spec.ts --project=chromium
+      - name: Commit feature and remove temporary files
+        run: |
+          rm scripts/tmp-mqs-now-playing-swap.py .github/workflows/apply-mqs-now-playing-swap-once.yml
+          git config user.name "Russfranky"
+          git config user.email "90220424+russfranky@users.noreply.github.com"
+          git add src/pages/MqsPrototype.tsx tests/mqs-prototype.spec.ts scripts/tmp-mqs-now-playing-swap.py .github/workflows/apply-mqs-now-playing-swap-once.yml
+          git commit -m "feat: swap Now Playing with queue rows"
+          git push origin HEAD:feature/mqs-now-playing-swap
