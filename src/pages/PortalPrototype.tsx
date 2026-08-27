@@ -176,29 +176,25 @@ function SpaceCard({
             <h2 className="min-w-0 overflow-hidden text-sm leading-5 font-bold text-ellipsis whitespace-nowrap text-[#fcfdfe]">
               {space.title}
             </h2>
-            {browseLabel ? (
-              <span className="ml-2 shrink-0 text-[13px] leading-[20px] font-medium text-[#a294fc]">
-                {browseLabel}
-              </span>
-            ) : null}
           </div>
+
+          {browseLabel && onBrowse ? (
+            <button
+              type="button"
+              onClick={onBrowse}
+              aria-label={`View ${space.title} and ${space.attachedCount ?? 0} attached spaces`}
+              className="ml-3 inline-flex shrink-0 cursor-pointer items-center gap-1 border-none bg-transparent p-0 text-[13px] leading-[20px] font-medium text-[#fcfdfe] opacity-50 transition-opacity hover:opacity-80"
+            >
+              <span>{browseLabel}</span>
+              <ChevronRight className="size-4 shrink-0" />
+            </button>
+          ) : null}
         </div>
 
         <div className="flex w-full items-center justify-between px-3 pb-3">
           <SpaceAttendance space={space} />
 
-          {onBrowse ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-xs"
-              onClick={onBrowse}
-              aria-label={`View ${space.title} and ${space.attachedCount ?? 0} attached spaces`}
-              className="shrink-0 rounded-full text-muted-foreground hover:bg-white/[0.04] hover:text-[#fcfdfe]"
-            >
-              <ChevronRight className="size-4 shrink-0" />
-            </Button>
-          ) : space.current ? (
+          {space.current ? (
             <TimeInSpace />
           ) : !space.underConstruction ? (
             <Button
