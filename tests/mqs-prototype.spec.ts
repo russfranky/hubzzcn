@@ -184,6 +184,59 @@ test.describe("MQS final-layout prototype", () => {
     await expect(page.getByRole("button", { name: "Skip down" })).toBeVisible()
   })
 
+  test("toggles the current item loop with a long press without pausing", async ({
+    page,
+  }) => {
+    const pause = page.getByRole("button", { name: "Pause" })
+    const box = await pause.boundingBox()
+    if (!box) throw new Error("Pause control has no bounding box")
+
+    const center = {
+      x: box.x + box.width / 2,
+      y: box.y + box.height / 2,
+    }
+
+    await page.mouse.move(center.x, center.y)
+    await page.mouse.down()
+    await expect(page.getByTestId("loop-hold-progress")).toBeVisible()
+    await page.waitForTimeout(650)
+    await page.mouse.up()
+
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible()
+    await expect(page.getByTestId("current-loop-badge")).toBeVisible()
+    await expect(page.getByTestId("loop-feedback")).toHaveText("Loop on")
+
+    await page.mouse.down()
+    await page.waitForTimeout(650)
+    await page.mouse.up()
+
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible()
+    await expect(page.getByTestId("current-loop-badge")).toHaveCount(0)
+    await expect(page.getByTestId("loop-feedback")).toHaveText("Loop off")
+  })
+
+  test("loops finite current media when playback reaches the end", async ({
+    page,
+  }) => {
+    await page.getByRole("button", { name: "Pause" }).click()
+    await page.getByRole("button", { name: "Queue actions" }).click()
+    await page.getByRole("menuitem", { name: "Loop current item" }).click()
+
+    await expect(page.getByTestId("current-loop-badge")).toBeVisible()
+
+    const slider = page.getByRole("slider", { name: "Playback position" })
+    await slider.focus()
+    await slider.press("End")
+    await expect(slider).toHaveAttribute("aria-valuenow", "4542")
+
+    await page.getByRole("button", { name: "Play" }).click()
+    await expect
+      .poll(async () => Number(await slider.getAttribute("aria-valuenow")), {
+        timeout: 2500,
+      })
+      .toBeLessThan(5)
+  })
+
   test("places elapsed and total time under the playback bar", async ({
     page,
   }) => {
