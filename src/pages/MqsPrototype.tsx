@@ -265,7 +265,7 @@ function Contributor({ name }: { name: string }) {
   return (
     <a
       href={`#user-${encodeURIComponent(name.replace(/^@/, ""))}`}
-      className="font-medium text-indigo-400 underline-offset-2 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+      className="font-medium text-primary underline-offset-2 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
     >
       {name}
     </a>
@@ -396,7 +396,7 @@ function UpcomingRow({
           data-position={dropInsertionIndex === index ? "before" : "after"}
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute right-3 left-3 z-20 h-0.5 rounded-full bg-indigo-400",
+            "pointer-events-none absolute right-3 left-3 z-20 h-0.5 rounded-full bg-primary",
             dropInsertionIndex === index ? "-top-px" : "-bottom-px"
           )}
         />
@@ -507,7 +507,7 @@ function CurrentCard({
       onDrop={onSwapDrop}
       className={cn(
         "relative gap-0 overflow-hidden rounded-xl bg-card py-0 ring-1 ring-foreground/15 transition-colors",
-        swapSourceTitle && "ring-indigo-400/60"
+        swapSourceTitle && "ring-primary/60"
       )}
     >
       {swapSourceTitle ? (
@@ -568,13 +568,13 @@ function CurrentCard({
               >
                 <div className="absolute top-1/2 right-0 left-0 h-1 -translate-y-1/2 overflow-hidden rounded-full bg-muted">
                   <div
-                    className="h-full rounded-full bg-indigo-400"
+                    className="h-full rounded-full bg-primary"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
                 <span
                   aria-hidden="true"
-                  className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-400 ring-4 ring-card"
+                  className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary ring-4 ring-card"
                   style={{ left: `${progress}%` }}
                 />
               </div>
@@ -1208,7 +1208,7 @@ export function MqsPrototype() {
                 data-testid="queue-tail-drop-indicator"
                 aria-hidden="true"
                 className={cn(
-                  "pointer-events-none absolute right-2 left-2 z-30 h-0.5 rounded-full bg-indigo-400",
+                  "pointer-events-none absolute right-2 left-2 z-30 h-0.5 rounded-full bg-primary",
                   upcoming.length === 0 ? "top-2" : "bottom-0"
                 )}
               />
