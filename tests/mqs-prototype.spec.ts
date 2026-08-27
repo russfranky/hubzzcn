@@ -107,6 +107,27 @@ test.describe("MQS final-layout prototype", () => {
     ).toBeVisible()
   })
 
+  test("supports slash-to-focus and Escape without losing the media draft", async ({
+    page,
+  }) => {
+    const input = page.getByRole("textbox", { name: "Media URL" })
+
+    await page.keyboard.press("/")
+    await expect(input).toBeFocused()
+    await expect(
+      page.getByRole("button", { name: "Add media to queue" })
+    ).toBeVisible()
+
+    await input.fill("https://example.com/draft")
+    await input.press("Escape")
+
+    await expect(input).not.toBeFocused()
+    await expect(input).toHaveValue("https://example.com/draft")
+    await expect(
+      page.getByRole("button", { name: "Queue actions" })
+    ).toBeVisible()
+  })
+
   test("previews the exact queue insertion point while dragging", async ({
     page,
   }) => {
@@ -138,6 +159,37 @@ test.describe("MQS final-layout prototype", () => {
     await expect(rows.nth(1)).toContainText("Anjunadeep Open Air 2025")
     await expect(rows.nth(2)).toContainText("Afterlife Tulum 2025")
     await expect(page.getByTestId("queue-drop-indicator")).toHaveCount(0)
+  })
+
+  test("accepts history drops into an empty Up Next area", async ({ page }) => {
+    await page.getByRole("button", { name: "Queue actions" }).click()
+    await page.getByRole("menuitem", { name: "Clear upcoming" }).click()
+    await expect(page.getByTestId("upcoming-row")).toHaveCount(0)
+
+    const history = page.getByTestId("history-row").first()
+    const upNext = page.getByTestId("up-next-scroll")
+    const upNextBox = await upNext.boundingBox()
+    if (!upNextBox) throw new Error("Up Next has no bounding box")
+    const dataTransfer = await page.evaluateHandle(() => new DataTransfer())
+
+    await history.dispatchEvent("dragstart", { dataTransfer })
+    await upNext.dispatchEvent("dragover", {
+      dataTransfer,
+      clientX: upNextBox.x + upNextBox.width / 2,
+      clientY: upNextBox.y + upNextBox.height / 2,
+    })
+    await expect(page.getByTestId("queue-tail-drop-indicator")).toBeVisible()
+
+    await upNext.dispatchEvent("drop", {
+      dataTransfer,
+      clientX: upNextBox.x + upNextBox.width / 2,
+      clientY: upNextBox.y + upNextBox.height / 2,
+    })
+
+    await expect(page.getByTestId("upcoming-row")).toHaveCount(1)
+    await expect(page.getByTestId("upcoming-row").first()).toContainText(
+      "Sunset Drive 2025"
+    )
   })
 
   test("keeps composer geometry fixed while dragging and centers the removal poof", async ({
@@ -341,6 +393,33 @@ test.describe("MQS final-layout prototype", () => {
       metrics.upNextClientHeight
     )
     await expect(page.getByTestId("upcoming-row")).toHaveCount(31)
+
+    const upNext = page.getByTestId("up-next-scroll")
+    const firstRow = page.getByTestId("upcoming-row").first()
+    const upNextBox = await upNext.boundingBox()
+    if (!upNextBox) throw new Error("Up Next has no bounding box")
+    const dataTransfer = await page.evaluateHandle(() => new DataTransfer())
+    await firstRow.dispatchEvent("dragstart", { dataTransfer })
+
+    const beforeScroll = await upNext.evaluate((element) => element.scrollTop)
+    for (let index = 0; index < 8; index += 1) {
+      await upNext.dispatchEvent("dragover", {
+        dataTransfer,
+        clientX: upNextBox.x + upNextBox.width / 2,
+        clientY: upNextBox.y + upNextBox.height - 2,
+      })
+    }
+    const afterScroll = await upNext.evaluate((element) => element.scrollTop)
+    expect(afterScroll).toBeGreaterThan(beforeScroll)
+    await firstRow.dispatchEvent("dragend", { dataTransfer })
+
+    const input = page.getByRole("textbox", { name: "Media URL" })
+    await input.fill("https://example.com/reveal-me")
+    await input.press("Enter")
+    await expect(page.getByTestId("upcoming-row")).toHaveCount(32)
+    const added = page.getByTestId("upcoming-row").last()
+    await expect(added).toContainText("https://example.com/reveal-me")
+    await expect(added).toBeInViewport()
   })
 
   test("previews a setlist and replaces the queue in paused state", async ({

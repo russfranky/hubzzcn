@@ -350,6 +350,7 @@ function UpcomingRow({
   return (
     <div
       data-testid="upcoming-row"
+      data-queue-id={item.id}
       draggable
       onDragStart={(event) => {
         setDragging(true)
@@ -373,6 +374,7 @@ function UpcomingRow({
       }}
       onDrop={(event) => {
         event.preventDefault()
+        event.stopPropagation()
         const targetIndex = dropInsertionIndex ?? index
         setDropInsertionIndex(null)
         onDropSource(event.dataTransfer.getData("text/plain"), targetIndex)
@@ -627,6 +629,10 @@ export function MqsPrototype() {
   const [dragSource, setDragSource] = React.useState<string | null>(null)
   const [removeTargetActive, setRemoveTargetActive] = React.useState(false)
   const [inputFocused, setInputFocused] = React.useState(false)
+  const [queueTailDropActive, setQueueTailDropActive] = React.useState(false)
+  const [pendingRevealId, setPendingRevealId] = React.useState<string | null>(
+    null
+  )
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const removeTargetRef = React.useRef<HTMLDivElement>(null)
 
@@ -641,6 +647,54 @@ export function MqsPrototype() {
 
     return () => window.clearInterval(timer)
   }, [current, isPlaying])
+
+  React.useEffect(() => {
+    function focusComposer(event: KeyboardEvent) {
+      if (
+        event.key !== "/" ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        document.querySelector('[role="dialog"]')
+      ) {
+        return
+      }
+
+      const target = event.target
+      if (
+        target instanceof HTMLElement &&
+        target.closest('input, textarea, select, [contenteditable="true"]')
+      ) {
+        return
+      }
+
+      const input = document.querySelector<HTMLInputElement>(
+        'input[aria-label="Media URL"]'
+      )
+      if (!input) return
+
+      event.preventDefault()
+      input.focus()
+    }
+
+    window.addEventListener("keydown", focusComposer)
+    return () => window.removeEventListener("keydown", focusComposer)
+  }, [])
+
+  React.useEffect(() => {
+    if (!pendingRevealId) return
+
+    const frame = window.requestAnimationFrame(() => {
+      const row = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-queue-id]")
+      ).find((element) => element.dataset.queueId === pendingRevealId)
+
+      row?.scrollIntoView({ block: "nearest" })
+      setPendingRevealId(null)
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [pendingRevealId, upcoming])
 
   function moveUpcoming(from: number, to: number) {
     if (
@@ -680,6 +734,7 @@ export function MqsPrototype() {
     const item = played[index]
     if (!item) return
 
+    setPendingRevealId(item.id)
     setPlayed((items) => items.filter((_, itemIndex) => itemIndex !== index))
     setUpcoming((items) => {
       const next = [...items]
@@ -693,6 +748,7 @@ export function MqsPrototype() {
     event.dataTransfer.setData("text/plain", source)
     setDragSource(source)
     setRemoveTargetActive(false)
+    setQueueTailDropActive(false)
   }
 
   function removeDraggedSource(source: string) {
@@ -732,6 +788,7 @@ export function MqsPrototype() {
     if (removed && target) playRemovalPoof(target)
 
     setRemoveTargetActive(false)
+    setQueueTailDropActive(false)
     setDragSource(null)
   }
 
@@ -785,6 +842,7 @@ export function MqsPrototype() {
     setUpcoming((items) =>
       mode === "next" ? [item, ...items] : [...items, item]
     )
+    setPendingRevealId(item.id)
     setUrl("")
     setError(null)
     setInputFocused(false)
@@ -830,6 +888,7 @@ export function MqsPrototype() {
       onDragEnd={() => {
         setDragSource(null)
         setRemoveTargetActive(false)
+        setQueueTailDropActive(false)
       }}
     >
       <Card
@@ -920,8 +979,57 @@ export function MqsPrototype() {
           </h2>
           <Card
             data-testid="up-next-scroll"
-            className="min-h-0 flex-1 gap-0 overflow-y-auto rounded-xl bg-card py-0 ring-1 ring-foreground/10"
+            className="relative min-h-0 flex-1 gap-0 overflow-y-auto rounded-xl bg-card py-0 ring-1 ring-foreground/10"
+            onDragOver={(event) => {
+              if (!dragSource) return
+
+              event.preventDefault()
+              event.dataTransfer.dropEffect = "move"
+
+              const rect = event.currentTarget.getBoundingClientRect()
+              const edge = Math.min(48, rect.height * 0.2)
+              if (event.clientY <= rect.top + edge) {
+                event.currentTarget.scrollTop -= 24
+              } else if (event.clientY >= rect.bottom - edge) {
+                event.currentTarget.scrollTop += 24
+              }
+
+              const row = (event.target as HTMLElement).closest(
+                '[data-testid="upcoming-row"]'
+              )
+              setQueueTailDropActive(!row)
+            }}
+            onDragLeave={(event) => {
+              const next = event.relatedTarget as Node | null
+              if (next && event.currentTarget.contains(next)) return
+              setQueueTailDropActive(false)
+            }}
+            onDrop={(event) => {
+              if (
+                (event.target as HTMLElement).closest(
+                  '[data-testid="upcoming-row"]'
+                )
+              ) {
+                return
+              }
+
+              event.preventDefault()
+              const source =
+                event.dataTransfer.getData("text/plain") || dragSource || ""
+              handleDropSource(source, upcoming.length)
+              setQueueTailDropActive(false)
+            }}
           >
+            {queueTailDropActive ? (
+              <span
+                data-testid="queue-tail-drop-indicator"
+                aria-hidden="true"
+                className={cn(
+                  "pointer-events-none absolute right-2 left-2 z-30 h-0.5 rounded-full bg-indigo-400",
+                  upcoming.length === 0 ? "top-2" : "bottom-0"
+                )}
+              />
+            ) : null}
             {upcoming.length > 0 ? (
               upcoming.map((item, index) => (
                 <UpcomingRow
@@ -1002,12 +1110,21 @@ export function MqsPrototype() {
                     setError(null)
                   }}
                   onKeyDown={(event) => {
+                    if (event.key === "Escape") {
+                      event.preventDefault()
+                      event.currentTarget.blur()
+                      setInputFocused(false)
+                      setError(null)
+                      return
+                    }
+
                     if (event.key === "Enter") {
                       event.preventDefault()
                       addUrl("tail")
                     }
                   }}
                   aria-label="Media URL"
+                  aria-keyshortcuts="/"
                   placeholder="Paste YouTube or Twitch URL"
                   className="h-9 rounded-md bg-transparent pl-9 text-sm"
                 />
