@@ -60,25 +60,29 @@ function CurrentAttendance() {
     <div className="flex shrink-0 items-center gap-2">
       <div className="flex items-center">
         <div className="flex pr-[6px]">
-          {CURRENT_AVATAR_COLORS.map((color, index) => (
-            <span
-              key={color}
-              className="relative shrink-0 rounded-[32px]"
-              style={{ height: 26, width: 26, marginRight: -6 }}
-            >
+          {CURRENT_AVATAR_COLORS.map((color, index) => {
+            const gapMask =
+              index < CURRENT_AVATAR_COLORS.length - 1
+                ? "radial-gradient(circle 16px at 33px 13px, transparent 15.6px, black 16.4px)"
+                : undefined
+
+            return (
               <span
-                className="block size-full rounded-full"
-                style={{ background: color }}
-              />
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-[-3px] rounded-[35px] border-3 border-solid border-[#24262b]"
-                style={{
-                  opacity: index === CURRENT_AVATAR_COLORS.length - 1 ? 0 : 1,
-                }}
-              />
-            </span>
-          ))}
+                key={color}
+                className="relative shrink-0 rounded-[32px]"
+                style={{ height: 26, width: 26, marginRight: -6 }}
+              >
+                <span
+                  className="block size-full rounded-full"
+                  style={{
+                    background: color,
+                    WebkitMaskImage: gapMask,
+                    maskImage: gapMask,
+                  }}
+                />
+              </span>
+            )
+          })}
         </div>
       </div>
     </div>
@@ -159,7 +163,7 @@ function SpaceCard({
   onBrowse?: () => void
 }) {
   return (
-    <div className="relative aspect-[7/2] w-full overflow-hidden rounded-[12px]">
+    <div className="relative aspect-[7/2] w-full cursor-pointer overflow-hidden rounded-[12px]">
       <div
         className="absolute inset-0"
         style={{ background: space.gradient }}
@@ -169,7 +173,7 @@ function SpaceCard({
       <div className="relative z-10 flex h-full w-full flex-col justify-between overflow-hidden">
         <div className="flex items-start justify-between p-3">
           <div className="flex min-w-0 flex-1 items-center justify-start">
-            <h2 className="min-w-0 flex-1 overflow-hidden text-sm leading-5 font-bold text-ellipsis whitespace-nowrap text-[#fcfdfe]">
+            <h2 className="min-w-0 overflow-hidden text-sm leading-5 font-bold text-ellipsis whitespace-nowrap text-[#fcfdfe]">
               {space.title}
             </h2>
             {browseLabel ? (
@@ -287,12 +291,12 @@ export function PortalPrototype() {
   const [floor, setFloor] = React.useState<number | null>(null)
 
   return (
-    <main className="dark min-h-svh bg-background text-foreground">
+    <main className="min-h-svh bg-background text-foreground">
       <section
-        className="h-svh w-[min(92vw,28rem)] max-w-none overflow-hidden bg-sidebar text-sidebar-foreground shadow-[16px_0_32px_-16px_rgba(0,0,0,0.5)] sm:w-[350px] sm:max-w-[calc(100vw-1rem)]"
+        className="space-cards dark flex h-svh w-[min(92vw,28rem)] max-w-none flex-col overflow-hidden rounded-none bg-sidebar bg-clip-padding text-sm text-sidebar-foreground duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] sm:w-[350px] sm:max-w-[calc(100vw-1rem)] sm:shadow-[16px_0_32px_-16px_rgba(0,0,0,0.5)]"
         aria-label="Hubzz Tower portal prototype"
       >
-        <div className="flex h-full min-h-0 flex-col overflow-y-auto">
+        <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-0 overflow-auto">
           <ScreenHeader
             title={floor === null ? "Hubzz Tower" : `Hallway ${floor}`}
             count={floor === null ? portalSpaces.length : 15}
