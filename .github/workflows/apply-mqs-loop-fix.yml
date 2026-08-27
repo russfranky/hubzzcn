@@ -1,0 +1,368 @@
+name: Apply MQS loop interaction fix
+
+on:
+  push:
+    branches:
+      - fix/mqs-long-press-loop
+    paths:
+      - .github/workflows/apply-mqs-loop-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/mqs-long-press-loop
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Replace brittle long-press handling
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          import re
+
+          source_path = Path("src/pages/MqsPrototype.tsx")
+          source = source_path.read_text()
+
+          source = source.replace(
+              "const LOOP_HOLD_MS = 600\n",
+              "const LOOP_HOLD_MS = 600\nconst LOOP_MOVE_TOLERANCE_PX = 12\n",
+              1,
+          )
+
+          source = source.replace(
+              "  onToggleLooping: () => void\n",
+              "  onToggleLooping: (itemId: string) => void\n",
+              1,
+          )
+
+          new_hold_block = '''  const [scrubSeconds, setScrubSeconds] = React.useState<number | null>(null)
+  const [loopHoldActive, setLoopHoldActive] = React.useState(false)
+  const [loopNotice, setLoopNotice] = React.useState<string | null>(null)
+  const loopHoldTimerRef = React.useRef<number | null>(null)
+  const loopHoldPointerRef = React.useRef<number | null>(null)
+  const loopHoldOriginRef = React.useRef<{ x: number; y: number } | null>(null)
+  const loopHoldItemRef = React.useRef<string | null>(null)
+  const loopHoldTargetRef = React.useRef<HTMLButtonElement | null>(null)
+  const loopHoldCanceledRef = React.useRef(false)
+  const latestItemIdRef = React.useRef(item.id)
+  const previousItemIdRef = React.useRef(item.id)
+  const suppressPlaybackClickRef = React.useRef(false)
+  const loopNoticeTimerRef = React.useRef<number | null>(null)
+  const duration = item.durationSeconds ?? 0
+  const hasDuration = duration > 0
+  const displayedElapsed = scrubSeconds ?? elapsed
+  const progress = hasDuration
+    ? Math.min(100, Math.max(0, (displayedElapsed / duration) * 100))
+    : 0
+
+  latestItemIdRef.current = item.id
+
+  function resetLoopHold(releasePointer = true) {
+    if (loopHoldTimerRef.current !== null) {
+      window.clearTimeout(loopHoldTimerRef.current)
+      loopHoldTimerRef.current = null
+    }
+
+    const target = loopHoldTargetRef.current
+    const pointerId = loopHoldPointerRef.current
+    if (releasePointer && target && pointerId !== null) {
+      try {
+        if (target.hasPointerCapture(pointerId)) {
+          target.releasePointerCapture(pointerId)
+        }
+      } catch {
+        // The browser can release capture before React receives the event.
+      }
+    }
+
+    loopHoldPointerRef.current = null
+    loopHoldOriginRef.current = null
+    loopHoldItemRef.current = null
+    loopHoldTargetRef.current = null
+    loopHoldCanceledRef.current = false
+    setLoopHoldActive(false)
+  }
+
+  function showLoopNotice(nextLooping: boolean) {
+    setLoopNotice(nextLooping ? "Loop on" : "Loop off")
+    if (loopNoticeTimerRef.current !== null) {
+      window.clearTimeout(loopNoticeTimerRef.current)
+    }
+    loopNoticeTimerRef.current = window.setTimeout(() => {
+      setLoopNotice(null)
+      loopNoticeTimerRef.current = null
+    }, 1000)
+  }
+
+  function beginLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
+    if (event.pointerType === "mouse" && event.button !== 0) return
+
+    resetLoopHold()
+    suppressPlaybackClickRef.current = false
+    loopHoldPointerRef.current = event.pointerId
+    loopHoldOriginRef.current = { x: event.clientX, y: event.clientY }
+    loopHoldItemRef.current = item.id
+    loopHoldTargetRef.current = event.currentTarget
+    loopHoldCanceledRef.current = false
+    setLoopHoldActive(true)
+
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId)
+    } catch {
+      // Pointer capture is optional. The hold still works without it.
+    }
+
+    const pressedItemId = item.id
+    const nextLooping = !item.looping
+    loopHoldTimerRef.current = window.setTimeout(() => {
+      if (
+        loopHoldPointerRef.current !== event.pointerId ||
+        loopHoldCanceledRef.current ||
+        loopHoldItemRef.current !== pressedItemId ||
+        latestItemIdRef.current !== pressedItemId
+      ) {
+        return
+      }
+
+      loopHoldTimerRef.current = null
+      setLoopHoldActive(false)
+      suppressPlaybackClickRef.current = true
+      onToggleLooping(pressedItemId)
+      showLoopNotice(nextLooping)
+
+      try {
+        navigator.vibrate?.(18)
+      } catch {
+        // Haptic feedback is optional.
+      }
+    }, LOOP_HOLD_MS)
+  }
+
+  function moveLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
+    if (loopHoldPointerRef.current !== event.pointerId) return
+    if (loopHoldCanceledRef.current) return
+
+    const origin = loopHoldOriginRef.current
+    if (!origin) return
+
+    const distance = Math.hypot(
+      event.clientX - origin.x,
+      event.clientY - origin.y
+    )
+    if (distance <= LOOP_MOVE_TOLERANCE_PX) return
+
+    loopHoldCanceledRef.current = true
+    if (loopHoldTimerRef.current !== null) {
+      window.clearTimeout(loopHoldTimerRef.current)
+      loopHoldTimerRef.current = null
+    }
+    setLoopHoldActive(false)
+  }
+
+  function endLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
+    if (loopHoldPointerRef.current !== event.pointerId) return
+    if (loopHoldCanceledRef.current) {
+      suppressPlaybackClickRef.current = true
+    }
+    resetLoopHold()
+  }
+
+  function cancelLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
+    if (loopHoldPointerRef.current !== event.pointerId) return
+    suppressPlaybackClickRef.current = false
+    resetLoopHold(false)
+  }
+
+  function loseLoopPointerCapture(event: React.PointerEvent<HTMLButtonElement>) {
+    if (loopHoldPointerRef.current !== event.pointerId) return
+    suppressPlaybackClickRef.current = false
+    resetLoopHold(false)
+  }
+
+  React.useEffect(() => {
+    if (previousItemIdRef.current === item.id) return
+    previousItemIdRef.current = item.id
+
+    if (loopHoldTimerRef.current !== null) {
+      window.clearTimeout(loopHoldTimerRef.current)
+      loopHoldTimerRef.current = null
+    }
+    if (loopHoldPointerRef.current !== null) {
+      loopHoldCanceledRef.current = true
+    }
+    setLoopHoldActive(false)
+    setLoopNotice(null)
+    if (loopNoticeTimerRef.current !== null) {
+      window.clearTimeout(loopNoticeTimerRef.current)
+      loopNoticeTimerRef.current = null
+    }
+  }, [item.id])
+
+  React.useEffect(() => {
+    return () => {
+      if (loopHoldTimerRef.current !== null) {
+        window.clearTimeout(loopHoldTimerRef.current)
+      }
+      if (loopNoticeTimerRef.current !== null) {
+        window.clearTimeout(loopNoticeTimerRef.current)
+      }
+
+      const target = loopHoldTargetRef.current
+      const pointerId = loopHoldPointerRef.current
+      if (target && pointerId !== null) {
+        try {
+          if (target.hasPointerCapture(pointerId)) {
+            target.releasePointerCapture(pointerId)
+          }
+        } catch {
+          // The element can disappear before cleanup runs.
+        }
+      }
+    }
+  }, [])
+'''
+
+          source, count = re.subn(
+              r"  const \[scrubSeconds, setScrubSeconds\].*?\n  function secondsFromPointer",
+              new_hold_block + "\n  function secondsFromPointer",
+              source,
+              count=1,
+              flags=re.S,
+          )
+          if count != 1:
+              raise SystemExit(f"hold block replacement count: {count}")
+
+          new_button = '''          <Button
+            type="button"
+            variant="outline"
+            size="icon-lg"
+            className="relative touch-manipulation rounded-full bg-card"
+            data-looping={item.looping ? "true" : "false"}
+            aria-label={isPlaying ? "Pause" : "Play"}
+            title={`${isPlaying ? "Pause" : "Play"} · Hold to toggle loop`}
+            onPointerDown={beginLoopHold}
+            onPointerMove={moveLoopHold}
+            onPointerUp={endLoopHold}
+            onPointerCancel={cancelLoopHold}
+            onLostPointerCapture={loseLoopPointerCapture}
+            onContextMenu={(event) => {
+              if (loopHoldPointerRef.current !== null) {
+                event.preventDefault()
+              }
+            }}
+            onClick={() => {
+              if (suppressPlaybackClickRef.current) {
+                suppressPlaybackClickRef.current = false
+                return
+              }
+              onTogglePlaying()
+            }}
+          >
+            {loopHoldActive ? (
+              <svg
+                data-testid="loop-hold-progress"
+                aria-hidden="true"
+                viewBox="0 0 56 56"
+                className="pointer-events-none absolute top-1/2 left-1/2 size-14 -translate-x-1/2 -translate-y-1/2 -rotate-90 overflow-visible text-primary"
+              >
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="24"
+                  pathLength="100"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeDasharray="100"
+                  strokeDashoffset="100"
+                >
+                  <animate
+                    attributeName="stroke-dashoffset"
+                    from="100"
+                    to="0"
+                    dur={`${LOOP_HOLD_MS}ms`}
+                    fill="freeze"
+                  />
+                </circle>
+              </svg>
+            ) : null}
+            {isPlaying ? <Pause /> : <Play />}
+            {item.looping ? (
+              <span
+                data-testid="current-loop-badge"
+                aria-hidden="true"
+                title="Loop on"
+                className="pointer-events-none absolute -right-1 -bottom-1 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground ring-2 ring-card"
+              >
+                <Repeat2 className="size-3" />
+              </span>
+            ) : null}
+          </Button>'''
+
+          source, count = re.subn(
+              r'''          <Button\n            type="button"\n            variant="outline"\n            size="icon-lg"\n            className="relative touch-none rounded-full bg-card".*?          </Button>''',
+              new_button,
+              source,
+              count=1,
+              flags=re.S,
+          )
+          if count != 1:
+              raise SystemExit(f"play button replacement count: {count}")
+
+          source = source.replace(
+              '''          {loopNotice ? (\n            <span\n              data-testid="loop-feedback"\n              role="status"\n              className="pointer-events-none absolute top-1/2 right-full mr-3 -translate-y-1/2 rounded-md border border-border bg-popover px-2 py-1 text-xs font-medium whitespace-nowrap text-popover-foreground shadow-md"\n            >\n              {loopNotice}\n            </span>\n          ) : null}\n''',
+              '''          {loopNotice ? (\n            <span data-testid="loop-feedback" role="status" className="sr-only">\n              {loopNotice}\n            </span>\n          ) : null}\n''',
+              1,
+          )
+
+          source = source.replace(
+              '''  function toggleCurrentLoop() {\n    setCurrent((item) => (item ? { ...item, looping: !item.looping } : item))\n  }\n''',
+              '''  function toggleCurrentLoop() {\n    setCurrent((item) => (item ? { ...item, looping: !item.looping } : item))\n  }\n\n  function toggleCurrentLoopForItem(itemId: string) {\n    setCurrent((item) =>\n      item?.id === itemId ? { ...item, looping: !item.looping } : item\n    )\n  }\n''',
+              1,
+          )
+
+          source = source.replace(
+              "              onToggleLooping={toggleCurrentLoop}\n",
+              "              onToggleLooping={toggleCurrentLoopForItem}\n",
+              1,
+          )
+
+          source_path.write_text(source)
+
+          test_path = Path("tests/mqs-prototype.spec.ts")
+          tests = test_path.read_text()
+          marker = '''  test("loops finite current media when playback reaches the end", async ({\n'''
+          addition = '''  test("cancels the loop hold when the pointer moves", async ({ page }) => {\n    const pause = page.getByRole("button", { name: "Pause" })\n    const box = await pause.boundingBox()\n    if (!box) throw new Error("Pause control has no bounding box")\n\n    const center = {\n      x: box.x + box.width / 2,\n      y: box.y + box.height / 2,\n    }\n\n    await page.mouse.move(center.x, center.y)\n    await page.mouse.down()\n    await expect(page.getByTestId("loop-hold-progress")).toBeVisible()\n    await page.mouse.move(center.x + 18, center.y)\n    await expect(page.getByTestId("loop-hold-progress")).toHaveCount(0)\n    await page.waitForTimeout(650)\n    await page.mouse.up()\n\n    await expect(page.getByTestId("current-loop-badge")).toHaveCount(0)\n    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible()\n  })\n\n  test("cancels a stale loop hold when the current item changes", async ({\n    page,\n  }) => {\n    const pause = page.getByRole("button", { name: "Pause" })\n    const box = await pause.boundingBox()\n    if (!box) throw new Error("Pause control has no bounding box")\n\n    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)\n    await page.mouse.down()\n    await expect(page.getByTestId("loop-hold-progress")).toBeVisible()\n\n    await page\n      .getByRole("button", { name: "Skip down" })\n      .evaluate((element) => (element as HTMLButtonElement).click())\n    await expect(page.getByTestId("current-row")).toContainText(\n      "Afterlife Tulum 2025"\n    )\n    await expect(page.getByTestId("loop-hold-progress")).toHaveCount(0)\n\n    await page.waitForTimeout(650)\n    await page.mouse.up()\n\n    await expect(page.getByTestId("current-loop-badge")).toHaveCount(0)\n    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible()\n  })\n\n'''
+          if marker not in tests:
+              raise SystemExit("test insertion marker not found")
+          tests = tests.replace(marker, addition + marker, 1)
+          test_path.write_text(tests)
+          PY
+
+      - run: pnpm exec prettier --write src/pages/MqsPrototype.tsx tests/mqs-prototype.spec.ts
+
+      - name: Commit fix and remove helper workflow
+        shell: bash
+        run: |
+          rm .github/workflows/apply-mqs-loop-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/MqsPrototype.tsx tests/mqs-prototype.spec.ts .github/workflows/apply-mqs-loop-fix.yml
+          git commit -m "fix: harden MQS loop long press"
+          git push origin HEAD:fix/mqs-long-press-loop
