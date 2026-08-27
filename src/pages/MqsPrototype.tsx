@@ -1,8 +1,10 @@
 import * as React from "react"
 import {
+  AlertTriangle,
   ChevronDown,
   ChevronUp,
   GripVertical,
+  Headphones,
   Link2,
   MoreVertical,
   X,
@@ -158,14 +160,45 @@ function formatTime(seconds?: number) {
   return `${minutes}:${String(secs).padStart(2, "0")}`
 }
 
+function normalizeMediaUrl(value: string) {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+
+  const candidate =
+    trimmed.startsWith("https://") || trimmed.startsWith("http://")
+      ? trimmed
+      : /^[a-zA-Z0-9]/.test(trimmed) &&
+          trimmed.includes(".") &&
+          !trimmed.includes(" ")
+        ? `https://${trimmed}`
+        : null
+
+  if (!candidate) return null
+
+  try {
+    const parsed = new URL(candidate)
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return null
+    return parsed.href
+  } catch {
+    return null
+  }
+}
+
 function providerFromUrl(value: string) {
   try {
     const host = new URL(value).hostname.replace(/^www\./, "")
-    if (host.includes("youtube") || host === "youtu.be") return "YouTube"
-    if (host.includes("twitch")) return "Twitch"
-    return host
+    if (
+      host === "youtube.com" ||
+      host === "m.youtube.com" ||
+      host === "youtu.be"
+    ) {
+      return "YouTube"
+    }
+    if (host === "twitch.tv") return "Twitch"
+    if (host === "kick.com") return "Kick"
+    return "Website"
   } catch {
-    return "Web"
+    return "Website"
   }
 }
 
@@ -1000,18 +1033,24 @@ export function MqsPrototype() {
 
   function addUrl(mode: "tail" | "next") {
     const trimmed = url.trim()
-    if (!trimmed) return
+    if (!trimmed) {
+      setError("Paste a media URL to add it to the queue.")
+      return
+    }
 
-    if (!isSafeHttpUrl(trimmed)) {
-      setError("Use a valid http(s) media URL.")
+    const normalizedUrl = normalizeMediaUrl(trimmed)
+    if (!normalizedUrl) {
+      setError(
+        "Invalid URL. Try YouTube, Twitch, Kick, or another http(s) URL."
+      )
       return
     }
 
     const item: QueueItem = {
       id: `url-${Date.now()}`,
-      title: trimmed,
-      url: trimmed,
-      platform: providerFromUrl(trimmed),
+      title: normalizedUrl,
+      url: normalizedUrl,
+      platform: providerFromUrl(normalizedUrl),
       addedBy: "@you",
     }
 
@@ -1142,8 +1181,24 @@ export function MqsPrototype() {
               onSwapDrop={handleCurrentSwapDrop}
             />
           ) : (
-            <Card className="rounded-xl bg-card py-8 text-center text-muted-foreground ring-1 ring-border">
-              Nothing is playing.
+            <Card
+              data-testid="empty-current-state"
+              className="rounded-xl bg-card py-0 ring-1 ring-border"
+            >
+              <CardContent className="flex min-h-36 flex-col items-center justify-center px-6 py-7 text-center">
+                <span className="mb-3 flex size-12 items-center justify-center rounded-full border border-border bg-secondary">
+                  <Headphones
+                    className="size-6 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                </span>
+                <span className="text-base font-semibold text-foreground">
+                  Nothing playing
+                </span>
+                <span className="mt-1 max-w-56 text-sm leading-5 text-muted-foreground">
+                  Paste a link below or load a setlist to start.
+                </span>
+              </CardContent>
             </Card>
           )}
         </section>
@@ -1307,7 +1362,7 @@ export function MqsPrototype() {
                   }}
                   aria-label="Media URL"
                   aria-keyshortcuts="/"
-                  placeholder="Paste YouTube or Twitch URL"
+                  placeholder="https://youtube.com/watch?v=dQw4w9WgXcQ…"
                   className="h-9 rounded-md border-border bg-secondary pl-9 text-sm dark:bg-secondary"
                 />
               </>
@@ -1405,9 +1460,14 @@ export function MqsPrototype() {
         </div>
 
         {error ? (
-          <p role="alert" className="px-8 pb-6 text-sm text-destructive">
-            {error}
-          </p>
+          <div
+            data-testid="composer-error"
+            role="alert"
+            className="flex items-center gap-1.5 px-8 pb-6 text-xs font-medium text-destructive"
+          >
+            <AlertTriangle className="size-3.5 shrink-0" aria-hidden="true" />
+            <span>{error}</span>
+          </div>
         ) : null}
       </Card>
 

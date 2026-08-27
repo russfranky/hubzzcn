@@ -274,21 +274,47 @@ test.describe("MQS final-layout prototype", () => {
     await expect(rows.nth(1)).toContainText("Afterlife Tulum 2025")
   })
 
-  test("adds a safe URL with Enter and keeps actions inside the single menu", async ({
+  test("validates and normalizes composer URLs without narrowing the MQS contract", async ({
     page,
   }) => {
     const input = page.getByRole("textbox", { name: "Media URL" })
+    await expect(input).toHaveAttribute(
+      "placeholder",
+      "https://youtube.com/watch?v=dQw4w9WgXcQ…"
+    )
+
+    await input.press("Enter")
+    let error = page.getByTestId("composer-error")
+    await expect(error).toContainText(
+      "Paste a media URL to add it to the queue."
+    )
+    await expect(error.locator("svg.lucide-triangle-alert")).toHaveCount(1)
 
     await input.fill("javascript:alert(1)")
     await input.press("Enter")
-    await expect(page.getByText("Use a valid http(s) media URL.")).toBeVisible()
+    error = page.getByTestId("composer-error")
+    await expect(error).toContainText(
+      "Invalid URL. Try YouTube, Twitch, Kick, or another http(s) URL."
+    )
     await expect(page.getByTestId("upcoming-row")).toHaveCount(5)
 
-    await input.fill("https://example.com/media")
+    await input.fill("kick.com/example-live")
+    await expect(page.getByTestId("composer-error")).toHaveCount(0)
     await input.press("Enter")
     await expect(page.getByTestId("upcoming-row")).toHaveCount(6)
     await expect(page.getByTestId("upcoming-row").last()).toContainText(
+      "https://kick.com/example-live"
+    )
+    await expect(page.getByTestId("upcoming-row").last()).toContainText("Kick")
+
+    await input.fill("https://example.com/media")
+    await input.press("Enter")
+    await expect(page.getByTestId("upcoming-row")).toHaveCount(7)
+    await expect(page.getByTestId("upcoming-row").last()).toContainText(
       "https://example.com/media"
+    )
+    await expect(page.getByTestId("upcoming-row").last()).toContainText(
+      "Website"
     )
 
     await page.getByRole("button", { name: "Queue actions" }).click()
@@ -761,6 +787,12 @@ test.describe("MQS final-layout prototype", () => {
     await expect(page.getByTestId("current-row")).toHaveCount(0)
     await expect(page.getByTestId("upcoming-row")).toHaveCount(0)
     await expect(page.getByTestId("history-row")).toHaveCount(0)
-    await expect(page.getByText("Nothing is playing.")).toBeVisible()
+    const empty = page.getByTestId("empty-current-state")
+    await expect(empty).toBeVisible()
+    await expect(empty).toContainText("Nothing playing")
+    await expect(empty).toContainText(
+      "Paste a link below or load a setlist to start."
+    )
+    await expect(empty.locator("svg.lucide-headphones")).toHaveCount(1)
   })
 })
