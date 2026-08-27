@@ -48,6 +48,29 @@ test.describe("MQS final-layout prototype", () => {
     await expect(page.getByRole("button", { name: "Skip down" })).toBeVisible()
   })
 
+  test("disables skip up when there is no Last Played history", async ({
+    page,
+  }) => {
+    const skipUp = page.getByRole("button", { name: "Skip up" })
+    await expect(skipUp).toBeEnabled()
+
+    for (let index = 0; index < 3; index += 1) {
+      const dataTransfer = await page.evaluateHandle(() => new DataTransfer())
+      await page.getByTestId("history-row").first().dispatchEvent("dragstart", {
+        dataTransfer,
+      })
+      await page.getByTestId("remove-drop-target").dispatchEvent("drop", {
+        dataTransfer,
+      })
+    }
+
+    await expect(page.getByTestId("history-row")).toHaveCount(0)
+    await expect(skipUp).toBeDisabled()
+
+    await page.getByRole("button", { name: "Skip down" }).click()
+    await expect(skipUp).toBeEnabled()
+  })
+
   test("moves through the vertical queue without changing the layout model", async ({
     page,
   }) => {
