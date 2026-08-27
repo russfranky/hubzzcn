@@ -284,7 +284,7 @@ function DragHandle({
       type="button"
       variant="ghost"
       size="icon-xs"
-      className="cursor-grab text-muted-foreground/70 hover:bg-transparent hover:text-foreground active:cursor-grabbing"
+      className="cursor-grab text-muted-foreground/70 hover:!bg-transparent hover:!text-muted-foreground/70 active:cursor-grabbing"
       aria-label={`Reorder ${title}`}
       title={`Reorder ${title}`}
       onKeyDown={onKeyDown}
