@@ -361,14 +361,72 @@ test.describe("MQS final-layout prototype", () => {
 
     await page.getByRole("button", { name: "Queue actions" }).click()
     await expect(
-      page.getByRole("menuitem", { name: "Upload setlist" })
+      page.getByRole("menuitem", { name: "Load setlist" })
     ).toBeVisible()
     await expect(
       page.getByRole("menuitem", { name: "Shuffle upcoming" })
     ).toBeVisible()
     await expect(
+      page.getByRole("menuitem", { name: "Mute local audio" })
+    ).toBeVisible()
+    await expect(
+      page.getByRole("menuitem", { name: "Set local volume…" })
+    ).toBeVisible()
+    await expect(
       page.getByRole("menuitem", { name: "Clear upcoming" })
     ).toBeVisible()
+  })
+
+  test("keeps local audio and secondary actions explicit in the ellipsis menu", async ({
+    page,
+  }) => {
+    const modal = page.getByTestId("mqs-modal")
+    const actions = page.getByRole("button", { name: "Queue actions" })
+
+    await expect(modal).toHaveAttribute("data-local-muted", "false")
+    await expect(modal).toHaveAttribute("data-local-volume", "100")
+
+    await actions.click()
+    await expect(
+      page.getByRole("menuitem", { name: "Add pasted URL" })
+    ).toHaveCount(0)
+    await expect(
+      page.getByRole("menuitem", { name: "Play pasted URL next" })
+    ).toHaveCount(0)
+    await expect(
+      page.getByRole("menuitem", { name: "Load setlist" })
+    ).toBeVisible()
+    await page.getByRole("menuitem", { name: "Mute local audio" }).click()
+    await expect(modal).toHaveAttribute("data-local-muted", "true")
+
+    await actions.click()
+    await expect(
+      page.getByRole("menuitem", { name: "Unmute local audio" })
+    ).toBeVisible()
+    await page.getByRole("menuitem", { name: "Set local volume…" }).click()
+
+    const volumeDialog = page.getByRole("dialog", {
+      name: "Local audio volume",
+    })
+    await expect(volumeDialog).toContainText("this device only")
+    await expect(volumeDialog).toContainText("does not affect room volume")
+    const slider = page.getByRole("slider", { name: "Local audio volume" })
+    await expect(slider).toHaveValue("100")
+    await slider.fill("35")
+    await expect(page.getByTestId("local-volume-value")).toHaveText("35%")
+    await page.getByRole("button", { name: "Apply volume" }).click()
+    await expect(modal).toHaveAttribute("data-local-volume", "35")
+
+    const input = page.getByRole("textbox", { name: "Media URL" })
+    await input.fill("https://example.com/next")
+    await input.press("Escape")
+    await actions.click()
+    await expect(
+      page.getByRole("menuitem", { name: "Play pasted URL next" })
+    ).toBeVisible()
+    await expect(
+      page.getByRole("menuitem", { name: "Add pasted URL" })
+    ).toHaveCount(0)
   })
 
   test("supports slash-to-focus and Escape without losing the media draft", async ({
