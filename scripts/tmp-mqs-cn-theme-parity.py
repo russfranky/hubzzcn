@@ -79,15 +79,15 @@ new_test = '''
     })
 
     expect(palette).toEqual({
-      background: "oklch(0.221 0.009 255.608)",
-      foreground: "oklch(0.994 0.002 247.839)",
-      card: "oklch(0.269 0.01 268.313)",
-      primary: "oklch(0.592 0.221 283.18)",
-      muted: "oklch(0.302 0.011 271.028)",
-      mutedForeground: "oklch(0.677 0.015 238.128)",
-      border: "oklch(0.282 0.011 278.154)",
-      input: "oklch(0.361 0.012 252.962)",
-      ring: "oklch(0.592 0.221 283.18)",
+      background: "oklch(22.1% .009 255.608)",
+      foreground: "oklch(99.4% .002 247.839)",
+      card: "oklch(26.9% .01 268.313)",
+      primary: "oklch(59.2% .221 283.18)",
+      muted: "oklch(30.2% .011 271.028)",
+      mutedForeground: "oklch(67.7% .015 238.128)",
+      border: "oklch(28.2% .011 278.154)",
+      input: "oklch(36.1% .012 252.962)",
+      ring: "oklch(59.2% .221 283.18)",
     })
 
     await expect(page.locator('[class*="indigo"]')).toHaveCount(0)
