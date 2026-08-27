@@ -72,8 +72,8 @@ function CurrentAttendance() {
                 className="relative shrink-0 rounded-[32px]"
                 style={{ height: 26, width: 26, marginRight: -6 }}
               >
-                <span
-                  className="relative block size-full overflow-hidden rounded-full"
+                <div
+                  className="relative size-full overflow-hidden rounded-full"
                   style={{
                     background: color,
                     WebkitMaskImage: gapMask,
@@ -87,7 +87,7 @@ function CurrentAttendance() {
                       boxShadow: "inset 0 0 0 1px rgba(252,253,254,0.42)",
                     }}
                   />
-                </span>
+                </div>
               </span>
             )
           })}
@@ -171,61 +171,55 @@ function SpaceCard({
   onBrowse?: () => void
 }) {
   return (
-    <div
-      className="relative aspect-[7/2] w-full cursor-pointer rounded-[12px] bg-card"
-      style={{
-        boxShadow:
-          "0px 0px 2px 0px rgba(0,0,0,0.08), 0px 2px 6px 0px rgba(0,0,0,0.1)",
-      }}
-    >
-      <div className="relative size-full overflow-hidden rounded-[inherit]">
+    <div className="relative aspect-[7/2] w-full cursor-pointer overflow-hidden rounded-[12px] bg-card">
+      <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
         <div
           className="absolute inset-0"
           style={{ background: space.gradient }}
         />
-        <div className="absolute inset-0 bg-[rgba(0,0,0,0.36)]" />
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 rounded-[inherit]"
-          style={{ boxShadow: CARD_PHOTO_LINE }}
-        />
+        <div className="absolute inset-0 bg-[rgba(0,0,0,0.36)] shadow-[0px_0px_0px_1px_rgba(0,0,0,0.2),0px_0px_2px_0px_rgba(0,0,0,0.08),0px_2px_6px_0px_rgba(0,0,0,0.1)]" />
+      </div>
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 rounded-[inherit]"
+        style={{ boxShadow: CARD_PHOTO_LINE }}
+      />
 
-        <div className="relative z-10 flex h-full w-full flex-col justify-between overflow-hidden">
-          <div className="flex items-start justify-between p-3">
-            <div className="flex min-w-0 flex-1 items-center justify-start">
-              <h2 className="min-w-0 overflow-hidden text-sm leading-5 font-bold text-ellipsis whitespace-nowrap text-[#fcfdfe]">
-                {space.title}
-              </h2>
-            </div>
-
-            {browseLabel && onBrowse ? (
-              <button
-                type="button"
-                onClick={onBrowse}
-                aria-label={`View ${space.title} and ${space.attachedCount ?? 0} attached spaces`}
-                className="ml-3 inline-flex shrink-0 cursor-pointer items-center border-none bg-transparent p-0 text-[13px] leading-[20px] font-medium text-[#fcfdfe] opacity-50 transition-opacity hover:opacity-80"
-              >
-                {browseLabel}
-              </button>
-            ) : null}
+      <div className="relative z-10 flex h-full w-full flex-col justify-between overflow-hidden">
+        <div className="flex items-start justify-between p-3">
+          <div className="flex min-w-0 flex-1 items-center justify-start">
+            <h2 className="min-w-0 overflow-hidden text-sm leading-5 font-bold text-ellipsis whitespace-nowrap text-[#fcfdfe]">
+              {space.title}
+            </h2>
           </div>
 
-          <div className="flex w-full items-center justify-between px-3 pb-3">
-            <SpaceAttendance space={space} />
+          {browseLabel && onBrowse ? (
+            <button
+              type="button"
+              onClick={onBrowse}
+              aria-label={`View ${space.title} and ${space.attachedCount ?? 0} attached spaces`}
+              className="ml-3 shrink-0 cursor-pointer border-none bg-transparent p-0 text-[13px] leading-[20px] font-medium text-[#fcfdfe] opacity-50 transition-opacity hover:opacity-80"
+            >
+              {browseLabel}
+            </button>
+          ) : null}
+        </div>
 
-            {space.current ? (
-              <TimeInSpace />
-            ) : !space.underConstruction ? (
-              <Button
-                type="button"
-                size="xs"
-                variant="ghost"
-                className="shrink-0 rounded-full bg-gradient-to-b from-[#9a77ff] to-[#735ffa] px-3.5 text-[12px] font-semibold text-[#fcfdfe] hover:text-[#fcfdfe] hover:opacity-90"
-              >
-                Join
-              </Button>
-            ) : null}
-          </div>
+        <div className="flex w-full items-center justify-between px-3 pb-3">
+          <SpaceAttendance space={space} />
+
+          {space.current ? (
+            <TimeInSpace />
+          ) : !space.underConstruction ? (
+            <Button
+              type="button"
+              size="xs"
+              variant="ghost"
+              className="shrink-0 rounded-full bg-gradient-to-b from-[#9a77ff] to-[#735ffa] px-3.5 text-[12px] font-semibold text-[#fcfdfe] hover:text-[#fcfdfe] hover:opacity-90"
+            >
+              Join
+            </Button>
+          ) : null}
         </div>
       </div>
     </div>
@@ -256,8 +250,10 @@ function ScreenHeader({
         </Button>
       ) : null}
       <span className="text-lg font-bold text-foreground">{title}</span>
-      <span className="ml-auto text-[15px] font-semibold text-muted-foreground">
-        {count}
+      <span className="ml-auto">
+        <span className="text-[15px] font-semibold text-muted-foreground">
+          {count}
+        </span>
       </span>
     </div>
   )
@@ -309,7 +305,7 @@ export function PortalPrototype() {
   return (
     <main className="min-h-svh bg-background text-foreground">
       <section
-        className="space-cards dark flex h-svh w-[min(92vw,28rem)] max-w-none flex-col overflow-hidden rounded-none bg-sidebar bg-clip-padding text-sm text-sidebar-foreground shadow-lg duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] sm:w-[350px] sm:max-w-[calc(100vw-1rem)] sm:shadow-[16px_0_32px_-16px_rgba(0,0,0,0.5)]"
+        className="space-cards dark fixed inset-y-0 left-0 z-[200010] flex w-[min(92vw,28rem)] max-w-none flex-col overflow-hidden rounded-none bg-sidebar bg-clip-padding text-sm text-sidebar-foreground shadow-lg duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] sm:w-[350px] sm:max-w-[calc(100vw-1rem)] sm:shadow-[16px_0_32px_-16px_rgba(0,0,0,0.5)] data-open:animate-in data-open:slide-in-from-left-[100%] data-closed:animate-out data-closed:slide-out-to-left-[100%]"
         aria-label="Hubzz Tower portal prototype"
       >
         <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-0 overflow-auto">
