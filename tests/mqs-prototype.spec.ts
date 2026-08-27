@@ -229,14 +229,14 @@ test.describe("MQS final-layout prototype", () => {
 
     await page.mouse.move(center.x, center.y)
     await page.mouse.down()
-    await page.mouse.move(center.x + 18, center.y)
+    await page.mouse.move(center.x + 80, center.y)
     await page.waitForTimeout(650)
     await page.mouse.up()
 
-    await expect(page.getByRole("button", { name: "Pause" })).toHaveAttribute(
-      "data-looping",
-      "false"
-    )
+    const stillPaused = page.getByRole("button", { name: "Pause" })
+    await expect(stillPaused).toHaveAttribute("data-looping", "false")
+    await stillPaused.click()
+    await expect(page.getByRole("button", { name: "Play" })).toBeVisible()
   })
 
   test("cancels a loop hold when the current item changes", async ({
@@ -258,10 +258,10 @@ test.describe("MQS final-layout prototype", () => {
     await page.waitForTimeout(650)
     await page.mouse.up()
 
-    await expect(page.getByRole("button", { name: "Pause" })).toHaveAttribute(
-      "data-looping",
-      "false"
-    )
+    const stillPaused = page.getByRole("button", { name: "Pause" })
+    await expect(stillPaused).toHaveAttribute("data-looping", "false")
+    await stillPaused.click()
+    await expect(page.getByRole("button", { name: "Play" })).toBeVisible()
   })
 
   test("loops finite media after the long-press toggle", async ({ page }) => {

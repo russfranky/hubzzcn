@@ -504,6 +504,7 @@ function CurrentCard({
   const loopHoldOriginRef = React.useRef<{ x: number; y: number } | null>(null)
   const loopHoldItemRef = React.useRef<string | null>(null)
   const loopHoldTargetRef = React.useRef<HTMLButtonElement | null>(null)
+  const loopHoldCanceledRef = React.useRef(false)
   const suppressPlaybackClickRef = React.useRef(false)
   const latestItemIdRef = React.useRef(item.id)
   const previousItemIdRef = React.useRef(item.id)
@@ -538,6 +539,7 @@ function CurrentCard({
     loopHoldOriginRef.current = null
     loopHoldItemRef.current = null
     loopHoldTargetRef.current = null
+    loopHoldCanceledRef.current = false
   }
 
   function beginLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
@@ -549,6 +551,7 @@ function CurrentCard({
     loopHoldOriginRef.current = { x: event.clientX, y: event.clientY }
     loopHoldItemRef.current = item.id
     loopHoldTargetRef.current = event.currentTarget
+    loopHoldCanceledRef.current = false
 
     try {
       event.currentTarget.setPointerCapture(event.pointerId)
@@ -574,6 +577,8 @@ function CurrentCard({
 
   function moveLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
     if (loopHoldPointerRef.current !== event.pointerId) return
+    if (loopHoldCanceledRef.current) return
+
     const origin = loopHoldOriginRef.current
     if (!origin) return
 
@@ -583,13 +588,24 @@ function CurrentCard({
     )
     if (distance <= LOOP_MOVE_TOLERANCE_PX) return
 
+    loopHoldCanceledRef.current = true
     suppressPlaybackClickRef.current = true
-    clearLoopHold()
+    if (loopHoldTimerRef.current !== null) {
+      window.clearTimeout(loopHoldTimerRef.current)
+      loopHoldTimerRef.current = null
+    }
   }
 
   function endLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
     if (loopHoldPointerRef.current !== event.pointerId) return
+
+    const suppressClick = suppressPlaybackClickRef.current
     clearLoopHold()
+    if (suppressClick) {
+      window.setTimeout(() => {
+        suppressPlaybackClickRef.current = false
+      }, 0)
+    }
   }
 
   function cancelLoopHold(event: React.PointerEvent<HTMLButtonElement>) {
@@ -610,13 +626,14 @@ function CurrentCard({
     if (previousItemIdRef.current === item.id) return
     previousItemIdRef.current = item.id
 
-    if (
-      loopHoldTimerRef.current !== null ||
-      loopHoldPointerRef.current !== null
-    ) {
-      suppressPlaybackClickRef.current = true
+    if (loopHoldPointerRef.current === null) return
+
+    loopHoldCanceledRef.current = true
+    suppressPlaybackClickRef.current = true
+    if (loopHoldTimerRef.current !== null) {
+      window.clearTimeout(loopHoldTimerRef.current)
+      loopHoldTimerRef.current = null
     }
-    clearLoopHold()
   }, [item.id])
 
   React.useEffect(() => {
