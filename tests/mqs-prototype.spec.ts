@@ -184,6 +184,136 @@ test.describe("MQS final-layout prototype", () => {
     await expect(page.getByRole("button", { name: "Skip down" })).toBeVisible()
   })
 
+  test("toggles loop with a long press without changing playback", async ({
+    page,
+  }) => {
+    const pause = page.getByRole("button", { name: "Pause" })
+    const box = await pause.boundingBox()
+    if (!box) throw new Error("Pause control has no bounding box")
+
+    const center = {
+      x: box.x + box.width / 2,
+      y: box.y + box.height / 2,
+    }
+
+    await expect(pause).toHaveAttribute("data-looping", "false")
+    await page.mouse.move(center.x, center.y)
+    await page.mouse.down()
+    await page.waitForTimeout(650)
+    await page.mouse.up()
+
+    await expect(page.getByRole("button", { name: "Pause" })).toHaveAttribute(
+      "data-looping",
+      "true"
+    )
+
+    await page.mouse.down()
+    await page.waitForTimeout(650)
+    await page.mouse.up()
+
+    await expect(page.getByRole("button", { name: "Pause" })).toHaveAttribute(
+      "data-looping",
+      "false"
+    )
+  })
+
+  test("supports the same Loop hold from the keyboard", async ({ page }) => {
+    const pause = page.getByRole("button", { name: "Pause" })
+    await pause.focus()
+    await expect(pause).toHaveAttribute(
+      "aria-description",
+      "Hold Space or Enter to toggle Loop. Loop is off."
+    )
+
+    await page.keyboard.down("Space")
+    await page.waitForTimeout(650)
+    await page.keyboard.up("Space")
+
+    await expect(page.getByRole("button", { name: "Pause" })).toHaveAttribute(
+      "data-looping",
+      "true"
+    )
+    await expect(page.getByRole("button", { name: "Pause" })).toHaveAttribute(
+      "aria-description",
+      "Hold Space or Enter to toggle Loop. Loop is on."
+    )
+
+    await page.keyboard.press("Enter")
+    await expect(page.getByRole("button", { name: "Play" })).toBeVisible()
+  })
+
+  test("cancels the loop hold when the pointer moves", async ({ page }) => {
+    const pause = page.getByRole("button", { name: "Pause" })
+    const box = await pause.boundingBox()
+    if (!box) throw new Error("Pause control has no bounding box")
+
+    const center = {
+      x: box.x + box.width / 2,
+      y: box.y + box.height / 2,
+    }
+
+    await page.mouse.move(center.x, center.y)
+    await page.mouse.down()
+    await page.mouse.move(center.x + 80, center.y)
+    await page.waitForTimeout(650)
+    await page.mouse.up()
+
+    const stillPaused = page.getByRole("button", { name: "Pause" })
+    await expect(stillPaused).toHaveAttribute("data-looping", "false")
+    await stillPaused.click()
+    await expect(page.getByRole("button", { name: "Play" })).toBeVisible()
+  })
+
+  test("cancels a loop hold when the current item changes", async ({
+    page,
+  }) => {
+    const pause = page.getByRole("button", { name: "Pause" })
+    const box = await pause.boundingBox()
+    if (!box) throw new Error("Pause control has no bounding box")
+
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+    await page.mouse.down()
+    await page
+      .getByRole("button", { name: "Skip down" })
+      .evaluate((element) => (element as HTMLButtonElement).click())
+
+    await expect(page.getByTestId("current-row")).toContainText(
+      "Afterlife Tulum 2025"
+    )
+    await page.waitForTimeout(650)
+    await page.mouse.up()
+
+    const stillPaused = page.getByRole("button", { name: "Pause" })
+    await expect(stillPaused).toHaveAttribute("data-looping", "false")
+    await stillPaused.click()
+    await expect(page.getByRole("button", { name: "Play" })).toBeVisible()
+  })
+
+  test("loops finite media after the long-press toggle", async ({ page }) => {
+    const pause = page.getByRole("button", { name: "Pause" })
+    const box = await pause.boundingBox()
+    if (!box) throw new Error("Pause control has no bounding box")
+
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+    await page.mouse.down()
+    await page.waitForTimeout(650)
+    await page.mouse.up()
+    await expect(pause).toHaveAttribute("data-looping", "true")
+
+    await pause.click()
+    const slider = page.getByRole("slider", { name: "Playback position" })
+    await slider.focus()
+    await slider.press("End")
+    await expect(slider).toHaveAttribute("aria-valuenow", "4542")
+
+    await page.getByRole("button", { name: "Play" }).click()
+    await expect
+      .poll(async () => Number(await slider.getAttribute("aria-valuenow")), {
+        timeout: 2500,
+      })
+      .toBeLessThan(5)
+  })
+
   test("places elapsed and total time under the playback bar", async ({
     page,
   }) => {
