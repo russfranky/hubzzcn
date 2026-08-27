@@ -73,13 +73,19 @@ function CurrentAttendance() {
                 style={{ height: 26, width: 26, marginRight: -6 }}
               >
                 <span
-                  className="block size-full rounded-full"
+                  className="relative block size-full overflow-hidden rounded-full"
                   style={{
                     background: color,
                     WebkitMaskImage: gapMask,
                     maskImage: gapMask,
                   }}
-                />
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 rounded-full"
+                    style={{ boxShadow: "inset 0 0 0 1px rgba(252,253,254,0.42)" }}
+                  />
+                </span>
               </span>
             )
           })}
@@ -168,7 +174,13 @@ function SpaceCard({
         className="absolute inset-0"
         style={{ background: space.gradient }}
       />
-      <div className="absolute inset-0 bg-[rgba(0,0,0,0.36)] shadow-[0px_0px_0px_1px_rgba(0,0,0,0.2),0px_0px_2px_0px_rgba(0,0,0,0.08),0px_2px_6px_0px_rgba(0,0,0,0.1)]" />
+      <div
+        className="absolute inset-0 bg-[rgba(0,0,0,0.36)]"
+        style={{
+          boxShadow:
+            "inset 0 0 0 1px rgba(252,253,254,0.14), 0px 0px 0px 1px rgba(0,0,0,0.2), 0px 0px 2px 0px rgba(0,0,0,0.08), 0px 2px 6px 0px rgba(0,0,0,0.1)",
+        }}
+      />
 
       <div className="relative z-10 flex h-full w-full flex-col justify-between overflow-hidden">
         <div className="flex items-start justify-between p-3">
