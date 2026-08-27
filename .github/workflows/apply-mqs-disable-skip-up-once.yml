@@ -1,0 +1,59 @@
+name: Apply MQS Skip Up Once
+
+on:
+  push:
+    branches:
+      - feature/mqs-disable-empty-history-skip
+    paths:
+      - .github/workflows/apply-mqs-disable-skip-up-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: feature/mqs-disable-empty-history-skip
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply skip-up availability patch
+        run: python .github/scripts/apply_mqs_disable_skip_up.py
+
+      - name: Format changed files
+        run: pnpm exec prettier --write src/pages/MqsPrototype.tsx tests/mqs-prototype.spec.ts
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run MQS browser tests
+        run: pnpm exec playwright test tests/mqs-prototype.spec.ts --project=chromium
+
+      - name: Commit feature and remove temporary patch files
+        run: |
+          rm .github/scripts/apply_mqs_disable_skip_up.py
+          rm .github/workflows/apply-mqs-disable-skip-up-once.yml
+          git config user.name "Russfranky"
+          git config user.email "90220424+russfranky@users.noreply.github.com"
+          git add src/pages/MqsPrototype.tsx tests/mqs-prototype.spec.ts .github/scripts/apply_mqs_disable_skip_up.py .github/workflows/apply-mqs-disable-skip-up-once.yml
+          git commit -m "fix: disable MQS skip up without history"
+          git push origin HEAD:feature/mqs-disable-empty-history-skip
