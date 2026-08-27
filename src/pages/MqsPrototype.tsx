@@ -51,14 +51,18 @@ type QueueItem = {
 
 type SetlistSegment = {
   title?: unknown
+  type?: unknown
   url?: unknown
   platform?: unknown
   duration?: unknown
 }
 
 type PendingSetlist = {
-  items: QueueItem[]
-  dropped: number
+  data: unknown
+  fileName: string
+  count: number
+  totalMinutes: number
+  cappedCount: number
 }
 
 type DraggedMedia = {
@@ -677,55 +681,85 @@ function CurrentCard({
   )
 }
 
-function normalizeSetlist(value: unknown): PendingSetlist {
-  if (!value || typeof value !== "object") {
-    throw new Error("That file is not a setlist object.")
-  }
+function formatRuntimeMinutes(minutes: number) {
+  const rounded = Math.round(minutes)
+  if (rounded < 60) return `${rounded}m`
+  const hours = Math.floor(rounded / 60)
+  const rest = rounded % 60
+  return `${hours}h${rest ? ` ${rest}m` : ""}`
+}
 
-  const record = value as { segments?: unknown }
-  if (!Array.isArray(record.segments) || record.segments.length === 0) {
-    throw new Error("A setlist needs at least one segment.")
-  }
+function inspectSetlist(
+  fileName: string,
+  value: unknown
+): PendingSetlist | null {
+  const record =
+    value && typeof value === "object"
+      ? (value as Record<string, unknown>)
+      : null
+  const segments = Array.isArray(record?.segments) ? record.segments : null
+  if (!segments || segments.length === 0) return null
 
-  const sourceSegments = record.segments.slice(
-    0,
-    SETLIST_LIMIT
-  ) as SetlistSegment[]
-  const items = sourceSegments.flatMap((segment, index) => {
-    if (typeof segment.url !== "string" || !isSafeHttpUrl(segment.url))
-      return []
-
-    const durationMinutes =
-      typeof segment.duration === "number" && Number.isFinite(segment.duration)
-        ? Math.max(1, Math.min(segment.duration, 480))
-        : 30
-
-    return [
-      {
-        id: `upload-${Date.now()}-${index}`,
-        title:
-          typeof segment.title === "string" && segment.title.trim()
-            ? segment.title.trim()
-            : "Untitled",
-        url: segment.url,
-        platform:
-          typeof segment.platform === "string" && segment.platform.trim()
-            ? segment.platform.trim()
-            : providerFromUrl(segment.url),
-        addedBy: "@you",
-        durationSeconds: Math.round(durationMinutes * 60),
-      } satisfies QueueItem,
-    ]
-  })
-
-  if (items.length === 0) {
-    throw new Error("No safe http(s) segments were found in that setlist.")
-  }
+  const totalMinutes = segments.reduce((sum, segment) => {
+    if (!segment || typeof segment !== "object") return sum
+    const duration = Number((segment as Record<string, unknown>).duration)
+    return sum + (Number.isFinite(duration) && duration > 0 ? duration : 0)
+  }, 0)
 
   return {
-    items,
-    dropped: record.segments.length - items.length,
+    data: value,
+    fileName,
+    count: segments.length,
+    totalMinutes,
+    cappedCount: Math.min(segments.length, SETLIST_LIMIT),
   }
+}
+
+function materializeSetlist(value: unknown): QueueItem[] {
+  const record =
+    value && typeof value === "object"
+      ? (value as Record<string, unknown>)
+      : null
+  if (!Array.isArray(record?.segments)) return []
+
+  return record.segments
+    .slice(0, SETLIST_LIMIT)
+    .flatMap((rawSegment, index) => {
+      if (!rawSegment || typeof rawSegment !== "object") return []
+      const segment = rawSegment as SetlistSegment
+      const type = typeof segment.type === "string" ? segment.type : ""
+      const url = typeof segment.url === "string" ? segment.url : ""
+
+      // Mirror the current engine boundary for this standalone simulation:
+      // native rows may omit a URL; every other row needs safe http(s).
+      if (type !== "native" && !isSafeHttpUrl(url)) return []
+
+      const durationMinutes = Number(segment.duration)
+      const durationSeconds =
+        Number.isFinite(durationMinutes) && durationMinutes > 0
+          ? Math.round(durationMinutes * 60)
+          : undefined
+      const platform =
+        typeof segment.platform === "string" && segment.platform.trim()
+          ? segment.platform.trim()
+          : type === "native"
+            ? "Native"
+            : providerFromUrl(url)
+
+      return [
+        {
+          id: `upload-${Date.now()}-${index}`,
+          title:
+            typeof segment.title === "string" && segment.title.trim()
+              ? segment.title.trim()
+              : "Untitled",
+          url,
+          platform,
+          addedBy: "@you",
+          durationSeconds,
+        } satisfies QueueItem,
+      ]
+    })
 }
 
 export function MqsPrototype() {
@@ -749,6 +783,8 @@ export function MqsPrototype() {
   const [error, setError] = React.useState<string | null>(null)
   const [pendingSetlist, setPendingSetlist] =
     React.useState<PendingSetlist | null>(null)
+  const [setlistOpen, setSetlistOpen] = React.useState(false)
+  const [setlistError, setSetlistError] = React.useState<string | null>(null)
   const [stopOpen, setStopOpen] = React.useState(false)
   const [localMuted, setLocalMuted] = React.useState(false)
   const [localVolume, setLocalVolume] = React.useState(100)
@@ -1080,27 +1116,49 @@ export function MqsPrototype() {
   }
 
   async function readSetlist(file: File) {
+    let text: string
     try {
-      setPendingSetlist(
-        normalizeSetlist(JSON.parse(await file.text()) as unknown)
-      )
-      setError(null)
-    } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : "Could not read setlist."
-      )
+      text = await file.text()
+    } catch {
+      setPendingSetlist(null)
+      setSetlistError("The setlist file could not be read.")
+      setSetlistOpen(true)
+      return
+    }
+
+    try {
+      const data = JSON.parse(text) as unknown
+      const preview = inspectSetlist(file.name, data)
+      if (!preview) {
+        setPendingSetlist(null)
+        setSetlistError("This file does not contain any setlist segments.")
+        setSetlistOpen(true)
+        return
+      }
+
+      setPendingSetlist(preview)
+      setSetlistError(null)
+      setSetlistOpen(true)
+    } catch {
+      setPendingSetlist(null)
+      setSetlistError("That file is not valid setlist JSON.")
+      setSetlistOpen(true)
     }
   }
 
   function replaceWithSetlist() {
-    if (!pendingSetlist?.items.length) return
-    const [nextCurrent, ...nextUpcoming] = pendingSetlist.items
+    if (!pendingSetlist) return
+    const [nextCurrent, ...nextUpcoming] = materializeSetlist(
+      pendingSetlist.data
+    )
     setPlayed([])
-    setCurrent(nextCurrent)
+    setCurrent(nextCurrent ?? null)
     setUpcoming(nextUpcoming)
     setElapsed(0)
-    setIsPlaying(false)
+    setIsPlaying(Boolean(nextCurrent))
     setPendingSetlist(null)
+    setSetlistError(null)
+    setSetlistOpen(false)
   }
 
   function stopAndClear() {
@@ -1459,7 +1517,11 @@ export function MqsPrototype() {
                   </>
                 ) : null}
                 <DropdownMenuItem
-                  onSelect={() => fileInputRef.current?.click()}
+                  onSelect={() => {
+                    setPendingSetlist(null)
+                    setSetlistError(null)
+                    setSetlistOpen(true)
+                  }}
                 >
                   <Upload />
                   Load setlist
@@ -1535,25 +1597,96 @@ export function MqsPrototype() {
       </Card>
 
       <Dialog
-        open={Boolean(pendingSetlist)}
+        open={setlistOpen}
         onOpenChange={(open) => {
-          if (!open) setPendingSetlist(null)
+          setSetlistOpen(open)
+          if (!open) {
+            setPendingSetlist(null)
+            setSetlistError(null)
+          }
         }}
       >
-        <DialogContent>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Load setlist</DialogTitle>
+            <DialogTitle>Load prepared setlist</DialogTitle>
             <DialogDescription>
-              {pendingSetlist
-                ? `${pendingSetlist.items.length} valid segments · ${pendingSetlist.dropped} invalid or capped`
-                : "Review the setlist before replacing the queue."}
+              Choose a JSON export from Playlister, review how it joins the live
+              queue, then commit it.
             </DialogDescription>
           </DialogHeader>
+
+          {!pendingSetlist ? (
+            <button
+              data-testid="setlist-dropzone"
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault()
+                const file = event.dataTransfer.files?.[0]
+                if (file) void readSetlist(file)
+              }}
+              className={cn(
+                "flex min-h-32 w-full flex-col items-center justify-center rounded-md border bg-muted/50 px-4 text-center transition-colors hover:bg-muted",
+                setlistError && "border-destructive"
+              )}
+            >
+              <Upload className="mb-2 size-5" aria-hidden="true" />
+              <span className="text-sm font-medium">
+                Drop a .json setlist here
+              </span>
+              <span className="mt-1 text-xs text-muted-foreground">
+                or click to browse
+              </span>
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <div
+                data-testid="setlist-preview"
+                className="rounded-md border bg-muted/30 p-3"
+              >
+                <div className="text-sm font-medium">
+                  {pendingSetlist.fileName}
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {pendingSetlist.count} segment
+                  {pendingSetlist.count === 1 ? "" : "s"}
+                  {pendingSetlist.totalMinutes > 0
+                    ? ` · ${formatRuntimeMinutes(pendingSetlist.totalMinutes)}`
+                    : ""}
+                </div>
+                {pendingSetlist.count > pendingSetlist.cappedCount ? (
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    The live import is capped at the first{" "}
+                    {pendingSetlist.cappedCount} segments.
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                This setlist will replace the live queue and start from its
+                first segment.
+              </div>
+            </div>
+          )}
+
+          {setlistError ? (
+            <div role="alert" className="text-sm text-destructive">
+              {setlistError}
+            </div>
+          ) : null}
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPendingSetlist(null)}>
+            <Button variant="outline" onClick={() => setSetlistOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={replaceWithSetlist}>Replace queue</Button>
+            {pendingSetlist ? (
+              <Button onClick={replaceWithSetlist}>Load setlist</Button>
+            ) : (
+              <Button onClick={() => fileInputRef.current?.click()}>
+                Browse file
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
