@@ -1,0 +1,45 @@
+name: Apply MQS Wave 1 State Patch Once
+
+on:
+  push:
+    branches:
+      - feature/mqs-wave1-empty-validation
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: python scripts/tmp-mqs-wave1-empty-validation.py
+      - run: pnpm exec prettier --write src/pages/MqsPrototype.tsx tests/mqs-prototype.spec.ts
+      - run: pnpm typecheck
+      - run: pnpm exec playwright install chromium
+      - run: pnpm exec playwright test tests/mqs-prototype.spec.ts --project=chromium
+
+      - name: Commit feature and remove temporary files
+        run: |
+          rm scripts/tmp-mqs-wave1-empty-validation.py
+          rm .github/workflows/apply-mqs-wave1-empty-validation-once.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/MqsPrototype.tsx tests/mqs-prototype.spec.ts scripts .github/workflows
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "feat: add MQS empty and validation states"
+          git push origin HEAD:feature/mqs-wave1-empty-validation
