@@ -844,10 +844,14 @@ function CurrentCard({
             type="button"
             variant="outline"
             size="icon-lg"
-            className="relative touch-manipulation rounded-full bg-card"
+            className={cn(
+              "relative touch-manipulation rounded-full bg-card",
+              item.looping &&
+                "border-primary/60 bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
+            )}
             data-looping={item.looping ? "true" : "false"}
             aria-label={isPlaying ? "Pause" : "Play"}
-            title={`${isPlaying ? "Pause" : "Play"} · Hold to toggle loop`}
+            title={`${isPlaying ? "Pause" : "Play"} · Hold to ${item.looping ? "turn loop off" : "turn loop on"}`}
             onPointerDown={beginLoopHold}
             onPointerMove={moveLoopHold}
             onPointerUp={endLoopHold}
@@ -870,13 +874,13 @@ function CurrentCard({
               <svg
                 data-testid="loop-hold-progress"
                 aria-hidden="true"
-                viewBox="0 0 56 56"
-                className="pointer-events-none absolute top-1/2 left-1/2 size-14 -translate-x-1/2 -translate-y-1/2 -rotate-90 overflow-visible text-primary"
+                viewBox="0 0 44 44"
+                className="pointer-events-none absolute -inset-0.5 size-11 -rotate-90 overflow-visible text-primary"
               >
                 <circle
-                  cx="28"
-                  cy="28"
-                  r="24"
+                  cx="22"
+                  cy="22"
+                  r="20"
                   pathLength="100"
                   fill="none"
                   stroke="currentColor"
@@ -896,16 +900,6 @@ function CurrentCard({
               </svg>
             ) : null}
             {isPlaying ? <Pause /> : <Play />}
-            {item.looping ? (
-              <span
-                data-testid="current-loop-badge"
-                aria-hidden="true"
-                title="Loop on"
-                className="pointer-events-none absolute -right-1 -bottom-1 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground ring-2 ring-card"
-              >
-                <Repeat2 className="size-3" />
-              </span>
-            ) : null}
           </Button>
           {loopNotice ? (
             <span data-testid="loop-feedback" role="status" className="sr-only">
