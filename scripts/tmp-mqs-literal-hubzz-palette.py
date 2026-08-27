@@ -84,13 +84,13 @@ main:has(#now-playing-title) [data-slot="input"]:focus-visible {
   border-color: var(--ring);
 }
 
-main:has(#now-playing-title) [data-slot="button"][data-variant="outline"] {
+main:has(#now-playing-title) [data-variant="outline"] {
   border-color: var(--border);
   background: var(--secondary);
 }
 
-main:has(#now-playing-title) [data-slot="button"][data-variant="outline"]:hover,
-main:has(#now-playing-title) [data-slot="button"][data-variant="ghost"]:hover {
+main:has(#now-playing-title) [data-variant="outline"]:hover,
+main:has(#now-playing-title) [data-variant="ghost"]:hover {
   background: var(--accent);
 }
 '''
