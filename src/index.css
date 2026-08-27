@@ -279,36 +279,20 @@ main:has(#now-playing-title)
   [data-testid="current-row"]
   > [data-slot="card-content"] {
   min-height: 7rem;
-  grid-template-columns: 1.75rem minmax(0, 1fr) 3.5rem;
+  grid-template-columns: minmax(0, 1fr) 3.5rem;
 }
 
 main:has(#now-playing-title)
   [data-testid="current-row"]
   > [data-slot="card-content"]
   > div:first-child {
-  padding-top: 1rem;
+  padding: 0.875rem 0.75rem;
 }
 
 main:has(#now-playing-title)
   [data-testid="current-row"]
   > [data-slot="card-content"]
   > div:first-child
-  svg {
-  width: 0.875rem;
-  height: 0.875rem;
-}
-
-main:has(#now-playing-title)
-  [data-testid="current-row"]
-  > [data-slot="card-content"]
-  > div:nth-child(2) {
-  padding: 0.875rem 0.75rem 0.875rem 0.25rem;
-}
-
-main:has(#now-playing-title)
-  [data-testid="current-row"]
-  > [data-slot="card-content"]
-  > div:nth-child(2)
   > div:first-child {
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -317,7 +301,7 @@ main:has(#now-playing-title)
 main:has(#now-playing-title)
   [data-testid="current-row"]
   > [data-slot="card-content"]
-  > div:nth-child(2)
+  > div:first-child
   > div:nth-child(2) {
   margin-top: 0.25rem;
 }
@@ -325,7 +309,7 @@ main:has(#now-playing-title)
 main:has(#now-playing-title)
   [data-testid="current-row"]
   > [data-slot="card-content"]
-  > div:nth-child(2)
+  > div:first-child
   > div:nth-child(2)
   > div {
   gap: 0.375rem;
@@ -347,11 +331,16 @@ main:has(#now-playing-title)
   line-height: 1rem;
 }
 
-main:has(#now-playing-title) [data-testid="current-row"] [role="slider"] {
+main:has(#now-playing-title)
+  [data-testid="current-row"]
+  [data-testid="playback-rail"] {
   height: 1.75rem;
 }
 
-main:has(#now-playing-title) [data-testid="current-row"] [role="slider"] > div {
+main:has(#now-playing-title)
+  [data-testid="current-row"]
+  [data-testid="playback-rail"]
+  > div {
   height: 0.125rem;
 }
 
@@ -367,7 +356,7 @@ main:has(#now-playing-title)
 main:has(#now-playing-title)
   [data-testid="current-row"]
   > [data-slot="card-content"]
-  > div:nth-child(3) {
+  > div:last-child {
   gap: 0.375rem;
   padding-inline: 0.5rem;
 }
@@ -375,7 +364,7 @@ main:has(#now-playing-title)
 main:has(#now-playing-title)
   [data-testid="current-row"]
   > [data-slot="card-content"]
-  > div:nth-child(3)
+  > div:last-child
   [data-slot="button"] {
   width: 2rem;
   height: 2rem;
