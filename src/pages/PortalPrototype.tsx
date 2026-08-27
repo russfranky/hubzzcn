@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ArrowLeft, ChevronRight } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 
@@ -35,7 +35,6 @@ const portalSpaces: PortalSpace[] = [
       id: `hallway-${floor}`,
       title: `Hallway ${floor}`,
       attachedCount: 15,
-      underConstruction: true,
       gradient: FLOOR_GRADIENTS[index % FLOOR_GRADIENTS.length],
     }
   }),
@@ -204,10 +203,9 @@ function SpaceCard({
                 type="button"
                 onClick={onBrowse}
                 aria-label={`View ${space.title} and ${space.attachedCount ?? 0} attached spaces`}
-                className="ml-3 inline-flex shrink-0 cursor-pointer items-center gap-1 border-none bg-transparent p-0 text-[13px] leading-[20px] font-medium text-[#fcfdfe] opacity-50 transition-opacity hover:opacity-80"
+                className="ml-3 inline-flex shrink-0 cursor-pointer items-center border-none bg-transparent p-0 text-[13px] leading-[20px] font-medium text-[#fcfdfe] opacity-50 transition-opacity hover:opacity-80"
               >
-                <span>{browseLabel}</span>
-                <ChevronRight className="size-4 shrink-0" />
+                {browseLabel}
               </button>
             ) : null}
           </div>
@@ -280,7 +278,7 @@ function PortalOverview({
           <SpaceCard
             key={space.id}
             space={space}
-            browseLabel={floor ? `+ ${space.attachedCount} Spaces` : undefined}
+            browseLabel={floor ? `+${space.attachedCount} Spaces` : undefined}
             onBrowse={floor ? () => onOpenHallway(floor) : undefined}
           />
         )
