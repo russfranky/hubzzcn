@@ -14,6 +14,7 @@ import {
   Shuffle,
   Trash2,
   Upload,
+  WifiOff,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -725,6 +726,14 @@ function normalizeSetlist(value: unknown): PendingSetlist {
 }
 
 export function MqsPrototype() {
+  const connectionState = React.useMemo(() => {
+    const state = new URLSearchParams(window.location.search).get(
+      "mqsConnection"
+    )
+    return state === "reconnecting" ? "reconnecting" : "connected"
+  }, [])
+  const connectionBlocked = connectionState === "reconnecting"
+
   const [played, setPlayed] = React.useState(INITIAL_PLAYED)
   const [current, setCurrent] = React.useState<QueueItem | null>(
     INITIAL_CURRENT
@@ -1111,8 +1120,35 @@ export function MqsPrototype() {
     >
       <Card
         data-testid="mqs-modal"
-        className="mx-auto flex min-h-0 w-full max-w-[1028px] flex-1 flex-col gap-0 overflow-hidden rounded-3xl bg-card py-0 shadow-2xl ring-1 ring-border"
+        data-connection-state={connectionState}
+        aria-busy={connectionBlocked || undefined}
+        className="relative mx-auto flex min-h-0 w-full max-w-[1028px] flex-1 flex-col gap-0 overflow-hidden rounded-3xl bg-card py-0 shadow-2xl ring-1 ring-border"
       >
+        {connectionBlocked ? (
+          <div
+            data-testid="connection-overlay"
+            role="alert"
+            aria-live="assertive"
+            tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === "Tab") event.preventDefault()
+            }}
+            className="absolute inset-0 z-50 flex cursor-default flex-col items-center justify-center bg-background/80 px-6 text-center backdrop-blur-[2px] select-none focus-visible:outline-none"
+          >
+            <WifiOff
+              className="mb-4 size-10 text-muted-foreground"
+              strokeWidth={1.7}
+              aria-hidden="true"
+            />
+            <p className="text-lg font-semibold text-foreground">
+              Connection lost
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Attempting to reconnect…
+            </p>
+          </div>
+        ) : null}
+
         <CardHeader className="flex min-h-24 flex-row items-center justify-between border-b px-8 py-6">
           <CardTitle className="text-3xl font-semibold tracking-tight">
             Rooftop

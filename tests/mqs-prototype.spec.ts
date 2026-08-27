@@ -25,6 +25,7 @@ test.describe("MQS final-layout prototype", () => {
     await expect(page.getByTestId("upcoming-row")).toHaveCount(5)
     await expect(page.locator("img")).toHaveCount(0)
 
+    await expect(page.getByTestId("connection-overlay")).toHaveCount(0)
     await expect(page.getByRole("button", { name: "Close" })).toBeVisible()
     await expect(
       page.getByRole("button", { name: /Expand queue|Restore queue/ })
@@ -35,6 +36,47 @@ test.describe("MQS final-layout prototype", () => {
     await expect(page.getByRole("button", { name: /Mute|Unmute/ })).toHaveCount(
       0
     )
+  })
+
+  test("blocks the queue with the host-style reconnecting overlay", async ({
+    page,
+  }) => {
+    await page.goto("/?prototype=mqs&mqsConnection=reconnecting")
+
+    const modal = page.getByTestId("mqs-modal")
+    const overlay = page.getByTestId("connection-overlay")
+    await expect(modal).toHaveAttribute("data-connection-state", "reconnecting")
+    await expect(modal).toHaveAttribute("aria-busy", "true")
+    await expect(overlay).toBeVisible()
+    await expect(overlay).toHaveAttribute("role", "alert")
+    await expect(overlay).toContainText("Connection lost")
+    await expect(overlay).toContainText("Attempting to reconnect…")
+    await expect(overlay.locator("svg.lucide-wifi-off")).toHaveCount(1)
+    await expect(page.getByRole("button", { name: "Reconnect" })).toHaveCount(0)
+
+    await expect(page.getByTestId("current-row")).toContainText(
+      "Tomorrowland 2026 Mainstage W1"
+    )
+    await expect(overlay).toHaveCSS("backdrop-filter", "blur(2px)")
+
+    const pause = page.getByRole("button", { name: "Pause" })
+    const box = await pause.boundingBox()
+    if (!box) throw new Error("Pause control has no bounding box")
+    const topTargetIsOverlay = await page.evaluate(
+      ({ x, y }) =>
+        Boolean(
+          document
+            .elementFromPoint(x, y)
+            ?.closest('[data-testid="connection-overlay"]')
+        ),
+      { x: box.x + box.width / 2, y: box.y + box.height / 2 }
+    )
+    expect(topTargetIsOverlay).toBe(true)
+
+    await page.keyboard.press("Tab")
+    await expect(overlay).toBeFocused()
+    await page.keyboard.press("Tab")
+    await expect(overlay).toBeFocused()
   })
 
   test("closes the MQS popout instead of resizing it", async ({ page }) => {
