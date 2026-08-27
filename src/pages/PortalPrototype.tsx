@@ -45,6 +45,24 @@ function ProfilePanelButton({
   )
 }
 
+const PROFILE_PANEL_INPUT =
+  "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
+
+function ProfilePanelInput({
+  className,
+  type,
+  ...props
+}: React.ComponentProps<"input">) {
+  return (
+    <input
+      type={type}
+      data-slot="input"
+      className={cn(PROFILE_PANEL_INPUT, className)}
+      {...props}
+    />
+  )
+}
+
 const FLOOR_GRADIENTS = [
   "linear-gradient(135deg, #1a1a2e 0%, #16213e 44%, #0f3460 100%)",
   "linear-gradient(135deg, #241b2f 0%, #32233f 48%, #181b23 100%)",
@@ -382,31 +400,32 @@ function SpacesToolbar({
   return (
     <div className="px-4 pt-1 pb-4">
       <div className="flex items-center gap-2">
-        <label className="flex min-w-0 flex-1 items-center gap-3 rounded-[60px] bg-card px-4 py-3">
+        <div className="relative min-w-0 flex-1">
           <Search
-            className="size-5 shrink-0 text-[#fcfdfe]"
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden="true"
           />
-          <input
+          <ProfilePanelInput
             type="search"
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="Search spaces"
             aria-label="Search spaces"
-            className="min-w-0 flex-1 border-none bg-transparent p-0 text-[14px] leading-[20px] font-normal text-[#fcfdfe] outline-none placeholder:text-[#adbac5]"
+            className="pl-9 text-sm"
           />
-        </label>
+        </div>
 
         <div className="relative shrink-0">
-          <button
+          <ProfilePanelButton
             type="button"
+            size="icon"
             aria-label="Filter spaces"
             aria-expanded={filterOpen}
             onClick={() => setFilterOpen((open) => !open)}
-            className="flex size-11 items-center justify-center rounded-full border-none bg-card text-[#fcfdfe] shadow-[0px_16px_16px_-4px_rgba(0,0,0,0.1)] transition-colors hover:bg-muted"
+            className="rounded-full bg-white/5 text-foreground hover:bg-white/10 hover:text-foreground"
           >
-            <ListFilter className="size-5" />
-          </button>
+            <ListFilter className="size-4" />
+          </ProfilePanelButton>
 
           {filterOpen ? (
             <div className="absolute top-full right-0 z-30 mt-2 w-[220px] rounded-[12px] border border-white/5 bg-card p-1 shadow-[0px_16px_32px_-8px_rgba(0,0,0,0.45)]">
