@@ -1,0 +1,226 @@
+/*
+ * Stage HUD prototype.
+ *
+ * Tokens and layout are scoped to the Stage prototype so the catalog
+ * foundation stays unchanged. Dock disclosure is sized against the STAGE
+ * column (@container), not the viewport.
+ */
+
+@theme {
+  --color-stage-bg: #181b1f;
+  --color-stage-panel: #24262b;
+  --color-stage-dock: #2d2f35;
+  --color-stage-raised: #393e44;
+  --color-stage-line: #464f55;
+  --color-stage-muted: #adbac5;
+  --color-stage-soft: #f1f5f9;
+  --color-stage-fg: #fcfdfe;
+  --color-stage-speak: #32d583;
+  --color-stage-speak-deep: #12b76a;
+  --color-stage-photo-line: rgb(252 253 254 / 0.42);
+  --color-stage-leave: #d92d20;
+  --color-stage-chip-rose: #fecdca;
+  --color-stage-chip-sky: #d1e9ff;
+  --color-stage-chip-violet: #d0cafd;
+  --color-stage-chip-slate: #e3e9ee;
+  --color-stage-chip-amber: #fef0c7;
+  --color-stage-chat-name: #a294fc;
+  --color-stage-chat: #22262b;
+  --color-stage-overlay: rgb(0 0 0 / 0.55);
+  --color-stage-rank: #f5a24e;
+  --height-stage-fade: 178px;
+  --size-stage-head-sm: 7.5rem;
+  --size-stage-head-md: 10rem;
+  --size-stage-head-lg: 12.5rem;
+}
+
+html:has(.stage-hud),
+html:has(.stage-hud) body,
+html:has(.stage-hud) #root {
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+  background: var(--color-stage-bg);
+  color: var(--color-stage-fg);
+}
+
+html:has(.stage-hud) [data-slot="dialog-overlay"] {
+  background: var(--color-stage-overlay);
+  backdrop-filter: none;
+}
+
+.stage-hud {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 3.5rem minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--color-stage-bg);
+  color: var(--color-stage-fg);
+}
+
+@media (min-width: 640px) {
+  .stage-hud[data-rail="on"] {
+    grid-template-columns: minmax(0, 1fr) 20.5rem;
+  }
+}
+
+.stage-hud-header {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.stage-hud-stage {
+  grid-column: 1;
+  grid-row: 2;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  container-type: inline-size;
+  container-name: stage;
+}
+
+.stage-hud-rail {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  z-index: 40;
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 640px) {
+  .stage-hud-rail {
+    width: min(20.5rem, 100%);
+    justify-self: end;
+  }
+  .stage-hud[data-rail="on"] .stage-hud-rail {
+    grid-column: 2;
+    width: 20.5rem;
+    justify-self: stretch;
+  }
+}
+
+.stage-lower-fade {
+  background-image: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--color-stage-bg) 78%, transparent) 0%,
+    color-mix(in srgb, var(--color-stage-bg) 68%, transparent) 30%,
+    color-mix(in srgb, var(--color-stage-bg) 48%, transparent) 58%,
+    color-mix(in srgb, var(--color-stage-bg) 18%, transparent) 82%,
+    transparent 100%
+  );
+}
+
+.stage-grid {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.stage-grid-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  justify-items: center;
+  align-content: start;
+  width: 100%;
+  margin-inline: auto;
+  column-gap: clamp(1.15rem, 4.2cqi, 2rem);
+  row-gap: clamp(1.25rem, 4.5cqi, 2rem);
+  padding-inline: clamp(0.85rem, 3.6cqi, 2rem);
+  padding-top: clamp(0.85rem, 2.4cqi, 1.5rem);
+  padding-bottom: 5rem;
+}
+
+@media (min-width: 640px) {
+  .stage-grid-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.stage-head-md {
+  width: min(92%, var(--size-stage-head-sm));
+  aspect-ratio: 1 / 1;
+  margin-inline: auto;
+}
+
+@container stage (min-width: 28rem) {
+  .stage-head-md {
+    width: min(90%, var(--size-stage-head-md));
+  }
+}
+
+@container stage (min-width: 48rem) {
+  .stage-head-md {
+    width: min(92%, var(--size-stage-head-lg));
+  }
+}
+
+.stage-name-md {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-inline: 0.125rem;
+  font-size: clamp(0.75rem, 2.1cqi, 1.125rem);
+  line-height: 1.3;
+}
+
+.stage-dock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(0.25rem, 2cqi, 0.75rem);
+  min-width: 0;
+  box-sizing: border-box;
+  height: calc(3.75rem + env(safe-area-inset-bottom, 0px));
+  padding: 0.5rem max(0.75rem, env(safe-area-inset-right))
+    max(0.5rem, env(safe-area-inset-bottom))
+    max(0.75rem, env(safe-area-inset-left));
+}
+
+@container stage (min-width: 40rem) {
+  .stage-dock {
+    height: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+    padding-inline: max(1rem, env(safe-area-inset-left))
+      max(1rem, env(safe-area-inset-right));
+  }
+}
+
+.stage-dock-left,
+.stage-dock-center,
+.stage-dock-right {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.25rem, 1.8cqi, 1rem);
+  min-width: 0;
+}
+
+.stage-dock-left,
+.stage-dock-right {
+  flex: 1 1 0;
+}
+
+.stage-dock-right {
+  justify-content: flex-end;
+}
+
+.stage-dock-center {
+  flex: 0 1 auto;
+  justify-content: center;
+}
+
+.stage-photo-line {
+  box-shadow: inset 0 0 0 1px var(--color-stage-photo-line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-hud,
+  .stage-hud * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

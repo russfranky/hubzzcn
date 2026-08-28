@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { Landing } from "@/pages/Landing"
 import { MqsPrototype } from "@/pages/MqsPrototype"
 import { PortalPrototype } from "@/pages/PortalPrototype"
+import { StagePrototype } from "@/pages/StagePrototype"
 
 export function App() {
   const { theme } = useTheme()
@@ -12,11 +13,15 @@ export function App() {
     pathname === "/cn/portal" ||
     pathname === "/portal" ||
     prototype === "portal"
+  const stagePrototype =
+    pathname === "/cn/stage" || pathname === "/stage" || prototype === "stage"
 
   return (
     <>
       {portalPrototype ? (
         <PortalPrototype />
+      ) : stagePrototype ? (
+        <StagePrototype />
       ) : prototype === "mqs" ? (
         <MqsPrototype />
       ) : (

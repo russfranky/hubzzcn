@@ -10,6 +10,12 @@ migration notes.
 
 ### Added
 
+- Stage HUD prototype at `/cn/stage` and `?prototype=stage` (Spaces-style
+  event floor, exclusive people/chat rail, production dock). Not part of the
+  published `@hubzz/ui` package surface.
+
+### Added
+
 - Public shadcn source registry with a Hubzz base, theme, Button override, and
   individually installable Hubzz components.
 - Public architecture and foundation documentation.
