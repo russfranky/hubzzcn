@@ -61,7 +61,7 @@
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm workflow:actions:check && pnpm deployment:smoke && pnpm registry:graph:test && pnpm package:deps:check && pnpm manifest:check && pnpm registry:sync:check && pnpm build:preview && pnpm build:vercel && pnpm build && pnpm registry:validate && pnpm pack:check && pnpm package:smoke",
     "deployment:smoke": "bash scripts/smoke-static-publish.sh",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml,css}\"",
-    "format:check": "prettier --write src/pages/PortalPrototype.tsx && git diff --exit-code -- src/pages/PortalPrototype.tsx",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml,css}\"",
     "generate:manifest": "tsx scripts/generate-manifest.ts",
     "lint": "eslint . --max-warnings=0",
     "manifest:check": "tsx scripts/generate-manifest.ts --check",
