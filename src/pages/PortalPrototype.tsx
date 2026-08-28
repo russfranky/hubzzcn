@@ -1,6 +1,13 @@
 import * as React from "react"
-import { ArrowLeft, Check, ListFilter, Search } from "lucide-react"
+import { ArrowLeft, ListFilter, Search } from "lucide-react"
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import "./portal-prealpha.css"
 
@@ -8,6 +15,7 @@ type PortalSpace = {
   id: string
   title: string
   gradient: string
+  path?: string
   attachedCount?: number
   underConstruction?: boolean
   current?: boolean
@@ -15,6 +23,16 @@ type PortalSpace = {
 
 type SpaceScope =
   { kind: "portal" } | { kind: "all" } | { kind: "hallway"; floor: number }
+
+export type PortalJoinSpace = (
+  spaceId: string,
+  title: string,
+  path?: string
+) => void
+
+export interface PortalPrototypeProps {
+  onJoinSpace: PortalJoinSpace
+}
 
 const PROFILE_PANEL_BUTTON_BASE =
   "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
@@ -131,6 +149,10 @@ function roomsForFloor(floor: number): PortalSpace[] {
   }))
 }
 
+function isKnownHallwayFloor(floor: number) {
+  return portalSpaces.some((space) => space.id === `hallway-${floor}`)
+}
+
 function initialScope(): SpaceScope {
   if (typeof window === "undefined") return { kind: "portal" }
 
@@ -139,7 +161,10 @@ function initialScope(): SpaceScope {
   const hallwayMatch = attachedTo ? /^hallway-(\d+)$/.exec(attachedTo) : null
 
   if (hallwayMatch) {
-    return { kind: "hallway", floor: Number(hallwayMatch[1]) }
+    const floor = Number(hallwayMatch[1])
+    if (isKnownHallwayFloor(floor)) {
+      return { kind: "hallway", floor }
+    }
   }
 
   if (params.get("scope") === "all") return { kind: "all" }
@@ -271,13 +296,18 @@ function SpaceCard({
   space,
   browseLabel,
   onBrowse,
+  onJoin,
 }: {
   space: PortalSpace
   browseLabel?: string
   onBrowse?: () => void
+  onJoin?: () => void
 }) {
   return (
-    <div className="relative aspect-[7/2] w-full cursor-pointer overflow-hidden rounded-[12px] bg-card">
+    <div
+      data-space-id={space.id}
+      className="relative aspect-[7/2] w-full overflow-hidden rounded-[12px] bg-card"
+    >
       <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
         <div
           className="absolute inset-0"
@@ -316,9 +346,10 @@ function SpaceCard({
 
           {space.current ? (
             <TimeInSpace />
-          ) : !space.underConstruction ? (
+          ) : !space.underConstruction && onJoin ? (
             <ProfilePanelButton
               type="button"
+              onClick={onJoin}
               className="shrink-0 rounded-full bg-gradient-to-b from-[#9a77ff] to-[#735ffa] px-3.5 text-[12px] font-semibold text-[#fcfdfe] hover:text-[#fcfdfe] hover:opacity-90"
             >
               Join
@@ -358,27 +389,6 @@ function ScreenHeader({
   )
 }
 
-function FilterOption({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean
-  children: React.ReactNode
-  onClick: () => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-left text-[13px] leading-[20px] font-medium text-[#fcfdfe] transition-colors hover:bg-muted"
-    >
-      <span>{children}</span>
-      {active ? <Check className="size-4 text-[#a294fc]" /> : null}
-    </button>
-  )
-}
-
 function SpacesToolbar({
   query,
   scope,
@@ -390,11 +400,27 @@ function SpacesToolbar({
   onQueryChange: (value: string) => void
   onScopeChange: (scope: SpaceScope) => void
 }) {
-  const [filterOpen, setFilterOpen] = React.useState(false)
+  const scopeValue =
+    scope.kind === "hallway" ? `hallway-${scope.floor}` : scope.kind
 
-  const chooseScope = (next: SpaceScope) => {
-    onScopeChange(next)
-    setFilterOpen(false)
+  const chooseScope = (value: string) => {
+    if (value === "portal") {
+      onScopeChange({ kind: "portal" })
+      return
+    }
+
+    if (value === "all") {
+      onScopeChange({ kind: "all" })
+      return
+    }
+
+    const hallwayMatch = /^hallway-(\d+)$/.exec(value)
+    if (!hallwayMatch) return
+
+    const floor = Number(hallwayMatch[1])
+    if (isKnownHallwayFloor(floor)) {
+      onScopeChange({ kind: "hallway", floor })
+    }
   }
 
   return (
@@ -415,51 +441,65 @@ function SpacesToolbar({
           />
         </div>
 
-        <div className="relative shrink-0">
-          <ProfilePanelButton
-            type="button"
-            size="icon"
-            aria-label="Filter spaces"
-            aria-expanded={filterOpen}
-            onClick={() => setFilterOpen((open) => !open)}
-            className="rounded-full bg-white/5 text-foreground hover:bg-white/10 hover:text-foreground"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <ProfilePanelButton
+              type="button"
+              size="icon"
+              aria-label="Filter spaces"
+              className="rounded-full bg-white/5 text-foreground hover:bg-white/10 hover:text-foreground"
+            >
+              <ListFilter className="size-4" />
+            </ProfilePanelButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            sideOffset={8}
+            className="w-[220px] rounded-[12px] border border-white/5 bg-card p-1 shadow-[0px_16px_32px_-8px_rgba(0,0,0,0.45)]"
           >
-            <ListFilter className="size-4" />
-          </ProfilePanelButton>
-
-          {filterOpen ? (
-            <div className="absolute top-full right-0 z-30 mt-2 w-[220px] rounded-[12px] border border-white/5 bg-card p-1 shadow-[0px_16px_32px_-8px_rgba(0,0,0,0.45)]">
+            <DropdownMenuRadioGroup
+              value={scopeValue}
+              onValueChange={chooseScope}
+            >
               {scope.kind === "hallway" ? (
-                <FilterOption active onClick={() => chooseScope(scope)}>
+                <DropdownMenuRadioItem
+                  value={`hallway-${scope.floor}`}
+                  className="w-full rounded-[8px] px-3 py-2 text-[13px] leading-[20px] font-medium text-[#fcfdfe] focus:bg-muted"
+                >
                   Hallway {scope.floor}
-                </FilterOption>
+                </DropdownMenuRadioItem>
               ) : null}
-              <FilterOption
-                active={scope.kind === "portal"}
-                onClick={() => chooseScope({ kind: "portal" })}
+              <DropdownMenuRadioItem
+                value="portal"
+                className="w-full rounded-[8px] px-3 py-2 text-[13px] leading-[20px] font-medium text-[#fcfdfe] focus:bg-muted"
               >
                 Hubzz Tower Portal
-              </FilterOption>
-              <FilterOption
-                active={scope.kind === "all"}
-                onClick={() => chooseScope({ kind: "all" })}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem
+                value="all"
+                className="w-full rounded-[8px] px-3 py-2 text-[13px] leading-[20px] font-medium text-[#fcfdfe] focus:bg-muted"
               >
                 All spaces
-              </FilterOption>
-            </div>
-          ) : null}
-        </div>
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   )
 }
 
-export function PortalPrototype() {
+export function PortalPrototype({ onJoinSpace }: PortalPrototypeProps) {
   const [scope, setScope] = React.useState<SpaceScope>(initialScope)
   const [query, setQuery] = React.useState(initialQuery)
 
   React.useEffect(() => {
+    const currentParams = new URLSearchParams(window.location.search)
     const params = new URLSearchParams()
+
+    if (currentParams.get("prototype") === "portal") {
+      params.set("prototype", "portal")
+    }
 
     if (scope.kind === "portal") {
       params.set("portal", "hubzz_tower_portal")
@@ -506,7 +546,7 @@ export function PortalPrototype() {
     <main className="hubzz-profile-panel-theme min-h-svh bg-background text-foreground">
       <section
         className="space-cards dark fixed inset-y-0 left-0 z-[200010] flex w-[min(92vw,28rem)] max-w-none flex-col overflow-hidden rounded-none bg-sidebar bg-clip-padding text-sm text-sidebar-foreground shadow-lg duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] sm:w-[350px] sm:max-w-[calc(100vw-1rem)] sm:shadow-[16px_0_32px_-16px_rgba(0,0,0,0.5)] data-open:animate-in data-open:slide-in-from-left-[100%] data-closed:animate-out data-closed:slide-out-to-left-[100%]"
-        aria-label="Spaces filtered by Hubzz Tower Portal"
+        aria-label="Spaces"
       >
         <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-0 overflow-auto">
           <ScreenHeader count={visibleSpaces.length} onBack={handleBack} />
@@ -534,6 +574,12 @@ export function PortalPrototype() {
                     onBrowse={
                       canBrowse && floor ? () => openHallway(floor) : undefined
                     }
+                    onJoin={
+                      !space.current && !space.underConstruction
+                        ? () =>
+                            onJoinSpace(space.id, space.title, space.path)
+                        : undefined
+                    }
                   />
                 )
               })
@@ -549,4 +595,21 @@ export function PortalPrototype() {
   )
 }
 
-export default PortalPrototype
+export function PortalPrototypeDemo() {
+  const [lastJoin, setLastJoin] = React.useState("")
+
+  return (
+    <>
+      <span data-testid="last-portal-join" className="sr-only" aria-live="polite">
+        {lastJoin}
+      </span>
+      <PortalPrototype
+        onJoinSpace={(spaceId, title, path) => {
+          setLastJoin(JSON.stringify({ spaceId, title, path: path ?? null }))
+        }}
+      />
+    </>
+  )
+}
+
+export default PortalPrototypeDemo
