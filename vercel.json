@@ -5,6 +5,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/cn", "destination": "/index.html" },
-    { "source": "/cn/portal", "destination": "/index.html" }
+    { "source": "/cn/portal", "destination": "/index.html" },
+    { "source": "/cn/stage", "destination": "/index.html" }
   ]
 }
