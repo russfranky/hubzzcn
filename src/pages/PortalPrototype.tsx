@@ -576,8 +576,7 @@ export function PortalPrototype({ onJoinSpace }: PortalPrototypeProps) {
                     }
                     onJoin={
                       !space.current && !space.underConstruction
-                        ? () =>
-                            onJoinSpace(space.id, space.title, space.path)
+                        ? () => onJoinSpace(space.id, space.title, space.path)
                         : undefined
                     }
                   />
@@ -600,7 +599,11 @@ export function PortalPrototypeDemo() {
 
   return (
     <>
-      <span data-testid="last-portal-join" className="sr-only" aria-live="polite">
+      <span
+        data-testid="last-portal-join"
+        className="sr-only"
+        aria-live="polite"
+      >
         {lastJoin}
       </span>
       <PortalPrototype
