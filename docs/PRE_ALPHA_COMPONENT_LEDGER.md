@@ -16,7 +16,7 @@ Update this ledger in the same pull request whenever a mapping changes.
 The current overhead census is pinned to:
 
 ```text
-HubzzInc/pre-alpha@98db19e01239d42ce3876de7d1c7cbcf8966ffac
+HubzzInc/pre-alpha@9e68e040c34d1fac963751959fe049c9cb7f5f36
 ```
 
 The census covers client UI across:
@@ -26,13 +26,16 @@ The census covers client UI across:
 - `packages/client/src/space-cards/**`
 - `packages/client/src/shell/**`
 - `packages/client/src/routes/**`
+- `packages/mqs/src/ui/**`
 
-`packages/client/src/rtc/**` and other non-visual runtime subsystems are outside
-this component ledger unless they later expose a reusable visual contract.
+`packages/client/src/rtc/**`, `packages/mqs/engine/**`, server MQS handlers, and
+other non-visual runtime subsystems are outside the component ledger unless they
+later expose a reusable visual contract. They remain integration dependencies
+for product UI that emits their intents.
 
 When pre-alpha moves materially, update the pinned commit before approving a new
-analog. Do not silently compare different source revisions under one ledger
-state.
+analog or port-ready product contract. Do not silently compare different source
+revisions under one ledger state.
 
 ## Reduction rules
 
@@ -111,7 +114,7 @@ HubzzCN follows an upstream-first, Unix-style component model:
 | profile-panel `ScreenHeader`                                                              | **PRODUCT**  | Reused inside one panel system but carries panel/mobile-close layout assumptions. Compose `Button` + heading in product.                                                                                                                                                         |
 | profile-panel `EmptyState`                                                                | **UPSTREAM** | Simple empty-state composition; no durable Hubzz-specific contract.                                                                                                                                                                                                              |
 | profile-panel small `space-card.tsx`                                                      | **UPSTREAM** | `Item` + `AvatarGroup` + `Button` composition.                                                                                                                                                                                                                                   |
-| profile-panel `spaces/SpaceCard.tsx`                                                      | **PRODUCT**  | Space preview framing, attendance, elapsed time, construction/join state and navigation are feature behavior.                                                                                                                                                                    |
+| profile-panel `spaces/SpaceCard.tsx`                                                      | **PRODUCT**  | Space preview framing, attendance, elapsed time, construction/join state and navigation are feature behavior. Join leaves through `ProfileHostCallbacks.onJoinSpace(spaceId, title, path?)`.                                                                                     |
 | profile-panel `ProfileCard.tsx` / `GuestDetailScreen.tsx`                                 | **PRODUCT**  | Feature assemblies. Reuse their leaf contracts instead of porting the cards wholesale.                                                                                                                                                                                           |
 | profile-panel `full-body-img.tsx`                                                         | **PRODUCT**  | The alpha-shadow figure treatment has one implementation used only inside the profile-card family. Public avatar cards/viewers intentionally use ordinary image treatment, so a registry extraction would add a cross-repo abstraction without deleting independent duplication. |
 | profile-panel screens: avatar, badges, friends, news, selfies, settings, spaces, wallets  | **PRODUCT**  | Screen/workflow assemblies. Extract a leaf only after independent reuse is proven.                                                                                                                                                                                               |
@@ -121,9 +124,34 @@ HubzzCN follows an upstream-first, Unix-style component model:
 | profile-panel `MetaChip`-style affordance in space-card chat                              | **COVERED**  | The generic toggle-chip contract is `Capsule`; feature code owns icon/label reveal state.                                                                                                                                                                                        |
 | `shell/ShellLayout.tsx`                                                                   | **PRODUCT**  | Correctly composes upstream Sidebar but carries portal and world/sidebar event wiring.                                                                                                                                                                                           |
 | `routes/*`                                                                                | **PRODUCT**  | Route assemblies.                                                                                                                                                                                                                                                                |
-| space-card `SpaceHUD`, `SpaceCardsOverlay`, chat display/input, modals and voice settings | **PRODUCT**  | Feature UI and orchestration, not registry atoms.                                                                                                                                                                                                                                |
+| space-card `SpaceHUD`, `SpaceCardsOverlay`, chat display/input, modals and voice settings | **PRODUCT**  | Feature UI and orchestration, not registry atoms. `SpaceHUD` owns the MQS host bridge and supplies server snapshots plus command/import/close ports.                                                                                                                             |
+| `packages/mqs/src/ui/window/MqsQueueWindow.tsx`                                           | **PRODUCT**  | Stateless product view over server-authoritative MQS snapshots. HubzzCN may port its presentation, but must retain the exact host port shape and emit server-supported intents. Do not register it as a Hubzz component.                                                         |
+| `packages/mqs/engine/**` and server MQS handlers                                          | **PRODUCT**  | Runtime authority. Queue mutation, permission enforcement, telemetry, command execution, and `mqs:*` synchronization stay in pre-alpha.                                                                                                                                          |
 | space-card generic image fallback                                                         | **PRODUCT**  | Utility behavior, no Hubzz visual identity.                                                                                                                                                                                                                                      |
 | RTC/audio/network subsystem                                                               | **PRODUCT**  | Non-visual runtime, outside this ledger.                                                                                                                                                                                                                                         |
+
+## MQS integration boundary
+
+The port-ready MQS UI follows the current production seam documented in
+`docs/PRE_ALPHA_MQS_INTEGRATION.md`.
+
+The queue window receives:
+
+- `items`;
+- `currentIndex`;
+- `isPlaying`;
+- optional `elapsed`, `isMuted`, and `title`;
+- `onCommand`;
+- optional `onImportSetlist` and `onClose`.
+
+It does not own the queue state machine. Transport, seek, mute, remove, reorder,
+and clear actions emit current server command strings. Setlist import uses the
+separate import port. Media URL entry stays in the pre-alpha chat bar.
+
+The profile-panel Spaces screen and MQS are sibling product workflows. Spaces
+joins through the profile host; the joined world mounts `SpaceHUD`; `SpaceHUD`
+then owns MQS permission/open state and server synchronization. Do not add a
+direct Portal-to-MQS state bridge.
 
 ## Completed from current census
 
@@ -209,13 +237,15 @@ composition is insufficient.
 
 ## Work order
 
-There is no approved NEXT or CANDIDATE component at the pinned census revision.
+There is no approved NEXT or CANDIDATE registry component at the pinned census
+revision. The MQS window is a product-port task, not a registry extraction.
 
-1. Stop extraction work at this boundary.
-2. Update the pinned pre-alpha SHA when the product UI moves materially.
-3. Re-census new or changed UI for independent duplication before approving any
-   additional HubzzCN analog.
-4. Prefer deleting or composing product-local wrappers over growing the registry.
+1. Keep Portal/Spaces navigation product-owned and route Join through the profile host.
+2. Keep the MQS window stateless over authoritative server snapshots.
+3. Keep MQS command, permission, connection, and synchronization logic in pre-alpha.
+4. Update the pinned pre-alpha SHA when product UI or MQS host contracts move materially.
+5. Re-census new or changed UI for independent duplication before approving any additional HubzzCN analog.
+6. Prefer deleting or composing product-local wrappers over growing the registry.
 
 The desired end state is not parity by component count. It is the smallest
 stable Hubzz-owned layer that lets product code express the current experience
