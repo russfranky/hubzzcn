@@ -30,6 +30,17 @@ pnpm dev
 Node 22 and pnpm 10.33.4 are the repository defaults. The minimum supported
 Node runtime is 20.19.
 
+## Session handoff
+
+Read [`AGENTS.md`](./AGENTS.md) before a new work session. Then read
+[`docs/WORKING_STATE.md`](./docs/WORKING_STATE.md) for the current handoff.
+
+Update `docs/WORKING_STATE.md` when a pull request changes the current focus,
+a known blocker, a prototype state, or the next recommended task. Keep the file
+short and remove stale details after work merges.
+
+Merged code and CI are the source of truth when the handoff file is stale.
+
 ## Required checks
 
 Before submitting a change:
@@ -92,7 +103,8 @@ Keep pull requests focused. Explain:
 - why the upstream shadcn component was or was not sufficient;
 - public API or registry impact;
 - accessibility impact;
-- how the change was verified.
+- how the change was verified;
+- whether the working-state handoff changed.
 
 Do not include secrets, deployment credentials, private infrastructure details,
 or unrelated product code.
