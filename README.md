@@ -53,6 +53,8 @@ Hubzz layer obvious.
 
 See:
 
+- [`AGENTS.md`](./AGENTS.md) for the stable work-session entry point
+- [`docs/WORKING_STATE.md`](./docs/WORKING_STATE.md) for current project progress
 - [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)
 - [`docs/FOUNDATIONS.md`](./docs/FOUNDATIONS.md)
 - [`docs/PRINCIPLES.md`](./docs/PRINCIPLES.md)
@@ -100,6 +102,10 @@ assets inside the design-system package.
 ## Development
 
 Node 22 and pnpm 10.33.4 are the repository baselines.
+
+Before a new work session, read [`AGENTS.md`](./AGENTS.md) and
+[`docs/WORKING_STATE.md`](./docs/WORKING_STATE.md). The first file contains the
+stable workflow. The second file contains the current handoff between sessions.
 
 ```bash
 pnpm install --frozen-lockfile
