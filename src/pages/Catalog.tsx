@@ -35,7 +35,8 @@ const GROUPS: Array<{
     layer: "component",
     eyebrow: "Hubzz components",
     title: "Product components",
-    description: "Hubzz-specific interface structure built on upstream primitives.",
+    description:
+      "Hubzz-specific interface structure built on upstream primitives.",
   },
   {
     id: "patterns",

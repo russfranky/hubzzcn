@@ -521,8 +521,6 @@ function CurrentCard({
     ? Math.min(100, Math.max(0, (displayedElapsed / duration) * 100))
     : 0
 
-  latestItemIdRef.current = item.id
-
   function clearLoopHold(releasePointer = true) {
     if (loopHoldTimerRef.current !== null) {
       window.clearTimeout(loopHoldTimerRef.current)
@@ -678,6 +676,7 @@ function CurrentCard({
   }
 
   React.useEffect(() => {
+    latestItemIdRef.current = item.id
     if (previousItemIdRef.current === item.id) return
     previousItemIdRef.current = item.id
 

@@ -86,7 +86,8 @@ const PRINCIPLES = [
   {
     icon: Layers3,
     title: "Upstream base",
-    description: "Commodity interaction contracts remain with shadcn and Radix.",
+    description:
+      "Commodity interaction contracts remain with shadcn and Radix.",
   },
   {
     icon: Box,
