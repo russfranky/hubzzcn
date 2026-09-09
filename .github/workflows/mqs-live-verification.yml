@@ -1,0 +1,92 @@
+name: Verify deployed MQS
+
+on:
+  push:
+    branches:
+      - ops/mqs-live-verification
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout tested merge
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 0f4b880e36cc71af4e575a1ce3e34af8fbd6c512
+          persist-credentials: false
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Install locked dependencies and browsers
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install chromium firefox webkit --with-deps
+      - name: Test the live MQS page
+        run: |
+          mkdir -p live-evidence
+          cat > playwright.live.config.ts <<'TS'
+          import { defineConfig, devices } from '@playwright/test'
+          export default defineConfig({
+            testDir: './tests',
+            testMatch: /mqs-reorder\.spec\.ts/,
+            forbidOnly: true,
+            retries: 0,
+            workers: 1,
+            reporter: [['list'], ['json', { outputFile: 'live-evidence/tests.json' }]],
+            use: {
+              baseURL: 'https://hubzz-ui-phi.vercel.app',
+              screenshot: 'only-on-failure',
+              trace: 'retain-on-failure',
+            },
+            projects: [
+              { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+              { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+              { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+            ],
+          })
+          TS
+          pnpm exec playwright test --config=playwright.live.config.ts
+      - name: Capture the deployed interface
+        if: always()
+        run: |
+          mkdir -p live-evidence
+          node --input-type=module <<'JS'
+          import { chromium, expect } from '@playwright/test';
+          import { writeFile } from 'node:fs/promises';
+          const browser = await chromium.launch();
+          const results = [];
+          try {
+            for (const [name, viewport] of [['desktop', { width: 1280, height: 900 }], ['narrow', { width: 320, height: 720 }]]) {
+              const page = await browser.newPage({ viewport });
+              const errors = [];
+              page.on('pageerror', error => errors.push(error.message));
+              const response = await page.goto('https://hubzz-ui-phi.vercel.app/?prototype=mqs', { waitUntil: 'networkidle', timeout: 30000 });
+              expect(response?.status()).toBe(200);
+              await expect(page.getByRole('list', { name: 'Media queue items' }).getByRole('listitem')).toHaveCount(5);
+              await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
+              await page.screenshot({ path: `live-evidence/mqs-${name}.png`, fullPage: true });
+              await writeFile(`live-evidence/mqs-${name}.txt`, await page.locator('body').ariaSnapshot());
+              expect(errors).toEqual([]);
+              results.push({ name, url: page.url(), status: response.status(), errors });
+              await page.close();
+            }
+            await writeFile('live-evidence/browser.json', JSON.stringify({ commit: '0f4b880e36cc71af4e575a1ce3e34af8fbd6c512', results }, null, 2));
+          } finally { await browser.close(); }
+          JS
+      - name: Save live verification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: mqs-live-evidence
+          path: |
+            live-evidence/
+            test-results/
+          retention-days: 7
