@@ -11,56 +11,78 @@ permissions:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    environment: production
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
-      - name: Inspect public site and Vercel metadata
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build canonical bundle
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        shell: bash
+          VITE_SOURCE_REF: main
+        run: pnpm build:preview
+      - name: Compare live assets with current source
         run: |
-          set -euo pipefail
           node --input-type=module <<'JS'
-          import { resolve } from 'node:dns/promises';
+          import { readFile, mkdir, writeFile } from 'node:fs/promises';
           import { createHash } from 'node:crypto';
-          const token = process.env.VERCEL_TOKEN;
-          const team = 'team_fxAj717BuD1hQ9q3PeCu02hC';
-          const project = 'prj_dol1AgcBzkQ17lN8zQJ1DOaXCrOA';
-          const pick = (value, keys) => Object.fromEntries(keys.filter(key => value?.[key] !== undefined).map(key => [key, value[key]]));
-          function report(label, value) { console.log(JSON.stringify({ label, ...value })); }
-          async function api(path, select) {
-            if (!token) return report(path, { credentialPresent: false });
-            const url = new URL(path, 'https://api.vercel.com');
-            url.searchParams.set('teamId', team);
-            try {
-              const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, redirect: 'error', signal: AbortSignal.timeout(15000) });
-              const data = await response.json();
-              report(path, { status: response.status, data: response.ok ? select(data) : pick(data.error, ['code', 'message']) });
-            } catch (error) { report(path, { error: error.name }); }
+          const base = 'https://hubzz.xyz';
+          const extract = html => [...html.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css))["']/g)].map(match => match[1]);
+          const html = await (await fetch(`${base}/cn/`, { signal: AbortSignal.timeout(15000) })).text();
+          const expected = extract(await readFile('dist/index.html', 'utf8'));
+          const actual = extract(html);
+          const assets = [];
+          for (const asset of actual) {
+            const url = new URL(asset, base);
+            if (url.origin !== base || !url.pathname.startsWith('/cn/assets/')) throw new Error('Unexpected asset path');
+            const response = await fetch(url, { signal: AbortSignal.timeout(15000) });
+            const bytes = Buffer.from(await response.arrayBuffer());
+            assets.push({ path: asset, status: response.status, sha256: createHash('sha256').update(bytes).digest('hex'), clipboardFix: bytes.includes(Buffer.from('Could not copy command')), queueSemantics: bytes.includes(Buffer.from('Media queue items')) });
           }
-          async function publicPage(path) {
-            const url = `https://hubzz.xyz${path}`;
-            try {
-              const response = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(15000) });
-              const body = await response.text();
-              const assets = [...body.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css)(?:\?[^"']*)?)["']/g)].map(match => match[1]);
-              report(url, {
-                status: response.status,
-                headers: pick(Object.fromEntries(response.headers), ['server', 'location', 'content-type', 'cache-control', 'cf-cache-status', 'x-vercel-id']),
-                title: body.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1],
-                htmlSha256: createHash('sha256').update(body).digest('hex'),
-                assets: assets.slice(0, 10),
-              });
-            } catch (error) { report(url, { error: error.name, code: error.cause?.code }); }
-          }
-          await Promise.all([
-            ...['NS', 'A', 'AAAA', 'CNAME'].map(async type => {
-              try { report('DNS', { type, records: await resolve('hubzz.xyz', type) }); }
-              catch (error) { report('DNS', { type, code: error.code }); }
-            }),
-            ...['/', '/cn/', '/cn/portal', '/cn/stage'].map(publicPage),
-            api(`/v9/projects/${project}/domains`, data => ({ domains: data.domains?.map(domain => pick(domain, ['name', 'verified', 'redirect', 'gitBranch'])) })),
-            api('/v6/domains/hubzz.xyz/config', data => pick(data, ['configuredBy', 'misconfigured', 'nameservers', 'intendedNameservers', 'recommendedIPv4', 'recommendedCNAME'])),
-            api('/v5/domains/hubzz.xyz', data => pick(data.domain, ['name', 'verified', 'nameservers', 'intendedNameservers', 'serviceType'])),
-          ]);
+          const report = { expected, actual, matchingAssetNames: JSON.stringify(expected) === JSON.stringify(actual), assets };
+          console.log(JSON.stringify(report, null, 2));
+          await mkdir('canonical-evidence', { recursive: true });
+          await writeFile('canonical-evidence/bundle.json', JSON.stringify(report, null, 2));
           JS
+      - name: Install Chromium
+        run: pnpm exec playwright install chromium --with-deps
+      - name: Inspect canonical routes in Chromium
+        run: |
+          node --input-type=module <<'JS'
+          import { chromium } from '@playwright/test';
+          import { writeFile } from 'node:fs/promises';
+          const browser = await chromium.launch();
+          const results = [];
+          for (const [name, path] of [['catalog', '/cn/'], ['portal', '/cn/portal'], ['stage', '/cn/stage'], ['mqs', '/cn/?prototype=mqs']]) {
+            const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+            const errors = [];
+            page.on('pageerror', error => errors.push(error.message));
+            try {
+              const response = await page.goto(`https://hubzz.xyz${path}`, { waitUntil: 'networkidle', timeout: 30000 });
+              await page.screenshot({ path: `canonical-evidence/${name}.png`, fullPage: true });
+              const snapshot = await page.locator('body').ariaSnapshot();
+              await writeFile(`canonical-evidence/${name}.txt`, snapshot);
+              results.push({ name, status: response?.status(), title: await page.title(), url: page.url(), body: (await page.locator('body').innerText()).slice(0, 1800), errors });
+            } catch (error) { results.push({ name, error: error.message, errors }); }
+            await page.close();
+          }
+          await browser.close();
+          console.log(JSON.stringify(results, null, 2));
+          await writeFile('canonical-evidence/browser.json', JSON.stringify(results, null, 2));
+          JS
+      - name: Save canonical evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: canonical-evidence
+          path: canonical-evidence/
+          retention-days: 7
