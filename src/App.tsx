@@ -2,7 +2,7 @@ import { useTheme } from "@/catalog/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { Landing } from "@/pages/Landing"
 import { MqsPrototype } from "@/pages/MqsPrototype"
-import { PortalPrototype } from "@/pages/PortalPrototype"
+import { PortalPrototypeDemo } from "@/pages/PortalPrototype"
 import { StagePrototype } from "@/pages/StagePrototype"
 
 export function App() {
@@ -19,7 +19,7 @@ export function App() {
   return (
     <>
       {portalPrototype ? (
-        <PortalPrototype />
+        <PortalPrototypeDemo />
       ) : stagePrototype ? (
         <StagePrototype />
       ) : prototype === "mqs" ? (
