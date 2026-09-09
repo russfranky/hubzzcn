@@ -1,0 +1,66 @@
+name: Inspect canonical deployment
+
+on:
+  push:
+    branches:
+      - ops/xyz-deployment-audit
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 5
+    steps:
+      - name: Inspect public site and Vercel metadata
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'JS'
+          import { resolve } from 'node:dns/promises';
+          import { createHash } from 'node:crypto';
+          const token = process.env.VERCEL_TOKEN;
+          const team = 'team_fxAj717BuD1hQ9q3PeCu02hC';
+          const project = 'prj_dol1AgcBzkQ17lN8zQJ1DOaXCrOA';
+          const pick = (value, keys) => Object.fromEntries(keys.filter(key => value?.[key] !== undefined).map(key => [key, value[key]]));
+          function report(label, value) { console.log(JSON.stringify({ label, ...value })); }
+          async function api(path, select) {
+            if (!token) return report(path, { credentialPresent: false });
+            const url = new URL(path, 'https://api.vercel.com');
+            url.searchParams.set('teamId', team);
+            try {
+              const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, redirect: 'error', signal: AbortSignal.timeout(15000) });
+              const data = await response.json();
+              report(path, { status: response.status, data: response.ok ? select(data) : pick(data.error, ['code', 'message']) });
+            } catch (error) { report(path, { error: error.name }); }
+          }
+          async function publicPage(path) {
+            const url = `https://hubzz.xyz${path}`;
+            try {
+              const response = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(15000) });
+              const body = await response.text();
+              const assets = [...body.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css)(?:\?[^"']*)?)["']/g)].map(match => match[1]);
+              report(url, {
+                status: response.status,
+                headers: pick(Object.fromEntries(response.headers), ['server', 'location', 'content-type', 'cache-control', 'cf-cache-status', 'x-vercel-id']),
+                title: body.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1],
+                htmlSha256: createHash('sha256').update(body).digest('hex'),
+                assets: assets.slice(0, 10),
+              });
+            } catch (error) { report(url, { error: error.name, code: error.cause?.code }); }
+          }
+          await Promise.all([
+            ...['NS', 'A', 'AAAA', 'CNAME'].map(async type => {
+              try { report('DNS', { type, records: await resolve('hubzz.xyz', type) }); }
+              catch (error) { report('DNS', { type, code: error.code }); }
+            }),
+            ...['/', '/cn/', '/cn/portal', '/cn/stage'].map(publicPage),
+            api(`/v9/projects/${project}/domains`, data => ({ domains: data.domains?.map(domain => pick(domain, ['name', 'verified', 'redirect', 'gitBranch'])) })),
+            api('/v6/domains/hubzz.xyz/config', data => pick(data, ['configuredBy', 'misconfigured', 'nameservers', 'intendedNameservers', 'recommendedIPv4', 'recommendedCNAME'])),
+            api('/v5/domains/hubzz.xyz', data => pick(data.domain, ['name', 'verified', 'nameservers', 'intendedNameservers', 'serviceType'])),
+          ]);
+          JS
