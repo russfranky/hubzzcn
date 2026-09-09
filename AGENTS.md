@@ -58,6 +58,14 @@ Before merge, confirm:
 - CodeQL passes;
 - no temporary workflows or repair files remain.
 
+## Merge preference
+
+Russ authorized this workflow on 2026-09-08: merge completed `hubzzcn` changes after review and required checks pass. Do not stop at an open PR or ask for another routine merge approval.
+
+This instruction cleared the former review-only hold on PR #76. It does not waive failed checks, unresolved defects, conflicts, repository protections, or a newer explicit hold. It does not authorize indiscriminate merges of unrelated or unreviewed pull requests, or changes to other repositories.
+
+Use a focused PR and verify its exact head SHA before merging. Then verify main-branch CI and the production deployment separately. A successful merge is not proof of a successful deployment. Record the result and any limits in the PR and handoff.
+
 ## Handoff rules
 
 Update `docs/WORKING_STATE.md` when a pull request changes any of these items:

@@ -4,48 +4,49 @@ This file is the short handoff between work sessions. Read [`../AGENTS.md`](../A
 
 Last reviewed: 2026-09-08
 
-## Production baseline
+## Current baseline
 
-- The public catalog remains at `https://hubzz.xyz/cn/`.
-- Last verified production code: `f655c7a` after PR #85. Its main CI, CodeQL, and production deployment passed.
-- Production includes the Stage HUD at `/cn/stage` and the standalone MQS long-press Loop prototype.
-- The pre-alpha Portal and MQS integration in PR #76 is not production code.
+- PR #76 merged as `6d5a4551529f9251fbb2d4214177f89d21299e1d` after Russ explicitly cleared its former review-only hold.
+- Main now includes the Portal and MQS product-local host adapters. The MQS adapter replaces the old standalone Loop demo; do not restore local queue authority by accident.
+- Routes in source: `/cn/portal`, `/cn/stage`, and `/cn/?prototype=mqs`.
+- The separate pre-alpha repository did not change. HubzzCN demos do not establish a live server connection.
+- Public package exports and registry boundaries remain unchanged.
 
-## Current focus
+## Deployment targets
 
-- Goal: repair the MQS list accessibility failure in [PR #76](https://github.com/russfranky/hubzzcn/pull/76).
-- Branch: `qa/pre-refactor-confidence-95`.
-- Scope: `src/components/hubzz/mqs-queue-window.tsx` and `tests/mqs-prototype.spec.ts`.
-- Implemented: explicit list-item roles, a named queue list, and regression tests for populated and empty queues.
-- Preserved: existing layout, host command strings, and server-owned queue state. No public package or registry additions.
-- Verification: inspect the latest PR #76 checks and session comment for exact tested commits and results.
-- Remaining: review clearance. A passing CI run does not remove the review-only hold.
+- Canonical catalog: `https://hubzz.xyz/cn/`. [`../DEPLOYMENT.md`](../DEPLOYMENT.md) describes a separate Nginx origin behind Cloudflare, with `scripts/deploy-production.sh` publishing the `/cn/` build on that host.
+- The automatic Vercel workflow targets `hubzz-ui`. Vercel confirmed commit `6d5a455` READY for production; its aliases include `hubzzhq.com`, not `hubzz.xyz`.
+- No evidence in this session confirms that the Nginx host received the merged changes. Vercel success is not proof of an update at `hubzz.xyz/cn/`.
+- Do not change DNS, domains, or the canonical URL to conceal this gap. Verify the separate static publication path before claiming the canonical site is current.
 
-## Review holds and other open work
+## Merge policy
 
-- PR #76 remains review-only. Do not merge or deploy it without explicit review clearance.
-- The prior Seer review did not complete. See the PR discussion before retrying or changing the review path.
-- [PR #40](https://github.com/russfranky/hubzzcn/pull/40) is a separate older MQS proposal. Do not merge or combine it without reconciling its intent.
-- Dependency pull requests are separate maintenance work. Do not mix them into the accessibility repair.
-- An empty issue search does not mean there is no unfinished work. Inspect open pull requests and their discussions too.
+Complete reviewed work through merge after all required checks pass. Do not ask for another routine merge approval. Preserve checks and protections. See `AGENTS.md` for the full policy.
 
-## Recently completed
+## Latest change
 
-- PR #77 added the Stage HUD prototype without expanding the public `@hubzz/ui` package surface.
-- PR #84 restored formatting and removed the old MQS render-time ref write.
-- PR #85 established the agent guide and session handoff. This review found that the first handoff omitted open product pull requests.
+- [PR #87](https://github.com/russfranky/hubzzcn/pull/87), branch `fix/catalog-clipboard-recovery`, resolves the catalog clipboard-feedback defect `DEF-CAT-001` from PR #76.
+- Source: `src/catalog/copy-command.tsx`. The change adds existing Sonner error feedback, manual-copy guidance, successful retry cleanup, timer cleanup, and protection against stale async copy results.
+- Tests: `tests/catalog-copy.spec.ts` runs in Chromium, Firefox, and WebKit through `playwright.config.ts`.
+- Coverage: denied permission, missing clipboard support, retry, success feedback reset, stale failure, and accessibility with the error visible.
+- The PR records exact tested heads, merge status, and verification results. Check its live state before resuming the branch; do not repeat a merged fix.
 
-## Known constraints
+## Verification sources
 
-- Keep ordinary shadcn primitives upstream-first.
-- Keep prototype-only code out of `src/index.ts` unless a change explicitly promotes it.
-- Preserve keyboard and reduced-motion behavior in interactive prototypes.
-- Keep production facts separate from unmerged branch behavior.
+- PR #76 head `c778f3c`: [CI](https://github.com/russfranky/hubzzcn/actions/runs/34293214591) passed with 205 browser tests; [CodeQL](https://github.com/russfranky/hubzzcn/actions/runs/34293214571) passed.
+- Merge `6d5a455`: [main CI](https://github.com/russfranky/hubzzcn/actions/runs/34294867068), [CodeQL](https://github.com/russfranky/hubzzcn/actions/runs/34294867097), and [Vercel deployment](https://github.com/russfranky/hubzzcn/actions/runs/34294867073) passed.
+- No local full-suite or live-site visual verification is claimed. The local shell could not resolve GitHub, the web reader could not open the canonical catalog, and Opera was disconnected. CI provides browser evidence.
+
+## Other open work
+
+- PR #40 is an older MQS proposal. Reconcile its intent with the merged snapshot adapter before any merge; it is not automatically safe to combine.
+- Dependency PRs remain separate maintenance work. Review and verify each focused update before merging.
+- An empty issue search does not mean there is no unfinished work. Inspect open PRs and their discussions.
 
 ## Next action
 
-Review the focused accessibility repair and latest CI results on PR #76, then complete the required review. Keep the integration unmerged until clearance.
+Confirm PR #87 and its main checks completed. Verify the canonical Nginx publication path separately from Vercel. Then review MQS reorder boundary cases, including external drops and keyboard movement at the last row, with regression tests.
 
-## Handoff format
+## Durable constraints
 
-Record the goal, branch or PR, affected files, completed work, remaining work, verification evidence, and next action. Prefer links to live CI over undated claims that checks pass.
+Keep upstream primitives, semantic tokens, keyboard access, and reduced-motion behavior. Keep prototype-only code out of public exports unless explicitly promoted. Keep production facts separate from unmerged work.

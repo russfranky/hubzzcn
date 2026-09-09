@@ -1,5 +1,6 @@
 import * as React from "react"
 import { Check, Copy } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -14,12 +15,48 @@ export function CopyCommand({
   label?: string
 }) {
   const [copied, setCopied] = React.useState(false)
+  const resetTimerRef = React.useRef<number | null>(null)
+  const requestRef = React.useRef(0)
+  const toastId = React.useId()
+
+  React.useEffect(() => {
+    return () => {
+      requestRef.current += 1
+      if (resetTimerRef.current !== null) {
+        window.clearTimeout(resetTimerRef.current)
+      }
+      toast.dismiss(toastId)
+    }
+  }, [toastId])
 
   const copy = React.useCallback(async () => {
-    await navigator.clipboard.writeText(command)
+    const request = ++requestRef.current
+    if (resetTimerRef.current !== null) {
+      window.clearTimeout(resetTimerRef.current)
+      resetTimerRef.current = null
+    }
+    setCopied(false)
+
+    try {
+      await navigator.clipboard.writeText(command)
+    } catch {
+      if (request !== requestRef.current) return
+      toast.error("Could not copy command", {
+        id: toastId,
+        description:
+          "Select the command text to copy it manually, or try again.",
+      })
+      return
+    }
+
+    if (request !== requestRef.current) return
+    toast.dismiss(toastId)
     setCopied(true)
-    window.setTimeout(() => setCopied(false), 1600)
-  }, [command])
+    resetTimerRef.current = window.setTimeout(() => {
+      setCopied(false)
+      resetTimerRef.current = null
+    }, 1600)
+  }, [command, toastId])
 
   return (
     <div
