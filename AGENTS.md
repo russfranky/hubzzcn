@@ -15,6 +15,14 @@ Read it before making changes. Then read [`docs/WORKING_STATE.md`](./docs/WORKIN
 
 Do not treat chat history as the source of truth. Use the repository, merged pull requests, CI, and `docs/WORKING_STATE.md`.
 
+## Domain and release target
+
+Russ confirmed on 2026-09-08 that the project moves forward with `hubzz.xyz`. Use `https://hubzz.xyz/cn/` for catalog links and canonical release verification. Do not substitute `hubzzhq.com` or a Vercel alias in a release report.
+
+[`DEPLOYMENT.md`](./DEPLOYMENT.md) describes the existing `/cn/` static publication path. The automatic Vercel deployment is a separate target. Its success does not establish that the canonical `.xyz` site received the change.
+
+Report code merge, CI results, target deployment, and canonical-site verification separately. Mark `.xyz` publication as unverified until evidence confirms it. The domain decision does not itself move hosting, change DNS, retire the existing Vercel workflow, or authorize changes outside this repository.
+
 ## Start of a work session
 
 1. Read this file.
