@@ -1,44 +1,41 @@
 # Working State
 
-This file is the short handoff between work sessions. Read [`../AGENTS.md`](../AGENTS.md) first.
-
-Last reviewed: 2026-09-09
+Read [`../AGENTS.md`](../AGENTS.md) first. Last reviewed: 2026-09-09.
 
 ## Active direction
 
-Russ dropped the `.xyz` requirement on 2026-09-09. Use the existing Vercel deployment and return to product work. This supersedes PR #88's domain requirement and the later `.xyz` repair proposal.
+Use the existing Vercel production site at `https://hubzz-ui-phi.vercel.app/` and its `Deploy Vercel Production` workflow. Russ dropped the `.xyz` requirement. Do not reopen domain, DNS, Cloudflare, or Nginx work without a new explicit request.
 
-- Working catalog: `https://hubzz-ui-phi.vercel.app/`.
-- Release path: the existing `Deploy Vercel Production` workflow for `hubzz-ui`.
-- Do not reopen `.xyz`, Cloudflare, Nginx, or DNS work or request credentials for it without a new explicit request.
-- Leave the old site and existing domains unchanged. The old site's stale build is no longer a project blocker.
+Merge completed, reviewed changes after all required checks pass without another routine approval. Preserve checks and protections. Record the exact tested commit and deployment results.
 
 ## Completed baseline
 
-- PR #76 merged as `6d5a455`: product-local Portal and MQS host adapters plus accessible queue list semantics.
-- PR #87 merged as `6536c18`: clipboard error feedback, retry, timer cleanup, and stale-result protection. Its pre-merge browser suite passed 220 tests. Do not repeat the fix.
-- Main at the start of this session was `6aa9798a614ce35801c81c7b7acb5c5a7971609a`. Its [main CI](https://github.com/russfranky/hubzzcn/actions/runs/34298356134), [CodeQL](https://github.com/russfranky/hubzzcn/actions/runs/34298356103), and [Vercel deployment](https://github.com/russfranky/hubzzcn/actions/runs/34298356168) all passed.
-- Vercel independently reported production deployment `dpl_9SnVizyipyEhK6QpHL1TBbXyMNJU` READY for that exact SHA. The working catalog URL returned HTTP 200 with the Hubzz UI entry document during this session. This was an HTTP check, not a new live browser test.
+- PR #76: product-local Portal and MQS host adapters plus accessible queue list semantics.
+- PR #87: clipboard error feedback, retry, timer cleanup, and stale-result protection. Its browser suite passed 220 tests.
+- PR #89 merged as `abfe0fef7010b4f233491f080ee39bf7f319974a`: use the existing Vercel site and stop the domain detour. Both jobs in [main CI](https://github.com/russfranky/hubzzcn/actions/runs/34387538898) passed. PR #89 records its successful Vercel deployment.
 
-## Current focus
+## Current change
 
-Return to focused product fixes. There is no active domain migration or server-access blocker.
+- Branch: `fix/mqs-reorder-boundaries`.
+- Goal: prevent invalid queue moves from external drops and end-of-list keyboard actions.
+- Source: `src/components/hubzz/mqs-queue-window.tsx`.
+- Implemented: queue-local drag token, stable source-item identity, validation against the current host snapshot, cancellation after drop/end/close, and keyboard bounds for both ends of the queue.
+- Tests: `tests/mqs-reorder.spec.ts`, included in all three browser projects by `playwright.config.ts`. Existing MQS and accessibility tests remain unchanged.
+- Coverage: valid keyboard/pointer moves, focus retention, first/last/single-item bounds, external text/files, invalid/canceled/repeated payloads, descendant drags, window remount, and host snapshot changes.
+- Verification and merge status: see the PR for this branch. Do not infer a passed check or completed deployment from this file. Check the live PR state before repeating the fix.
 
-The documentation change on `docs/use-existing-vercel-site` replaces the obsolete domain instructions and updates the README catalog link. Its PR records the exact verification and merge results. Check that PR before repeating this update.
+## Next action
 
-## Next product task
-
-Review MQS external drops and end-of-list keyboard reorder cases in `src/components/hubzz/mqs-queue-window.tsx`. Add regression tests in `tests/mqs-prototype.spec.ts`, preserve host command strings and server-owned queue state, run the checks, and merge the focused fix.
+Complete this PR's checks, review, merge, and Vercel verification. Then test the demo host's current-item identity during reorder/removal in `src/pages/MqsPrototype.tsx`: its move handler currently changes the item order without adjusting `currentIndex`. Keep that separate from this view-level command-validation fix.
 
 ## Product boundaries
 
 - Portal: `/cn/portal`; Stage: `/cn/stage`; MQS: `/?prototype=mqs`, on the working Vercel host.
-- The MQS host adapter replaced the old standalone Loop demo. Do not restore local queue authority.
+- The queue view emits host commands; it does not mutate authoritative queue state. Preserve the 1-based move/remove command contract.
+- Do not restore the old standalone Loop demo or add prototype code to public package exports or the registry.
 - HubzzCN demos do not establish a live server connection. The separate pre-alpha repository did not change.
-- Keep upstream primitives, semantic tokens, keyboard access, and reduced-motion behavior. Prototype-only code stays out of public exports unless explicitly promoted.
+- Preserve upstream primitives, semantic tokens, keyboard access, and reduced-motion behavior.
 
-## Merge policy and other work
+## Other work
 
-Merge completed, reviewed changes after all required checks pass without another routine approval. Preserve checks and protections. Record exact tested commits and deployment results, not assumptions about future runs.
-
-PR #40 remains an older MQS proposal that needs reconciliation with the merged snapshot adapter. Keep dependency PRs separate. Inspect open PRs and their discussions rather than treating an empty issue search as proof that no work remains.
+PR #40 is an older MQS proposal that needs reconciliation with the merged snapshot adapter. Keep dependency PRs separate. Inspect open PRs and their discussions before choosing further work.

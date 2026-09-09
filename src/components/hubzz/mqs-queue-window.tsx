@@ -23,6 +23,13 @@ import {
 } from "@/components/ui/item"
 import { cn } from "@/lib/utils"
 
+const QUEUE_DRAG_TYPE = "application/x-hubzz-mqs-reorder"
+
+type QueueDrag = {
+  itemId: string
+  token: string
+}
+
 export type MqsMediaType =
   | "youtube"
   | "twitch"
@@ -101,16 +108,18 @@ function itemMeta(item: MqsQueueItem) {
 function QueueRow({
   item,
   index,
+  items,
   current,
-  dragIndex,
-  setDragIndex,
+  drag,
+  setDrag,
   onCommand,
 }: {
   item: MqsQueueItem
   index: number
+  items: MqsQueueItem[]
   current: boolean
-  dragIndex: number | null
-  setDragIndex: (value: number | null) => void
+  drag: QueueDrag | null
+  setDrag: (value: QueueDrag | null) => void
   onCommand: (command: string) => void
 }) {
   return (
@@ -122,27 +131,45 @@ function QueueRow({
       variant={current ? "outline" : "default"}
       size="xs"
       onDragStart={(event) => {
-        setDragIndex(index)
+        // A nested draggable or text selection is not a queue-row drag.
+        if (event.target !== event.currentTarget) return
+        const token = crypto.randomUUID()
         event.dataTransfer.effectAllowed = "move"
-        event.dataTransfer.setData("text/plain", String(index))
+        event.dataTransfer.setData(QUEUE_DRAG_TYPE, token)
+        setDrag({ itemId: item.id, token })
       }}
-      onDragEnd={() => setDragIndex(null)}
+      onDragEnd={() => setDrag(null)}
       onDragOver={(event) => {
         event.preventDefault()
-        event.dataTransfer.dropEffect = "move"
+        // The browser exposes types, not payloads, during dragover.
+        const accepts =
+          drag !== null &&
+          drag.itemId !== item.id &&
+          items.some((candidate) => candidate.id === drag.itemId) &&
+          event.dataTransfer.types.includes(QUEUE_DRAG_TYPE)
+        event.dataTransfer.dropEffect = accepts ? "move" : "none"
       }}
       onDrop={(event) => {
         event.preventDefault()
-        const fromText = event.dataTransfer.getData("text/plain")
-        const from = Number(fromText || dragIndex)
-        setDragIndex(null)
-        if (!Number.isInteger(from) || from === index) return
+        event.stopPropagation()
+        setDrag(null)
+        if (
+          !drag ||
+          event.dataTransfer.getData(QUEUE_DRAG_TYPE) !== drag.token
+        ) {
+          return
+        }
+
+        // Resolve the stable ID against the latest host snapshot, not an
+        // index captured before another client changed the queue.
+        const from = items.findIndex((entry) => entry.id === drag.itemId)
+        if (from < 0 || from === index) return
         onCommand(`--move ${from + 1} ${index + 1}`)
       }}
       className={cn(
         "group/item flex-nowrap rounded-none border-x-0 border-t-0 border-b border-border/50 px-2.5 py-2.5 last:border-b-0",
         current && "bg-primary/[0.06] ring-1 ring-primary/30",
-        dragIndex === index && "opacity-45"
+        drag?.itemId === item.id && "opacity-45"
       )}
     >
       <Button
@@ -154,14 +181,11 @@ function QueueRow({
         className="cursor-grab text-muted-foreground active:cursor-grabbing"
         onKeyDown={(event) => {
           if (!event.altKey) return
-          if (event.key === "ArrowUp" && index > 0) {
-            event.preventDefault()
-            onCommand(`--move ${index + 1} ${index}`)
-          }
-          if (event.key === "ArrowDown") {
-            event.preventDefault()
-            onCommand(`--move ${index + 1} ${index + 2}`)
-          }
+          if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return
+          event.preventDefault()
+          const to = index + (event.key === "ArrowUp" ? -1 : 1)
+          if (to < 0 || to >= items.length) return
+          onCommand(`--move ${index + 1} ${to + 1}`)
         }}
       >
         <GripVertical aria-hidden="true" />
@@ -206,7 +230,7 @@ export function MqsQueueWindow({
   style,
   className,
 }: MqsQueueWindowProps) {
-  const [dragIndex, setDragIndex] = React.useState<number | null>(null)
+  const [drag, setDrag] = React.useState<QueueDrag | null>(null)
   const fileRef = React.useRef<HTMLInputElement>(null)
 
   const current =
@@ -396,9 +420,10 @@ export function MqsQueueWindow({
                 key={item.id}
                 item={item}
                 index={index}
+                items={items}
                 current={index === currentIndex}
-                dragIndex={dragIndex}
-                setDragIndex={setDragIndex}
+                drag={drag}
+                setDrag={setDrag}
                 onCommand={onCommand}
               />
             ))}
