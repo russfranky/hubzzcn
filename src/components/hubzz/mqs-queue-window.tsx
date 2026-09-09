@@ -115,6 +115,7 @@ function QueueRow({
 }) {
   return (
     <Item
+      role="listitem"
       data-testid={current ? "current-row" : "queue-row"}
       data-queue-index={index}
       draggable
@@ -389,7 +390,7 @@ export function MqsQueueWindow({
         className="min-h-0 flex-1 overflow-y-auto"
       >
         {items.length > 0 ? (
-          <ItemGroup className="gap-0">
+          <ItemGroup aria-label="Media queue items" className="gap-0">
             {items.map((item, index) => (
               <QueueRow
                 key={item.id}

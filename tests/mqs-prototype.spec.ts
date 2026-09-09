@@ -26,6 +26,59 @@ test.describe("MQS pre-alpha port contract", () => {
     await expect(page.getByText(/loop/i)).toHaveCount(0)
   })
 
+  test("exposes queue list items", async ({ page }) => {
+    const list = page.getByRole("list", { name: "Media queue items" })
+    const rows = list.getByRole("listitem")
+    const children = list.locator(":scope > *")
+
+    await expect(list).toBeVisible()
+    await expect(rows).toHaveCount(5)
+    await expect(children).toHaveCount(5)
+    await expect(page.getByTestId("current-row")).toHaveAttribute(
+      "role",
+      "listitem"
+    )
+
+    for (let index = 0; index < 5; index += 1) {
+      const row = rows.nth(index)
+      await expect(children.nth(index)).toHaveAttribute("role", "listitem")
+      await expect(
+        row.getByRole("button", { name: `Reorder item ${index + 1}` })
+      ).toBeVisible()
+      await expect(
+        row.getByRole("button", { name: `Remove item ${index + 1}` })
+      ).toBeVisible()
+    }
+  })
+
+  test("keeps an accessible empty queue", async ({ page }) => {
+    const list = page.getByRole("list", { name: "Media queue items" })
+
+    await page.getByRole("button", { name: "Remove item 3" }).click()
+    await expect(lastCommand(page)).toHaveText("--remove 3")
+    await expect(list.getByRole("listitem")).toHaveCount(4)
+
+    await page.getByRole("button", { name: "Clear queue" }).click()
+    await expect(lastCommand(page)).toHaveText("--clearqueue")
+    await expect(list.getByRole("listitem")).toHaveCount(1)
+    await expect(list.getByRole("listitem")).toContainText(
+      "Tomorrowland 2026 Mainstage W1"
+    )
+
+    await page.getByRole("button", { name: "Remove item 1" }).click()
+    await expect(lastCommand(page)).toHaveText("--remove 1")
+    await expect(list).toHaveCount(0)
+    await expect(page.getByRole("listitem")).toHaveCount(0)
+    await expect(page.getByText("Queue is empty.")).toBeVisible()
+
+    await page.waitForLoadState("networkidle")
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+      .analyze()
+
+    expect(results.violations).toEqual([])
+  })
+
   test("emits the current pre-alpha transport command strings", async ({
     page,
   }) => {
