@@ -4,48 +4,45 @@ This file is the short handoff between work sessions. Read [`../AGENTS.md`](../A
 
 Last reviewed: 2026-09-08
 
-## Production baseline
+## Current baseline
 
-- The public catalog remains at `https://hubzz.xyz/cn/`.
-- Last verified production code: `f655c7a` after PR #85. Its main CI, CodeQL, and production deployment passed.
-- Production includes the Stage HUD at `/cn/stage` and the standalone MQS long-press Loop prototype.
-- The pre-alpha Portal and MQS integration in PR #76 is not production code.
+- The public catalog is `https://hubzz.xyz/cn/`.
+- PR #76 merged as `6d5a4551529f9251fbb2d4214177f89d21299e1d` after Russ explicitly cleared its former review-only hold.
+- Portal and MQS now use product-local host adapters. The MQS adapter replaces the old standalone Loop demo; do not restore local queue authority by accident.
+- Routes: `/cn/portal`, `/cn/stage`, and `/cn/?prototype=mqs`.
+- The separate pre-alpha repository did not change. HubzzCN demos do not establish a live server connection.
+- Public package exports and registry boundaries remain unchanged.
 
-## Current focus
+## Merge policy
 
-- Goal: repair the MQS list accessibility failure in [PR #76](https://github.com/russfranky/hubzzcn/pull/76).
-- Branch: `qa/pre-refactor-confidence-95`.
-- Scope: `src/components/hubzz/mqs-queue-window.tsx` and `tests/mqs-prototype.spec.ts`.
-- Implemented: explicit list-item roles, a named queue list, and regression tests for populated and empty queues.
-- Preserved: existing layout, host command strings, and server-owned queue state. No public package or registry additions.
-- Verification: inspect the latest PR #76 checks and session comment for exact tested commits and results.
-- Remaining: review clearance. A passing CI run does not remove the review-only hold.
+Complete reviewed work through merge after all required checks pass. Do not ask for another routine merge approval. Preserve checks and protections. See `AGENTS.md` for the full policy.
 
-## Review holds and other open work
+## Current change
 
-- PR #76 remains review-only. Do not merge or deploy it without explicit review clearance.
-- The prior Seer review did not complete. See the PR discussion before retrying or changing the review path.
-- [PR #40](https://github.com/russfranky/hubzzcn/pull/40) is a separate older MQS proposal. Do not merge or combine it without reconciling its intent.
-- Dependency pull requests are separate maintenance work. Do not mix them into the accessibility repair.
-- An empty issue search does not mean there is no unfinished work. Inspect open pull requests and their discussions too.
+- Goal: resolve the catalog clipboard-feedback defect recorded as `DEF-CAT-001` in PR #76.
+- Branch: `fix/catalog-clipboard-recovery`.
+- Source: `src/catalog/copy-command.tsx`.
+- Added: existing Sonner error feedback, manual-copy guidance, successful retry cleanup, timer cleanup, and protection against stale async copy results.
+- Tests: `tests/catalog-copy.spec.ts` runs in Chromium, Firefox, and WebKit through `playwright.config.ts`.
+- Coverage: denied permission, missing clipboard support, retry, success feedback reset, stale failure, and accessibility with the error visible.
+- Verification: the accompanying PR records the exact tested head and CI results. Check its merge state before resuming this branch.
 
-## Recently completed
+## Verification sources
 
-- PR #77 added the Stage HUD prototype without expanding the public `@hubzz/ui` package surface.
-- PR #84 restored formatting and removed the old MQS render-time ref write.
-- PR #85 established the agent guide and session handoff. This review found that the first handoff omitted open product pull requests.
+- PR #76 head `c778f3c`: [CI](https://github.com/russfranky/hubzzcn/actions/runs/34293214591) passed with 205 browser tests; [CodeQL](https://github.com/russfranky/hubzzcn/actions/runs/34293214571) passed.
+- For post-merge status, inspect [main Actions](https://github.com/russfranky/hubzzcn/actions?query=branch%3Amain) for the exact commit. Do not infer deployment success from a PR check.
+- No local full-suite or live-site visual verification is claimed for this session. The local shell could not resolve GitHub; the web reader could not open the live catalog. CI provides browser evidence.
 
-## Known constraints
+## Other open work
 
-- Keep ordinary shadcn primitives upstream-first.
-- Keep prototype-only code out of `src/index.ts` unless a change explicitly promotes it.
-- Preserve keyboard and reduced-motion behavior in interactive prototypes.
-- Keep production facts separate from unmerged branch behavior.
+- PR #40 is an older MQS proposal. Reconcile its intent with the merged snapshot adapter before any merge; it is not automatically safe to combine.
+- Dependency PRs remain separate maintenance work. Review and verify each focused update before merging.
+- An empty issue search does not mean there is no unfinished work. Inspect open PRs and their discussions.
 
 ## Next action
 
-Review the focused accessibility repair and latest CI results on PR #76, then complete the required review. Keep the integration unmerged until clearance.
+Confirm the clipboard PR and its main deployment completed. Then review MQS reorder boundary cases, including external drops and keyboard movement at the last row, with regression tests.
 
-## Handoff format
+## Durable constraints
 
-Record the goal, branch or PR, affected files, completed work, remaining work, verification evidence, and next action. Prefer links to live CI over undated claims that checks pass.
+Keep upstream primitives, semantic tokens, keyboard access, and reduced-motion behavior. Keep prototype-only code out of public exports unless explicitly promoted. Keep production facts separate from unmerged work.
