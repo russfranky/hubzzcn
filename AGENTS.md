@@ -7,8 +7,10 @@ Read it before making changes. Then read [`docs/WORKING_STATE.md`](./docs/WORKIN
 
 - Repository: `russfranky/hubzzcn`
 - Default branch: `main`
-- Public catalog: `https://hubzz.xyz/cn/`
-- Stage prototype: `https://hubzz.xyz/cn/stage`
+- Working catalog: `https://hubzz-ui-phi.vercel.app/`
+- Portal prototype: `https://hubzz-ui-phi.vercel.app/cn/portal`
+- Stage prototype: `https://hubzz-ui-phi.vercel.app/cn/stage`
+- MQS prototype: `https://hubzz-ui-phi.vercel.app/?prototype=mqs`
 - Package name: `@hubzz/ui`
 - Node baseline: 22
 - pnpm baseline: 10.33.4
@@ -17,11 +19,13 @@ Do not treat chat history as the source of truth. Use the repository, merged pul
 
 ## Domain and release target
 
-Russ confirmed on 2026-09-08 that the project moves forward with `hubzz.xyz`. Use `https://hubzz.xyz/cn/` for catalog links and canonical release verification. Do not substitute `hubzzhq.com` or a Vercel alias in a release report.
+On 2026-09-09, Russ dropped the `.xyz` requirement to prioritize product work. This supersedes the `.xyz` decision in PR #88 and the subsequent delivery investigation.
 
-[`DEPLOYMENT.md`](./DEPLOYMENT.md) describes the existing `/cn/` static publication path. The automatic Vercel deployment is a separate target. Its success does not establish that the canonical `.xyz` site received the change.
+Use the existing `hubzz-ui` Vercel production project and its working URL above. Keep `.github/workflows/deploy-vercel.yml` as the release path. Existing custom-domain aliases may remain, but no domain migration is required.
 
-Report code merge, CI results, target deployment, and canonical-site verification separately. Mark `.xyz` publication as unverified until evidence confirms it. The domain decision does not itself move hosting, change DNS, retire the existing Vercel workflow, or authorize changes outside this repository.
+Do not resume `.xyz`, Cloudflare, Nginx, or DNS work, request credentials for that work, or treat it as a release blocker unless Russ explicitly reopens it. Do not delete or repoint the old site; leaving it alone is intentional.
+
+Report the checked commit and Vercel deployment result. Keep runtime verification distinct from deployment status, but do not require verification on the abandoned `.xyz` target. See [`DEPLOYMENT.md`](./DEPLOYMENT.md).
 
 ## Start of a work session
 

@@ -1,106 +1,75 @@
 # Production deployment
 
-The canonical catalog target is `https://hubzz.xyz/cn/`. Russ confirmed the
-`.xyz` domain decision on 2026-09-08. The existing publication path uses the
-Nginx site behind Cloudflare.
+Use the existing `hubzz-ui` Vercel production project.
 
-## Separate deployment targets
+**Working catalog:** `https://hubzz-ui-phi.vercel.app/`
 
-The canonical `.xyz` catalog and the automatic Vercel deployment are separate
-publication targets. Do not use a successful Vercel run, a `hubzzhq.com` alias,
-or a merged commit as proof that `hubzz.xyz/cn/` received an update.
+Russ dropped the `.xyz` requirement on 2026-09-09. No custom-domain migration,
+Cloudflare access, or Nginx publication is required for current product work.
+This supersedes the domain requirement recorded in PR #88. Leave the old site,
+DNS, and existing Vercel aliases unchanged unless separately requested.
 
-- Canonical `.xyz` catalog: `pnpm build:preview` produces the `/cn/` build;
-  `scripts/deploy-production.sh` publishes it on the existing static host.
-- Vercel: `.github/workflows/deploy-vercel.yml` deploys its configured project;
-  its catalog build uses a different base path. This workflow does not run the
-  static-host publisher.
+## Normal release
 
-Despite its name, `build:preview` is the production build for the canonical
-`/cn/` site. Do not copy the root-based Vercel build to that directory.
+1. Review a focused PR and confirm its exact head passes the required checks.
+2. Merge the PR into `main` under the standing merge-after-checks preference.
+3. Verify the `Deploy Vercel Production` workflow for that merge commit.
+4. Confirm the production deployment is `READY` and its Git SHA matches.
+5. Check the affected interface at the working Vercel URL and record the result.
 
-This domain decision does not change DNS or hosting by itself. The existing
-Vercel workflow remains unchanged. A separate hosting migration or retirement
-requires an explicit plan rather than an unannounced domain substitution.
+The existing `.github/workflows/deploy-vercel.yml` runs on pushes to `main`.
+It uses the configured production environment, pulls the Vercel settings,
+builds, and deploys the prebuilt output. Keep credentials in the existing
+secret store; no additional service access is needed for this release path.
 
-## Build
+`vercel.json` selects `pnpm build:vercel` and the `dist/` output. This build
+uses root-relative assets. The catalog is at `/`; the existing rewrite paths
+include `/cn`, `/cn/portal`, and `/cn/stage`. MQS is at `/?prototype=mqs`.
+Do not copy the legacy `/cn/` static-host build over the Vercel output.
 
-Use a reviewed commit with passing checks, the frozen pnpm lockfile, and the
-`/cn/` preview build:
+For a local production-build check:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm build:preview
+pnpm build:vercel
+pnpm preview
 ```
 
-The build writes the complete static site to `dist/`.
+Record merge, CI, deployment, and browser results separately in the PR.
+A deployment status is not a browser test. Neither result requires checking
+`.xyz`, which is no longer an active release target.
 
-## Deploy
+## Legacy static host — inactive reference
 
-Run the deployment script on the production host:
+The older `hubzz.xyz/cn/` site used Nginx behind Cloudflare. Its publication
+procedure remains below to explain the retained scripts, not as a current
+release task. Do not run it or request access unless Russ reopens that work.
 
-```bash
-./scripts/deploy-production.sh
-```
+### Legacy build and publication
 
-The default target is:
+The legacy build uses `pnpm build:preview`, which writes `/cn/`-based assets
+to `dist/`. `scripts/deploy-production.sh` builds that output on the static
+host and publishes to `/var/www/hubzz.xyz/cn` by default. `HUBZZ_CN_ROOT`
+overrides that directory.
 
-```text
-/var/www/hubzz.xyz/cn
-```
+The deployment script delegates publication to `scripts/publish-static.sh`.
+The publisher copies assets and other static files first, then atomically
+replaces `index.html`. It retains old hashed assets because already-open
+pages can still reference them. Asset cleanup must remain separate from
+publication.
 
-Set `HUBZZ_CN_ROOT` to override it.
+`pnpm deployment:smoke` exercises the dependency-first publisher as part of
+`pnpm check`. Retain that test and the legacy scripts; abandoning a domain
+requirement does not authorize deleting tested publication utilities.
 
-`deploy-production.sh` builds the site, then delegates static publishing to
-`scripts/publish-static.sh`. The publisher copies assets and other static files
-first and atomically replaces `index.html` last. A newly served HTML document
-therefore never references a release asset that has not been copied yet.
+### Legacy cache and release evidence
 
-Old content-addressed assets are intentionally retained during deployment. An
-already-open page may still request a previous hashed asset after a new index
-has become current, so deleting old assets in the same release operation would
-create an avoidable race. Asset cleanup is a separate maintenance concern and
-must not be coupled to publishing the new entry document.
+The intended static-host cache behavior is revalidated HTML and long-lived
+immutable hashed files under `/cn/assets/`. Content-hashed asset names avoid
+the need to purge old JS or CSS URLs during a release.
 
-The dependency-first publisher is exercised by `pnpm deployment:smoke`, which
-runs as part of the normal repository `pnpm check` gate.
-
-All runtime assets used by the catalog should be versioned in this repository.
-Production-only files are not part of the component contract.
-
-## CDN behavior
-
-Cloudflare remains in front of the existing `hubzz.xyz` Nginx origin. DNS does
-not change for catalog releases.
-
-After deployment, verify:
-
-```bash
-curl -I https://hubzz.xyz/cn/
-curl -I https://hubzz.xyz/cn/assets/<current-hashed-asset>.js
-```
-
-Expected behavior:
-
-- HTML is revalidated rather than long-term cached.
-- Hashed files under `/cn/assets/` receive long-lived immutable caching at the
-  Cloudflare edge.
-
-Content-hashed asset names allow new releases to roll out without purging old
-JS or CSS URLs.
-
-## Canonical release evidence
-
-A successful HTTP status alone does not identify the deployed revision. Record:
-
-1. The exact checked commit from the production checkout (`git rev-parse HEAD`).
-2. The result of the static-host publication for that checkout.
-3. The canonical HTML and its referenced JS/CSS asset paths, compared with the
-   corresponding `dist/index.html` build output.
-4. Browser checks at `https://hubzz.xyz/cn/` and the affected prototype route,
-   including a direct route load and refresh.
-
-Report merge, CI, static-host publication, and canonical browser verification
-as separate results. If host access or canonical-site access is unavailable,
-record that limit and the next action in `docs/WORKING_STATE.md`; do not mark
-`.xyz` publication complete based on a different deployment target.
+If this host is explicitly reactivated, record the checked commit, publication
+result, served HTML and asset paths compared with the matching build, and
+browser results for direct route loads and refreshes. An HTTP 200 alone does
+not identify a deployed revision. Until reactivation, none of these legacy
+host checks block a Vercel release or product work.

@@ -2,54 +2,43 @@
 
 This file is the short handoff between work sessions. Read [`../AGENTS.md`](../AGENTS.md) first.
 
-Last reviewed: 2026-09-08
+Last reviewed: 2026-09-09
 
-## Current baseline
+## Active direction
 
-- PR #76 merged as `6d5a4551529f9251fbb2d4214177f89d21299e1d` after Russ cleared its former review-only hold.
-- PR #87 merged as `6536c187b0ed4fdbb86194d869d8171b1daad798`. It fixes clipboard error recovery and records the merge-after-checks preference. Do not repeat that fix.
-- The post-merge [main CI for `6536c18`](https://github.com/russfranky/hubzzcn/actions/runs/34296149648) passed both Quality and registry and Browser and accessibility. The previously pending browser run is complete.
-- Main includes the Portal and MQS product-local host adapters. The MQS adapter replaces the old standalone Loop demo; do not restore local queue authority.
-- Routes in source: `/cn/portal`, `/cn/stage`, and `/cn/?prototype=mqs`.
-- The separate pre-alpha repository did not change. The demos do not establish a live server connection. Public package exports and registry boundaries remain unchanged.
+Russ dropped the `.xyz` requirement on 2026-09-09. Use the existing Vercel deployment and return to product work. This supersedes PR #88's domain requirement and the later `.xyz` repair proposal.
 
-## Confirmed domain decision
+- Working catalog: `https://hubzz-ui-phi.vercel.app/`.
+- Release path: the existing `Deploy Vercel Production` workflow for `hubzz-ui`.
+- Do not reopen `.xyz`, Cloudflare, Nginx, or DNS work or request credentials for it without a new explicit request.
+- Leave the old site and existing domains unchanged. The old site's stale build is no longer a project blocker.
 
-Russ confirmed on 2026-09-08: move forward with `hubzz.xyz`.
+## Completed baseline
 
-- Canonical catalog and release-verification target: `https://hubzz.xyz/cn/`.
-- Use `.xyz` in new catalog links, documentation, and release reports. Do not substitute `hubzzhq.com` or a Vercel alias as the canonical target.
-- [`../DEPLOYMENT.md`](../DEPLOYMENT.md) describes the existing Nginx origin behind Cloudflare. `scripts/deploy-production.sh` publishes the `/cn/` build on that host.
-- The automatic Vercel workflow is separate. PR #87 records its successful deployment evidence, but that does not prove publication to `.xyz`.
-- This documentation change does not alter DNS, hosting, workflows, or domain aliases.
+- PR #76 merged as `6d5a455`: product-local Portal and MQS host adapters plus accessible queue list semantics.
+- PR #87 merged as `6536c18`: clipboard error feedback, retry, timer cleanup, and stale-result protection. Its pre-merge browser suite passed 220 tests. Do not repeat the fix.
+- Main at the start of this session was `6aa9798a614ce35801c81c7b7acb5c5a7971609a`. Its [main CI](https://github.com/russfranky/hubzzcn/actions/runs/34298356134), [CodeQL](https://github.com/russfranky/hubzzcn/actions/runs/34298356103), and [Vercel deployment](https://github.com/russfranky/hubzzcn/actions/runs/34298356168) all passed.
+- Vercel independently reported production deployment `dpl_9SnVizyipyEhK6QpHL1TBbXyMNJU` READY for that exact SHA. The working catalog URL returned HTTP 200 with the Hubzz UI entry document during this session. This was an HTTP check, not a new live browser test.
 
-## Current focus and blocker
+## Current focus
 
-Verify the canonical `.xyz` publication path before claiming the merged code is live there. Publication to the Nginx host and a browser check of the canonical site remain unverified.
+Return to focused product fixes. There is no active domain migration or server-access blocker.
 
-The web reader did not return the canonical page in this session. That access failure does not establish a site outage or identify the deployed revision. Keep release claims tied to the checked target and commit.
+The documentation change on `docs/use-existing-vercel-site` replaces the obsolete domain instructions and updates the README catalog link. Its PR records the exact verification and merge results. Check that PR before repeating this update.
 
-## Merge policy
+## Next product task
 
-Complete reviewed work through merge after all required checks pass. Do not ask for another routine merge approval. Preserve checks and protections. See `AGENTS.md` for the full policy.
+Review MQS external drops and end-of-list keyboard reorder cases in `src/components/hubzz/mqs-queue-window.tsx`. Add regression tests in `tests/mqs-prototype.spec.ts`, preserve host command strings and server-owned queue state, run the checks, and merge the focused fix.
 
-## Verification sources
+## Product boundaries
 
-- [PR #87](https://github.com/russfranky/hubzzcn/pull/87) records the clipboard fix, pre-merge checks, and separate Vercel deployment evidence.
-- [Main CI for `6536c18`](https://github.com/russfranky/hubzzcn/actions/runs/34296149648) confirms the completed post-merge checks.
-- For later commits, inspect the exact commit's [main Actions](https://github.com/russfranky/hubzzcn/actions?query=branch%3Amain). Do not carry an earlier passing result forward to a different revision.
-- No live-site visual verification or static-host publication is claimed for this session. CI supplies repository browser-test evidence, not canonical-host evidence.
+- Portal: `/cn/portal`; Stage: `/cn/stage`; MQS: `/?prototype=mqs`, on the working Vercel host.
+- The MQS host adapter replaced the old standalone Loop demo. Do not restore local queue authority.
+- HubzzCN demos do not establish a live server connection. The separate pre-alpha repository did not change.
+- Keep upstream primitives, semantic tokens, keyboard access, and reduced-motion behavior. Prototype-only code stays out of public exports unless explicitly promoted.
 
-## Other open work
+## Merge policy and other work
 
-- PR #40 is an older MQS proposal. Reconcile its intent with the merged snapshot adapter before any merge.
-- Keep dependency PRs separate from product and deployment changes.
-- Inspect open PRs and their discussions; an empty issue search does not establish that no work remains.
+Merge completed, reviewed changes after all required checks pass without another routine approval. Preserve checks and protections. Record exact tested commits and deployment results, not assumptions about future runs.
 
-## Next action
-
-Verify the existing `.xyz` host publication using the evidence checklist in `DEPLOYMENT.md`. Keep the domain choice fixed; investigate hosting access or delivery separately. Then review MQS external drops and end-of-list keyboard reorder cases with regression tests.
-
-## Durable constraints
-
-Keep upstream primitives, semantic tokens, keyboard access, and reduced-motion behavior. Keep prototype-only code out of public exports unless explicitly promoted. Keep production facts separate from unmerged work.
+PR #40 remains an older MQS proposal that needs reconciliation with the merged snapshot adapter. Keep dependency PRs separate. Inspect open PRs and their discussions rather than treating an empty issue search as proof that no work remains.

@@ -3,7 +3,7 @@
 Public Hubzz design system built on shadcn/ui, Radix primitives, Tailwind CSS,
 and a deliberately small Hubzz-owned component layer.
 
-**Catalog:** `https://hubzz.xyz/cn/`
+**Catalog:** `https://hubzz-ui-phi.vercel.app/`
 
 ## Install
 
