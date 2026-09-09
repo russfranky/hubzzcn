@@ -186,10 +186,12 @@ test.describe("MQS reorder boundaries", () => {
 
   test("preserves native pointer drag reorder", async ({ page }) => {
     const original = await rows(page).allTextContents()
-    await rows(page).nth(0).dragTo(rows(page).nth(2), {
-      sourcePosition: { x: 60, y: 12 },
-      targetPosition: { x: 60, y: 12 },
-    })
+    await rows(page)
+      .nth(0)
+      .dragTo(rows(page).nth(2), {
+        sourcePosition: { x: 60, y: 12 },
+        targetPosition: { x: 60, y: 12 },
+      })
     await expect(lastCommand(page)).toHaveText("--move 1 3")
     await expect(rows(page)).toHaveText([
       original[1],
