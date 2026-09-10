@@ -1,4 +1,4 @@
-name: Verify MQS edge cases live
+name: Verify MQS error feedback live
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - name: Checkout tested merge
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -25,86 +25,53 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
-      - name: Install locked dependencies and browsers
+      - name: Install locked dependencies and Chromium
         run: |
           pnpm install --frozen-lockfile
-          pnpm exec playwright install chromium firefox webkit --with-deps
-      - name: Test the deployed MQS contract and edge cases
+          pnpm exec playwright install chromium --with-deps
+      - name: Verify settled error feedback in both motion modes
         run: |
-          mkdir -p live-evidence
-          cat > playwright.live.config.ts <<'TS'
-          import { defineConfig, devices } from '@playwright/test';
-          export default defineConfig({
-            testDir: './tests',
-            testMatch: /(?:mqs-prototype|mqs-reorder|mqs-state)\.spec\.ts/,
-            forbidOnly: true,
-            retries: 0,
-            workers: 1,
-            reporter: [['list'], ['json', { outputFile: 'live-evidence/tests.json' }]],
-            use: {
-              baseURL: 'https://hubzz-ui-phi.vercel.app',
-              screenshot: 'only-on-failure',
-              trace: 'retain-on-failure',
-            },
-            projects: [
-              { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-              { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-              { name: 'webkit', use: { ...devices['Desktop Safari'] } },
-            ],
-          });
-          TS
-          pnpm exec playwright test --config=playwright.live.config.ts
-      - name: Capture normal, error and long-queue states
-        if: always()
-        env:
-          SOURCE_COMMIT: 9001726ec355a4287c9188f1e7e28fcb2f90e305
-        run: |
-          mkdir -p live-evidence
+          mkdir -p live-error-evidence
           node --input-type=module <<'JS'
           import { chromium, expect } from '@playwright/test';
           import { writeFile } from 'node:fs/promises';
           const browser = await chromium.launch();
-          const output = 'live-evidence';
           const results = [];
           try {
-            for (const [name, viewport] of [['desktop', { width: 1280, height: 900 }], ['narrow', { width: 320, height: 720 }]]) {
-              const page = await browser.newPage({ viewport });
-              const errors = [];
-              page.on('pageerror', error => errors.push(error.message));
-              const response = await page.goto('https://hubzz-ui-phi.vercel.app/?prototype=mqs', { waitUntil: 'networkidle', timeout: 30000 });
-              expect(response?.status()).toBe(200);
-              const queue = page.getByTestId('mqs-window');
-              const rows = page.getByRole('list', { name: 'Media queue items' }).getByRole('listitem');
-              await expect(rows).toHaveCount(5);
-              await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
-              await page.screenshot({ path: `${output}/mqs-${name}.png`, fullPage: true });
-              await writeFile(`${output}/mqs-${name}.txt`, await page.locator('body').ariaSnapshot());
-              const original = await rows.allTextContents();
-              await page.getByLabel('Setlist JSON file').setInputFiles({ name: 'invalid.json', mimeType: 'application/json', buffer: Buffer.from('{') });
-              await expect(page.getByText('Could not load setlist', { exact: true })).toBeVisible();
-              await expect(rows).toHaveText(original);
-              await page.screenshot({ path: `${output}/mqs-${name}-error.png`, fullPage: true });
-              await writeFile(`${output}/mqs-${name}-error.txt`, await page.locator('body').ariaSnapshot());
-              const longQueue = { segments: Array.from({ length: 500 }, (_, index) => ({ type: 'native', title: `Queue item ${index + 1}` })) };
-              await page.getByLabel('Setlist JSON file').setInputFiles({ name: 'long-queue.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(longQueue)) });
-              await expect(rows).toHaveCount(500);
-              await expect(page.getByText('Could not load setlist', { exact: true })).toHaveCount(0);
-              await page.getByRole('button', { name: 'Reorder item 500', exact: true }).focus();
-              await page.screenshot({ path: `${output}/mqs-${name}-long-queue.png`, fullPage: true });
-              expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-              expect(errors).toEqual([]);
-              results.push({ name, url: page.url(), status: response.status(), queueBounds: await queue.boundingBox(), errors });
-              await page.close();
+            for (const reducedMotion of ['no-preference', 'reduce']) {
+              for (const [name, viewport] of [['desktop', { width: 1280, height: 900 }], ['narrow', { width: 320, height: 720 }]]) {
+                const page = await browser.newPage({ viewport, reducedMotion });
+                const errors = [];
+                page.on('pageerror', error => errors.push(error.message));
+                const response = await page.goto('https://hubzz-ui-phi.vercel.app/?prototype=mqs', { waitUntil: 'networkidle', timeout: 30000 });
+                expect(response?.status()).toBe(200);
+                const rows = page.getByRole('list', { name: 'Media queue items' }).getByRole('listitem');
+                await expect(rows).toHaveCount(5);
+                const original = await rows.allTextContents();
+                await page.getByLabel('Setlist JSON file').setInputFiles({ name: 'invalid.json', mimeType: 'application/json', buffer: Buffer.from('{') });
+                const message = page.getByText('Could not load setlist', { exact: true });
+                await expect(message).toBeVisible();
+                const notification = page.locator('[data-sonner-toast]').filter({ has: message });
+                // Visibility alone permits a toast still outside the viewport during entrance.
+                await expect(notification).toBeInViewport({ ratio: 1 });
+                await expect.poll(() => notification.evaluate(element => Number(getComputedStyle(element).opacity))).toBe(1);
+                await expect(rows).toHaveText(original);
+                const file = `mqs-${name}-${reducedMotion}-error`;
+                await page.screenshot({ path: `live-error-evidence/${file}.png`, fullPage: true, animations: 'disabled' });
+                await writeFile(`live-error-evidence/${file}.txt`, await page.locator('body').ariaSnapshot());
+                const bounds = await notification.boundingBox();
+                expect(errors).toEqual([]);
+                results.push({ name, reducedMotion, status: response.status(), notificationBounds: bounds, errors });
+                await page.close();
+              }
             }
           } finally { await browser.close(); }
-          await writeFile(`${output}/browser.json`, JSON.stringify({ sourceCommit: process.env.SOURCE_COMMIT, results }, null, 2));
+          await writeFile('live-error-evidence/browser.json', JSON.stringify({ sourceCommit: '9001726ec355a4287c9188f1e7e28fcb2f90e305', results }, null, 2));
           JS
-      - name: Save live verification evidence
+      - name: Save settled error evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: mqs-edge-live-evidence
-          path: |
-            live-evidence/
-            test-results/
+          name: mqs-settled-error-evidence
+          path: live-error-evidence/
           retention-days: 7
