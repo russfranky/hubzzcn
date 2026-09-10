@@ -8,47 +8,48 @@ Use `https://hubzz-ui-phi.vercel.app/` and the existing Vercel release workflow.
 Do not reopen domain work. Merge reviewed changes after required checks pass,
 without another routine approval. Preserve checks and repository protections.
 
-Russ requested consideration of edge cases. Review empty states, boundaries,
-invalid input, ordering, cancellation, recovery, and preserved state for each
-change. See [`MQS_EDGE_CASES.md`](./MQS_EDGE_CASES.md) for the MQS contract and
-its test matrix. Separate tested behavior from remote integration assumptions.
+Use the iterative review loop in `AGENTS.md`: find a concrete defect, add tests,
+fix it, review the result, and check related boundaries before merge. The MQS
+contract is in [`MQS_EDGE_CASES.md`](./MQS_EDGE_CASES.md).
 
 ## Completed baseline
 
-- PR #76: product-local Portal/MQS adapters and accessible queue list semantics.
+- PR #76: product-local Portal/MQS adapters and accessible queue semantics.
 - PR #87: clipboard error feedback, retry, and stale-result protection.
-- PR #89: the existing Vercel site is the working site; no domain migration.
-- PR #90 merged as `0f4b880e36cc71af4e575a1ce3e34af8fbd6c512`. Its main CI,
-  CodeQL, and Vercel deployment passed. The PR records 265 repository browser
-  tests and 45 successful live reorder tests. Do not repeat that repair.
+- PR #89: use the existing Vercel site; no domain migration.
+- PR #90: reject external drops and out-of-range keyboard reorder commands.
+- [PR #91](https://github.com/russfranky/hubzzcn/pull/91) merged as
+  `9001726ec355a4287c9188f1e7e28fcb2f90e305`. Its main CI, CodeQL, and Vercel
+  release passed. The PR records 319 repository browser tests, eight state-test
+  groups, and 144 passing live MQS cases. Do not repeat this completed fix.
 
-## Current change
+## Latest improvement
 
-Branch: `fix/mqs-state-edge-cases`.
+Branch: `fix/mqs-pointer-actions`.
 
-The demo host now uses pure snapshot transitions that preserve active identity
-through reorder/removal and define playback behavior at empty/boundary states.
-Setlist validation, fresh import IDs, safe timing, file-size limits, latest-read
-wins, and unmount cancellation address related edge cases. The view still emits
-host commands and never takes ownership of the authoritative queue.
+The previously inert grip click now opens a Radix Popover with four move actions.
+Native dragging and Alt+Arrow shortcuts remain. The actions use current snapshot
+positions, preserve active media and focus, cancel old drags, and handle first,
+last, single-item, removed, and replaced rows. The panel fits narrow and short
+viewports. Tests include mouse, keyboard, touch emulation, and accessibility.
 
-Tests live in `scripts/mqs-demo-state.test.ts` and `tests/mqs-state.spec.ts`.
-The state suite is part of `pnpm check`; browser scenarios run in all three
-configured engines. Local Node execution passed the state tests. The focused PR
-records exact CI, merge, and deployment results; check it before repeating work.
+The focused PR records exact check, merge, deployment, and live-browser results.
+Check that PR before repeating the work or treating it as pending. Documentation
+of implemented behavior does not substitute for a passing final-head check.
 
-## Next action
+## Next review
 
-Complete the focused PR's verification and merge. Verify the deployed MQS demo,
-then use the edge-case contract to choose the next product task. Do not add a
-second network state machine or claim real-room synchronization from demo tests.
+Review focus recovery when a keyboard user removes the focused queue row. Add a
+failing regression before selecting a successor focus target. Keep it separate
+from changes to authoritative playback or remote-server acknowledgement logic.
 
 ## Boundaries and other work
 
 Portal is at `/cn/portal`, Stage at `/cn/stage`, and MQS at `/?prototype=mqs`.
-The separate pre-alpha repository and public package exports remain unchanged.
-Keep the current host command/import ports, upstream primitives, semantic tokens,
-keyboard access, and reduced-motion behavior.
+The separate pre-alpha repository, package exports, and registry are unchanged.
+Keep host command/import ports, upstream primitives, semantic tokens, keyboard
+access, and reduced-motion behavior. Demo tests do not prove live-room recovery
+or physical-device behavior.
 
 PR #40 is an older MQS proposal that needs reconciliation with the current
 adapter. Keep dependency PRs separate. Inspect open PR discussions before work.

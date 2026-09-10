@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test"
 
 const catalogSmoke =
-  /(?:accessibility|catalog|catalog-copy|portal-prototype|mqs-prototype|mqs-reorder|mqs-state)\.spec\.ts/
+  /(?:accessibility|catalog|catalog-copy|portal-prototype|mqs-prototype|mqs-reorder|mqs-state|mqs-pointer)\.spec\.ts/
 const previewPort = 4173
 const previewUrl = `http://127.0.0.1:${previewPort}`
 
