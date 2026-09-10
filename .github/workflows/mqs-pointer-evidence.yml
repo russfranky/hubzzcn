@@ -1,4 +1,4 @@
-name: MQS baseline interaction evidence
+name: Verify MQS pointer actions live
 
 on:
   push:
@@ -9,14 +9,14 @@ permissions:
   contents: read
 
 jobs:
-  inspect:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 15
     steps:
-      - name: Checkout baseline
+      - name: Checkout tested merge
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
-          ref: 9001726ec355a4287c9188f1e7e28fcb2f90e305
+          ref: f05b5f01c06a47794be27dc584a13d5d66fed61e
           persist-credentials: false
       - name: Setup pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
@@ -25,44 +25,77 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
-      - name: Install dependencies and Chromium
+      - name: Install locked dependencies and browsers
         run: |
           pnpm install --frozen-lockfile
-          pnpm exec playwright install chromium --with-deps
-      - name: Inspect current pointer and keyboard behavior
+          pnpm exec playwright install chromium firefox webkit --with-deps
+      - name: Test all MQS suites on the live site
         run: |
-          mkdir -p baseline-evidence
+          mkdir -p live-evidence
+          cat > playwright.live.config.ts <<'TS'
+          import { defineConfig, devices } from '@playwright/test';
+          export default defineConfig({
+            testDir: './tests',
+            testMatch: /(?:mqs-prototype|mqs-reorder|mqs-state|mqs-pointer)\.spec\.ts/,
+            forbidOnly: true,
+            retries: 0,
+            workers: 1,
+            reporter: [['list'], ['json', { outputFile: 'live-evidence/tests.json' }]],
+            use: {
+              baseURL: 'https://hubzz-ui-phi.vercel.app',
+              screenshot: 'only-on-failure',
+              trace: 'retain-on-failure',
+            },
+            projects: [
+              { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+              { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+              { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+            ],
+          });
+          TS
+          pnpm exec playwright test --config=playwright.live.config.ts
+      - name: Capture pointer action panels and dismissal
+        if: always()
+        run: |
+          mkdir -p live-evidence
           node --input-type=module <<'JS'
           import { chromium, expect } from '@playwright/test';
           import { writeFile } from 'node:fs/promises';
           const browser = await chromium.launch();
+          const results = [];
           try {
-            const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-            const errors = [];
-            page.on('pageerror', error => errors.push(error.message));
-            const response = await page.goto('https://hubzz-ui-phi.vercel.app/?prototype=mqs', { waitUntil: 'networkidle' });
-            expect(response?.status()).toBe(200);
-            const rows = page.getByRole('list', { name: 'Media queue items' }).getByRole('listitem');
-            await expect(rows).toHaveCount(5);
-            await page.getByRole('button', { name: 'Reorder item 3', exact: true }).click();
-            const dialogCount = await page.getByRole('dialog').count();
-            await expect(page.getByTestId('last-mqs-command')).toHaveText('');
-            await page.screenshot({ path: 'baseline-evidence/grip-click.png', fullPage: true });
-            await writeFile('baseline-evidence/grip-click.txt', await page.locator('body').ariaSnapshot());
-            const remove = page.getByRole('button', { name: 'Remove item 3', exact: true });
-            await remove.focus();
-            await remove.press('Enter');
-            await expect(rows).toHaveCount(4);
-            const focusAfterRemove = await page.evaluate(() => ({ tag: document.activeElement?.tagName, label: document.activeElement?.getAttribute('aria-label') }));
-            const report = { baselineCommit: '9001726ec355a4287c9188f1e7e28fcb2f90e305', status: response.status(), dialogCountAfterGripClick: dialogCount, focusAfterRemove, errors };
-            console.log(JSON.stringify(report, null, 2));
-            await writeFile('baseline-evidence/result.json', JSON.stringify(report, null, 2));
+            for (const [name, viewport] of [['desktop', { width: 1280, height: 900 }], ['narrow', { width: 320, height: 720 }], ['short', { width: 320, height: 240 }]]) {
+              const page = await browser.newPage({ viewport, hasTouch: true, reducedMotion: 'reduce' });
+              const errors = [];
+              page.on('pageerror', error => errors.push(error.message));
+              const response = await page.goto('https://hubzz-ui-phi.vercel.app/?prototype=mqs', { waitUntil: 'networkidle', timeout: 30000 });
+              expect(response?.status()).toBe(200);
+              await expect(page.getByRole('list', { name: 'Media queue items' }).getByRole('listitem')).toHaveCount(5);
+              await page.getByRole('button', { name: 'Reorder item 3', exact: true }).tap();
+              const panel = page.getByRole('dialog', { name: 'Reorder item 3', exact: true });
+              await expect(panel).toBeInViewport({ ratio: 1 });
+              await page.screenshot({ path: `live-evidence/actions-${name}.png`, fullPage: true, animations: 'disabled' });
+              await writeFile(`live-evidence/actions-${name}.txt`, await page.locator('body').ariaSnapshot());
+              const bounds = await panel.boundingBox();
+              await panel.getByRole('button', { name: 'Move to end', exact: true }).tap();
+              await expect(page.getByTestId('last-mqs-command')).toHaveText('--move 3 5');
+              await expect(page.getByRole('dialog')).toHaveCount(0);
+              await expect(page.getByRole('button', { name: 'Reorder item 5', exact: true })).toBeFocused();
+              await expect(page.getByTestId('current-row')).toContainText('Tomorrowland 2026 Mainstage W1');
+              expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+              expect(errors).toEqual([]);
+              results.push({ name, viewport, status: response.status(), panelBounds: bounds, errors });
+              await page.close();
+            }
           } finally { await browser.close(); }
+          await writeFile('live-evidence/browser.json', JSON.stringify({ sourceCommit: 'f05b5f01c06a47794be27dc584a13d5d66fed61e', results }, null, 2));
           JS
-      - name: Save baseline evidence
+      - name: Save live evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: mqs-pointer-baseline
-          path: baseline-evidence/
+          name: mqs-pointer-live-evidence
+          path: |
+            live-evidence/
+            test-results/
           retention-days: 7
