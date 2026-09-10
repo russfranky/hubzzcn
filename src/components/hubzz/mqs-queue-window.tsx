@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/item"
 import { cn } from "@/lib/utils"
 import { clampMqsElapsed, mqsDurationSeconds } from "./mqs-timing"
+import { MqsFocusBoundary } from "./mqs-focus-boundary"
 
 const QUEUE_DRAG_TYPE = "application/x-hubzz-mqs-reorder"
 const SETLIST_FILE_LIMIT = 2 * 1024 * 1024
@@ -107,6 +108,7 @@ function QueueRow({
   current,
   drag,
   setDrag,
+  focusOwner,
   onCommand,
 }: {
   item: MqsQueueItem
@@ -115,10 +117,12 @@ function QueueRow({
   current: boolean
   drag: QueueDrag | null
   setDrag: (value: QueueDrag | null) => void
+  focusOwner: string
   onCommand: (command: string) => void
 }) {
   const [moveOpen, setMoveOpen] = React.useState(false)
   const descriptionId = React.useId()
+  const triggerRef = React.useRef<HTMLButtonElement>(null)
 
   function moveTo(to: number) {
     if (
@@ -138,6 +142,7 @@ function QueueRow({
       role="listitem"
       data-testid={current ? "current-row" : "queue-row"}
       data-queue-index={index}
+      data-mqs-focus-row={item.id}
       draggable
       variant={current ? "outline" : "default"}
       size="xs"
@@ -197,6 +202,8 @@ function QueueRow({
             variant="ghost"
             size="icon-xs"
             aria-label={`Reorder item ${index + 1}`}
+            ref={triggerRef}
+            data-mqs-focus-grip={item.id}
             aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
             title="Click for move actions, or drag to reorder"
             className="cursor-grab text-muted-foreground active:cursor-grabbing"
@@ -214,6 +221,12 @@ function QueueRow({
           <Popover.Content
             aria-label={`Reorder item ${index + 1}`}
             aria-describedby={descriptionId}
+            data-mqs-focus-owner={focusOwner}
+            data-mqs-focus-row={item.id}
+            onCloseAutoFocus={(event) => {
+              // A removed trigger must not override the boundary's recovery.
+              if (!triggerRef.current?.isConnected) event.preventDefault()
+            }}
             align="start"
             sideOffset={4}
             collisionPadding={8}
@@ -300,6 +313,7 @@ export function MqsQueueWindow({
   const fileRef = React.useRef<HTMLInputElement>(null)
   const importRequestRef = React.useRef(0)
   const importToastId = React.useId()
+  const focusOwner = React.useId()
 
   React.useEffect(
     () => () => {
@@ -365,9 +379,10 @@ export function MqsQueueWindow({
   )
 
   return (
-    <section
-      data-testid="mqs-window"
-      aria-label={`${title} media queue`}
+    <MqsFocusBoundary
+      items={items}
+      focusOwner={focusOwner}
+      label={`${title} media queue`}
       className={cn(
         "flex max-h-[min(78svh,680px)] w-[340px] max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-2xl",
         className
@@ -386,6 +401,7 @@ export function MqsQueueWindow({
             type="button"
             variant="ghost"
             size="icon-sm"
+            data-mqs-focus-fallback="close"
             aria-label="Close"
             onClick={onClose}
           >
@@ -409,6 +425,7 @@ export function MqsQueueWindow({
           <Button
             type="button"
             size="icon-sm"
+            data-mqs-focus-fallback="play"
             aria-label={playing ? "Pause" : "Play"}
             onClick={() => onCommand(playing ? "--pause" : "--resume")}
             disabled={!current}
@@ -433,6 +450,7 @@ export function MqsQueueWindow({
             type="button"
             variant="ghost"
             size="icon-sm"
+            data-mqs-focus-fallback="mute"
             aria-label={isMuted ? "Unmute" : "Mute"}
             onClick={() => onCommand(isMuted ? "--unmute" : "--mute")}
           >
@@ -523,6 +541,7 @@ export function MqsQueueWindow({
                 current={index === currentIndex}
                 drag={drag}
                 setDrag={setDrag}
+                focusOwner={focusOwner}
                 onCommand={onCommand}
               />
             ))}
@@ -550,6 +569,7 @@ export function MqsQueueWindow({
                 type="button"
                 variant="outline"
                 size="sm"
+                data-mqs-focus-fallback="load"
                 onClick={() => fileRef.current?.click()}
               >
                 <Upload aria-hidden="true" />
@@ -574,6 +594,6 @@ export function MqsQueueWindow({
           ) : null}
         </footer>
       )}
-    </section>
+    </MqsFocusBoundary>
   )
 }

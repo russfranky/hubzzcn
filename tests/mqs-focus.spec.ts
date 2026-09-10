@@ -75,7 +75,9 @@ test.describe("MQS focus recovery", () => {
   test("Previous at the first item leaves focus on a usable control", async ({
     page,
   }) => {
-    await page.getByRole("button", { name: "Previous", exact: true }).press("Enter")
+    await page
+      .getByRole("button", { name: "Previous", exact: true })
+      .press("Enter")
     await expect(
       page.getByRole("button", { name: "Previous", exact: true })
     ).toBeDisabled()

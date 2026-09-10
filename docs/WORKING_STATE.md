@@ -1,6 +1,6 @@
 # Working State
 
-Read [`../AGENTS.md`](../AGENTS.md) first. Last reviewed: 2026-09-09.
+Read [`../AGENTS.md`](../AGENTS.md) first. Last reviewed: 2026-09-10.
 
 ## Active direction
 
@@ -8,53 +8,46 @@ Use `https://hubzz-ui-phi.vercel.app/` and the existing Vercel release workflow.
 Do not reopen domain work. Merge reviewed changes after required checks pass,
 without another routine approval. Preserve checks and repository protections.
 
-Use the iterative review loop in `AGENTS.md`: find a concrete defect, add tests,
-fix it, review the result, and check related boundaries before merge. The MQS
-contract is in [`MQS_EDGE_CASES.md`](./MQS_EDGE_CASES.md).
-
 ## Completed baseline
 
-- PR #76: product-local Portal/MQS adapters and accessible queue semantics.
-- PR #87: clipboard error feedback, retry, and stale-result protection.
-- PR #89: use the existing Vercel site; no domain migration.
-- PR #90: reject external drops and out-of-range keyboard reorder commands.
-- PR #91: preserve active media and guard state/import edge cases.
-- [PR #92](https://github.com/russfranky/hubzzcn/pull/92) merged as
-  `f05b5f01c06a47794be27dc584a13d5d66fed61e`. Click and tap now open bounded
-  move actions. Its pre-merge suite passed 379 tests; the deployed MQS suites
-  passed 204 cases without retries. The Vercel release is complete.
+- PR #90 rejects external drops and invalid keyboard reorder positions.
+- PR #91 preserves active media and guards queue state and setlist imports.
+- PR #92 adds click/tap move actions with keyboard and native drag support.
+- PR #93 merged as `2cd9f7ba75dae9b0a50444cbfc74991b669d41c1`. Its settled
+  notification accessibility checks passed the 120-case live stress run. Both
+  jobs in [post-merge CI](https://github.com/russfranky/hubzzcn/actions/runs/34436327773)
+  are now complete and successful. Do not repeat this completed work.
 
-## Latest verification improvement
+## Current improvement
 
-Branch: `test/settled-toast-accessibility`.
+Branch: `fix/mqs-focus-recovery`.
 
-PR #92's post-merge browser run reported 378 passes and one flaky WebKit import
-error contrast scan. It passed on retry, but that is not a clean first-pass run.
-The existing scan could sample a partly transparent notification entrance.
+The new regression first reproduced focused-row removal on the unchanged runtime.
+The DOM focus boundary captures actual focus before a committed host update and
+recovers to a surviving non-destructive control only after focus becomes invalid.
+It covers row removal, disabled transport/seek controls, and portaled actions.
 
-The test helper in `tests/helpers/toast.ts` waits for the named notification to
-be fully in view, opaque, and settled. Normal pointer hover pauses its expiry
-while axe runs. Both MQS import-error and catalog clipboard-error scans use it
-and verify the message remains visible after the scan. No application styles,
-notification durations, accessibility rules, retries, or exclusions changed.
+[`MQS_FOCUS.md`](./MQS_FOCUS.md) defines the expected behavior and the test matrix.
+The production-demo tests and a Strict Mode controlled-host fixture cover delayed
+or rejected commands, batch changes, outside focus, empty queues, two instances,
+special-character IDs, and remount. The fixture is development-only, not a new
+production route or server integration.
 
-The focused PR records final-head checks, repeated live test results, merge,
-and deployment evidence. Check its current state before repeating the change.
+The focused PR records exact baseline failure, final-head checks, review, merge,
+and deployment evidence. Read its current state before repeating implementation.
 
-## Next product review
+## Next review
 
-The live baseline inspection in PR #92 confirmed that keyboard removal of the
-focused queue row leaves focus on BODY. Add a regression before selecting a
-successor focus target. Preserve outside focus and wait for authoritative row
-removal rather than moving focus when a host command is merely emitted.
+Check focus transfer when the demo host closes the entire queue and shows its
+Open queue button. This boundary deliberately does not move focus after unmount;
+the parent host owns that transition. Confirm the failure before changing it.
 
 ## Boundaries and other work
 
-Portal is at `/cn/portal`, Stage at `/cn/stage`, and MQS at `/?prototype=mqs`.
-The separate pre-alpha repository, package exports, and registry are unchanged.
-Keep host command/import ports, upstream primitives, semantic tokens, keyboard
-access, and reduced-motion behavior. Demo tests do not prove live-room recovery
-or physical-device behavior.
+See [`MQS_EDGE_CASES.md`](./MQS_EDGE_CASES.md) for state and pointer contracts.
+Host commands, package exports, registry, dependencies, and deployment targets
+remain unchanged. Controlled snapshots do not prove real-network recovery,
+physical-device behavior, or manual screen-reader compatibility.
 
 PR #40 is an older MQS proposal that needs reconciliation with the current
 adapter. Keep dependency PRs separate. Inspect open PR discussions before work.
