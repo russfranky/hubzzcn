@@ -56,7 +56,9 @@ function FocusFixture() {
         type="button"
         data-testid="apply-snapshot"
         onClick={() => {
-          const next: Partial<Fixture> = JSON.parse(draft.current?.value ?? "{}")
+          const next: Partial<Fixture> = JSON.parse(
+            draft.current?.value ?? "{}"
+          )
           setState((current) => ({ ...current, ...next }))
         }}
       >

@@ -33,7 +33,9 @@ test.describe("MQS authoritative focus updates", () => {
     await expect(rows(page)).toHaveCount(4)
   })
 
-  test("a pending or rejected removal does not move focus", async ({ page }) => {
+  test("a pending or rejected removal does not move focus", async ({
+    page,
+  }) => {
     await remove(page, 2).press("Enter")
     await expect(page.getByTestId("commands")).toHaveText('["--remove 2"]')
     await expect(remove(page, 2)).toBeFocused()
