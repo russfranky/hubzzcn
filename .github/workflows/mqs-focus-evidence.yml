@@ -1,0 +1,59 @@
+name: MQS focus evidence
+
+on:
+  push:
+    branches:
+      - ops/mqs-focus-evidence
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout regression before the fix
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 0baf8ae4d1b0cfc7546ce354449512968311f62a
+          persist-credentials: false
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Install locked dependencies and Chromium
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install chromium --with-deps
+      - name: Require the expected baseline failure
+        shell: bash
+        run: |
+          mkdir -p focus-evidence
+          set +e
+          PLAYWRIGHT_JSON_OUTPUT_FILE=focus-evidence/baseline.json pnpm exec playwright test tests/mqs-focus.spec.ts --project=chromium --grep 'keyboard removal at position 3' --retries=0 --reporter=json
+          result=$?
+          set -e
+          test "$result" -eq 1
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const report = JSON.parse(readFileSync('focus-evidence/baseline.json', 'utf8'));
+          assert.equal(report.stats.unexpected, 1);
+          assert.equal(report.stats.skipped, 0);
+          assert.equal(report.stats.flaky, 0);
+          assert.match(JSON.stringify(report.suites), /toBeFocused/);
+          console.log('Confirmed: focused-row removal fails the focus assertion before the fix.');
+          JS
+      - name: Save baseline evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: mqs-focus-baseline
+          path: |
+            focus-evidence/
+            test-results/
+          retention-days: 7
