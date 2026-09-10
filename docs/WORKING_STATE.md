@@ -4,38 +4,51 @@ Read [`../AGENTS.md`](../AGENTS.md) first. Last reviewed: 2026-09-09.
 
 ## Active direction
 
-Use the existing Vercel production site at `https://hubzz-ui-phi.vercel.app/` and its `Deploy Vercel Production` workflow. Russ dropped the `.xyz` requirement. Do not reopen domain, DNS, Cloudflare, or Nginx work without a new explicit request.
+Use `https://hubzz-ui-phi.vercel.app/` and the existing Vercel release workflow.
+Do not reopen domain work. Merge reviewed changes after required checks pass,
+without another routine approval. Preserve checks and repository protections.
 
-Merge completed, reviewed changes after all required checks pass without another routine approval. Preserve checks and protections. Record the exact tested commit and deployment results.
+Russ requested consideration of edge cases. Review empty states, boundaries,
+invalid input, ordering, cancellation, recovery, and preserved state for each
+change. See [`MQS_EDGE_CASES.md`](./MQS_EDGE_CASES.md) for the MQS contract and
+its test matrix. Separate tested behavior from remote integration assumptions.
 
 ## Completed baseline
 
-- PR #76: product-local Portal and MQS host adapters plus accessible queue list semantics.
-- PR #87: clipboard error feedback, retry, timer cleanup, and stale-result protection. Its browser suite passed 220 tests.
-- PR #89 merged as `abfe0fef7010b4f233491f080ee39bf7f319974a`: use the existing Vercel site and stop the domain detour. Both jobs in [main CI](https://github.com/russfranky/hubzzcn/actions/runs/34387538898) passed. PR #89 records its successful Vercel deployment.
+- PR #76: product-local Portal/MQS adapters and accessible queue list semantics.
+- PR #87: clipboard error feedback, retry, and stale-result protection.
+- PR #89: the existing Vercel site is the working site; no domain migration.
+- PR #90 merged as `0f4b880e36cc71af4e575a1ce3e34af8fbd6c512`. Its main CI,
+  CodeQL, and Vercel deployment passed. The PR records 265 repository browser
+  tests and 45 successful live reorder tests. Do not repeat that repair.
 
 ## Current change
 
-- Branch: `fix/mqs-reorder-boundaries`.
-- Goal: prevent invalid queue moves from external drops and end-of-list keyboard actions.
-- Source: `src/components/hubzz/mqs-queue-window.tsx`.
-- Implemented: queue-local drag token, stable source-item identity, validation against the current host snapshot, cancellation after drop/end/close, and keyboard bounds for both ends of the queue.
-- Tests: `tests/mqs-reorder.spec.ts`, included in all three browser projects by `playwright.config.ts`. Existing MQS and accessibility tests remain unchanged.
-- Coverage: valid keyboard/pointer moves, focus retention, first/last/single-item bounds, external text/files, invalid/canceled/repeated payloads, descendant drags, window remount, and host snapshot changes.
-- Verification and merge status: see the PR for this branch. Do not infer a passed check or completed deployment from this file. Check the live PR state before repeating the fix.
+Branch: `fix/mqs-state-edge-cases`.
+
+The demo host now uses pure snapshot transitions that preserve active identity
+through reorder/removal and define playback behavior at empty/boundary states.
+Setlist validation, fresh import IDs, safe timing, file-size limits, latest-read
+wins, and unmount cancellation address related edge cases. The view still emits
+host commands and never takes ownership of the authoritative queue.
+
+Tests live in `scripts/mqs-demo-state.test.ts` and `tests/mqs-state.spec.ts`.
+The state suite is part of `pnpm check`; browser scenarios run in all three
+configured engines. Local Node execution passed the state tests. The focused PR
+records exact CI, merge, and deployment results; check it before repeating work.
 
 ## Next action
 
-Complete this PR's checks, review, merge, and Vercel verification. Then test the demo host's current-item identity during reorder/removal in `src/pages/MqsPrototype.tsx`: its move handler currently changes the item order without adjusting `currentIndex`. Keep that separate from this view-level command-validation fix.
+Complete the focused PR's verification and merge. Verify the deployed MQS demo,
+then use the edge-case contract to choose the next product task. Do not add a
+second network state machine or claim real-room synchronization from demo tests.
 
-## Product boundaries
+## Boundaries and other work
 
-- Portal: `/cn/portal`; Stage: `/cn/stage`; MQS: `/?prototype=mqs`, on the working Vercel host.
-- The queue view emits host commands; it does not mutate authoritative queue state. Preserve the 1-based move/remove command contract.
-- Do not restore the old standalone Loop demo or add prototype code to public package exports or the registry.
-- HubzzCN demos do not establish a live server connection. The separate pre-alpha repository did not change.
-- Preserve upstream primitives, semantic tokens, keyboard access, and reduced-motion behavior.
+Portal is at `/cn/portal`, Stage at `/cn/stage`, and MQS at `/?prototype=mqs`.
+The separate pre-alpha repository and public package exports remain unchanged.
+Keep the current host command/import ports, upstream primitives, semantic tokens,
+keyboard access, and reduced-motion behavior.
 
-## Other work
-
-PR #40 is an older MQS proposal that needs reconciliation with the merged snapshot adapter. Keep dependency PRs separate. Inspect open PRs and their discussions before choosing further work.
+PR #40 is an older MQS proposal that needs reconciliation with the current
+adapter. Keep dependency PRs separate. Inspect open PR discussions before work.
