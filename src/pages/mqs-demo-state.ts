@@ -131,6 +131,8 @@ export function parseMqsDemoSetlist(
     if (!segment || typeof segment !== "object" || Array.isArray(segment))
       continue
     const candidate = segment as Record<string, unknown>
+    if (candidate.url !== undefined && typeof candidate.url !== "string")
+      continue
     const type =
       candidate.type === "youtube" ||
       candidate.type === "twitch" ||

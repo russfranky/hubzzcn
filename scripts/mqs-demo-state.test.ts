@@ -225,6 +225,9 @@ test("setlists validate structure, limits, safe URLs and invalid rows", () => {
     { segments: [] },
     { segments: "bad" },
     { segments: [null, 1, [], {}] },
+    { segments: [{ type: "native", url: null }] },
+    { segments: [{ type: "webcam", url: 42 }] },
+    { segments: [{ type: "screenshare", url: {} }] },
     { segments: Array(501).fill({ type: "native" }) },
   ]) {
     assert.equal(parse(value, "batch").ok, false)
@@ -301,8 +304,13 @@ test("mixed command sequences maintain invariants without mutating snapshots", (
         `--seek ${random() % 1000}`,
         `--remove ${random() % 10}`,
         `--move ${random() % 10} ${random() % 10}`,
+        "import",
       ]
-      current = apply(current, commands[random() % commands.length])
+      const command = commands[random() % commands.length]
+      current =
+        command === "import"
+          ? replace(current, snapshot((random() % 8) + 1, 0).items)
+          : apply(current, command)
       invariant(current)
     }
   }

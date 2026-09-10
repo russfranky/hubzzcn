@@ -241,14 +241,20 @@ test.describe("MQS state and import edge cases", () => {
     }
     await upload(page, data)
     await expect(rows(page)).toHaveCount(2)
+    const previousRow = await rows(page).first().elementHandle()
+    if (!previousRow) throw new Error("Missing imported row")
     const dataTransfer = await page.evaluateHandle(() => new DataTransfer())
     await rows(page).first().dispatchEvent("dragstart", { dataTransfer })
     await upload(page, data)
+    await expect
+      .poll(() => previousRow.evaluate((element) => element.isConnected))
+      .toBe(false)
     await expect(active(page)).toHaveAttribute("data-queue-index", "0")
     await rows(page).nth(1).dispatchEvent("drop", { dataTransfer })
     await expect(command(page)).toHaveText("")
     await expect(active(page)).toHaveAttribute("data-queue-index", "0")
     await dataTransfer.dispose()
+    await previousRow.dispose()
   })
 
   for (const outcome of ["success", "failure"] as const) {
