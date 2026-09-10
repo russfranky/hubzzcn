@@ -1,0 +1,92 @@
+name: Verify settled notifications live
+
+on:
+  push:
+    branches:
+      - ops/mqs-pointer-verification
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact test revision
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 1251e00ffdc12abf1e0c7a3ec6f7206ed3bc4d0a
+          persist-credentials: false
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Install locked dependencies and browsers
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install chromium firefox webkit --with-deps
+      - name: Repeat error accessibility scans on production
+        run: |
+          mkdir -p toast-evidence
+          cat > playwright.toast.config.ts <<'TS'
+          import { defineConfig, devices } from '@playwright/test';
+          const projects = [
+            ['chromium', devices['Desktop Chrome']],
+            ['firefox', devices['Desktop Firefox']],
+            ['webkit', devices['Desktop Safari']],
+          ] as const;
+          export default defineConfig({
+            testDir: './tests',
+            testMatch: /(?:catalog-copy|mqs-state)\.spec\.ts/,
+            grep: /reports denied clipboard access|file-read failures produce feedback without a page error/,
+            repeatEach: 10,
+            forbidOnly: true,
+            retries: 0,
+            workers: 1,
+            reporter: [['list'], ['json', { outputFile: 'toast-evidence/tests.json' }]],
+            use: {
+              baseURL: 'https://hubzz-ui-phi.vercel.app',
+              screenshot: 'only-on-failure',
+              trace: 'retain-on-failure',
+            },
+            projects: projects.flatMap(([name, device]) =>
+              (['no-preference', 'reduce'] as const).map(reducedMotion => ({
+                name: `${name}-${reducedMotion}`,
+                use: { ...device, reducedMotion },
+              }))
+            ),
+          });
+          TS
+          pnpm exec playwright test --config=playwright.toast.config.ts
+      - name: Record tested revision and scope
+        if: always()
+        run: |
+          mkdir -p toast-evidence
+          node --input-type=module <<'JS'
+          import { writeFile } from 'node:fs/promises';
+          await writeFile('toast-evidence/scope.json', JSON.stringify({
+            testCommit: '1251e00ffdc12abf1e0c7a3ec6f7206ed3bc4d0a',
+            runtimeCommitAtStart: 'f05b5f01c06a47794be27dc584a13d5d66fed61e',
+            baseURL: 'https://hubzz-ui-phi.vercel.app',
+            scenarios: ['catalog clipboard permission error', 'MQS setlist file-read error'],
+            repeats: 10,
+            browsers: ['chromium', 'firefox', 'webkit'],
+            reducedMotion: ['no-preference', 'reduce'],
+            retries: 0,
+            localWebServer: false,
+            runtimeChanges: false
+          }, null, 2));
+          JS
+      - name: Save repeated verification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: settled-toast-evidence
+          path: |
+            toast-evidence/
+            test-results/
+          retention-days: 7
