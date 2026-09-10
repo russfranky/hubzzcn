@@ -26,6 +26,30 @@ is not evidence that every possible environment or failure has been covered.
 - Closing and reopening the window preserves host state but discards pending
   view interactions. A full page reload intentionally resets this in-memory demo.
 
+## Pointer and keyboard reorder actions
+
+The row grip remains a native drag handle. A click, tap, Enter, or Space opens
+an upstream Radix Popover with Move up, Move down, Move to start, and Move to
+end buttons. Alt+ArrowUp/ArrowDown remains available without opening the panel.
+This supplies a single-pointer alternative to dragging, not just a keyboard one.
+
+- Disable destinations beyond either queue boundary and the row's own position.
+  A single-item queue keeps all move actions disabled and its Done button usable.
+- Preserve active item, playback time, pause, and mute. After an action or Escape,
+  return focus to the same keyed row's grip at its new position.
+- Use current snapshot positions when an open panel receives a host update.
+  Removal or replacement of its keyed row unmounts obsolete actions.
+- Opening the panel cancels any prior drag. Starting a row drag closes its panel.
+  A completed move cannot leave a reusable old drag payload.
+- Respect outside focus instead of returning it to the grip on outside dismissal.
+  Closing the queue unmounts its panels; reopening starts with them closed.
+- Use bounded, scrollable popover content for narrow and short viewports. Actions
+  have at least 36-pixel heights. No new popover animation is introduced.
+
+`tests/mqs-pointer.spec.ts` checks these interactions in the three browser
+engines, including explicit touch emulation. The native pointer-drag tests stay
+enabled. These tests do not replace physical-device or manual screen-reader work.
+
 ## Commands and timing
 
 Move and remove positions remain 1-based. Unknown, malformed, negative,

@@ -11,6 +11,7 @@ import {
   VolumeX,
   X,
 } from "lucide-react"
+import { Popover } from "radix-ui"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -116,6 +117,22 @@ function QueueRow({
   setDrag: (value: QueueDrag | null) => void
   onCommand: (command: string) => void
 }) {
+  const [moveOpen, setMoveOpen] = React.useState(false)
+  const descriptionId = React.useId()
+
+  function moveTo(to: number) {
+    if (
+      !Number.isSafeInteger(to) ||
+      to < 0 ||
+      to >= items.length ||
+      to === index
+    )
+      return
+    setMoveOpen(false)
+    setDrag(null)
+    onCommand(`--move ${index + 1} ${to + 1}`)
+  }
+
   return (
     <Item
       role="listitem"
@@ -127,6 +144,7 @@ function QueueRow({
       onDragStart={(event) => {
         // A nested draggable or text selection is not a queue-row drag.
         if (event.target !== event.currentTarget) return
+        setMoveOpen(false)
         const token = crypto.randomUUID()
         event.dataTransfer.effectAllowed = "move"
         event.dataTransfer.setData(QUEUE_DRAG_TYPE, token)
@@ -166,24 +184,78 @@ function QueueRow({
         drag?.itemId === item.id && "opacity-45"
       )}
     >
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-xs"
-        aria-label={`Reorder item ${index + 1}`}
-        title={`Reorder item ${index + 1}`}
-        className="cursor-grab text-muted-foreground active:cursor-grabbing"
-        onKeyDown={(event) => {
-          if (!event.altKey) return
-          if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return
-          event.preventDefault()
-          const to = index + (event.key === "ArrowUp" ? -1 : 1)
-          if (to < 0 || to >= items.length) return
-          onCommand(`--move ${index + 1} ${to + 1}`)
+      <Popover.Root
+        open={moveOpen}
+        onOpenChange={(open) => {
+          setMoveOpen(open)
+          if (open) setDrag(null)
         }}
       >
-        <GripVertical aria-hidden="true" />
-      </Button>
+        <Popover.Trigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            aria-label={`Reorder item ${index + 1}`}
+            aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
+            title="Click for move actions, or drag to reorder"
+            className="cursor-grab text-muted-foreground active:cursor-grabbing"
+            onKeyDown={(event) => {
+              if (!event.altKey) return
+              if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return
+              event.preventDefault()
+              moveTo(index + (event.key === "ArrowUp" ? -1 : 1))
+            }}
+          >
+            <GripVertical aria-hidden="true" />
+          </Button>
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Content
+            aria-label={`Reorder item ${index + 1}`}
+            aria-describedby={descriptionId}
+            align="start"
+            sideOffset={4}
+            collisionPadding={8}
+            className="dark z-50 max-h-(--radix-popover-content-available-height) w-52 max-w-[calc(100vw-1rem)] space-y-1 overflow-y-auto rounded-lg border border-border bg-popover p-2 text-popover-foreground shadow-md outline-none"
+          >
+            <p
+              id={descriptionId}
+              className="truncate px-2 py-1 text-xs text-muted-foreground"
+            >
+              {item.title}
+            </p>
+            {[
+              { label: "Move up", to: index - 1 },
+              { label: "Move down", to: index + 1 },
+              { label: "Move to start", to: 0 },
+              { label: "Move to end", to: items.length - 1 },
+            ].map(({ label, to }) => (
+              <Button
+                key={label}
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-9 w-full justify-start"
+                disabled={to < 0 || to >= items.length || to === index}
+                onClick={() => moveTo(to)}
+              >
+                {label}
+              </Button>
+            ))}
+            <Popover.Close asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 w-full"
+              >
+                Done
+              </Button>
+            </Popover.Close>
+          </Popover.Content>
+        </Popover.Portal>
+      </Popover.Root>
 
       <ItemContent className="min-w-0">
         <ItemTitle className="max-w-full">{item.title}</ItemTitle>

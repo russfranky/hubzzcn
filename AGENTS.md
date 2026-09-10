@@ -78,6 +78,18 @@ This instruction cleared the former review-only hold on PR #76. It does not waiv
 
 Use a focused PR and verify its exact head SHA before merging. Then verify main-branch CI and the production deployment separately. A successful merge is not proof of a successful deployment. Record the result and any limits in the PR and handoff.
 
+## Iterative improvement
+
+Russ requested recursive improvement on 2026-09-09. Use a bounded review loop
+within each active work session: find a concrete defect, state its expected
+behavior, add regression coverage, fix it, and review the changed behavior again.
+Test related boundaries and recovery, not just the first successful path. Keep
+unrelated product, infrastructure, and dependency work in separate changes.
+
+Finish each checked change through merge and target verification. Save completed
+work and the next concrete task in the handoff. This process does not imply a
+background worker or permission to weaken checks to keep a loop moving.
+
 ## Handoff rules
 
 Update `docs/WORKING_STATE.md` when a pull request changes any of these items:
