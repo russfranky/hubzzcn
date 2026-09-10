@@ -15,7 +15,9 @@ async function upload(page: Page, value: unknown, name = "setlist.json") {
   await page.getByLabel("Setlist JSON file").setInputFiles({
     name,
     mimeType: "application/json",
-    buffer: Buffer.from(typeof value === "string" ? value : JSON.stringify(value)),
+    buffer: Buffer.from(
+      typeof value === "string" ? value : JSON.stringify(value)
+    ),
   })
 }
 
@@ -67,10 +69,14 @@ test.describe("MQS state and import edge cases", () => {
   test("removing rows before and after the active item preserves time", async ({
     page,
   }) => {
-    await page.getByRole("button", { name: "Remove item 1", exact: true }).click()
+    await page
+      .getByRole("button", { name: "Remove item 1", exact: true })
+      .click()
     await expect(active(page)).toContainText(title)
     await expect(active(page)).toHaveAttribute("data-queue-index", "0")
-    await page.getByRole("button", { name: "Remove item 4", exact: true }).click()
+    await page
+      .getByRole("button", { name: "Remove item 4", exact: true })
+      .click()
     await expect(active(page)).toContainText(title)
     await expect(slider(page)).toHaveAttribute("aria-valuenow", "1938")
   })
@@ -99,7 +105,9 @@ test.describe("MQS state and import edge cases", () => {
     await upload(page, {
       segments: [...setlist("First").segments, ...setlist("Last").segments],
     })
+    await expect(active(page)).toContainText("First")
     await page.getByRole("button", { name: "Skip", exact: true }).click()
+    await expect(active(page)).toContainText("Last")
     await slider(page).press("End")
     await active(page)
       .getByRole("button", { name: /^Remove/ })
@@ -156,11 +164,17 @@ test.describe("MQS state and import edge cases", () => {
   test("live and invalid durations never produce a false seek range", async ({
     page,
   }) => {
-    for (const duration of [undefined, 0, -1, 1e308, 0.0001]) {
+    for (const [index, duration] of [
+      undefined,
+      0,
+      -1,
+      1e308,
+      0.0001,
+    ].entries()) {
       await upload(page, {
-        segments: [{ type: "native", title: "Live item", duration }],
+        segments: [{ type: "native", title: `Live item ${index}`, duration }],
       })
-      await expect(active(page)).toContainText("Live item")
+      await expect(active(page)).toContainText(`Live item ${index}`)
       await expect(slider(page)).toHaveCount(0)
       await expect(page.getByTestId("mqs-window")).not.toContainText(
         /NaN|Infinity/
@@ -169,10 +183,15 @@ test.describe("MQS state and import edge cases", () => {
     for (const durationMode of ["percent", "fill"]) {
       await upload(page, {
         segments: [
-          { type: "native", title: "Dynamic", duration: 10, durationMode },
+          {
+            type: "native",
+            title: `Dynamic ${durationMode}`,
+            duration: 10,
+            durationMode,
+          },
         ],
       })
-      await expect(active(page)).toContainText("Dynamic")
+      await expect(active(page)).toContainText(`Dynamic ${durationMode}`)
       await expect(slider(page)).toHaveCount(0)
     }
   })
@@ -187,6 +206,8 @@ test.describe("MQS state and import edge cases", () => {
       { segments: [] },
       { segments: [{ url: "javascript:alert(1)" }] },
     ]) {
+      await page.goto("/?prototype=mqs")
+      await expect(active(page)).toContainText(title)
       await upload(page, value)
       await expect(error(page)).toBeVisible()
       await expect(rows(page)).toHaveText(original)
