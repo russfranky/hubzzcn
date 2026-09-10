@@ -11,6 +11,7 @@ import {
   VolumeX,
   X,
 } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -22,8 +23,10 @@ import {
   ItemTitle,
 } from "@/components/ui/item"
 import { cn } from "@/lib/utils"
+import { clampMqsElapsed, mqsDurationSeconds } from "./mqs-timing"
 
 const QUEUE_DRAG_TYPE = "application/x-hubzz-mqs-reorder"
+const SETLIST_FILE_LIMIT = 2 * 1024 * 1024
 
 type QueueDrag = {
   itemId: string
@@ -74,22 +77,13 @@ export interface MqsQueueWindowProps {
   className?: string
 }
 
-function formatMinutes(minutes?: number) {
-  if (!Number.isFinite(minutes) || minutes === undefined) return "LIVE"
-  const seconds = Math.max(0, Math.round(minutes * 60))
-  const hours = Math.floor(seconds / 3600)
-  const mins = Math.floor((seconds % 3600) / 60)
-  const secs = seconds % 60
-
-  if (hours > 0) {
-    return `${hours}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
-  }
-
-  return `${mins}:${String(secs).padStart(2, "0")}`
+function formatMinutes(item?: MqsQueueItem) {
+  const seconds = mqsDurationSeconds(item)
+  return seconds === null ? "LIVE" : formatElapsed(seconds)
 }
 
 function formatElapsed(seconds: number) {
-  const safe = Math.max(0, Math.floor(seconds))
+  const safe = clampMqsElapsed(seconds, null)
   const hours = Math.floor(safe / 3600)
   const mins = Math.floor((safe % 3600) / 60)
   const secs = safe % 60
@@ -200,7 +194,7 @@ function QueueRow({
 
       <ItemActions className="shrink-0 gap-1">
         <span className="mr-1 text-xs text-muted-foreground tabular-nums">
-          {formatMinutes(item.duration)}
+          {formatMinutes(item)}
         </span>
         <Button
           type="button"
@@ -232,42 +226,70 @@ export function MqsQueueWindow({
 }: MqsQueueWindowProps) {
   const [drag, setDrag] = React.useState<QueueDrag | null>(null)
   const fileRef = React.useRef<HTMLInputElement>(null)
+  const importRequestRef = React.useRef(0)
+  const importToastId = React.useId()
+
+  React.useEffect(
+    () => () => {
+      importRequestRef.current += 1
+      toast.dismiss(importToastId)
+    },
+    [importToastId, onImportSetlist]
+  )
 
   const current =
-    currentIndex >= 0 && currentIndex < items.length
+    Number.isSafeInteger(currentIndex) &&
+    currentIndex >= 0 &&
+    currentIndex < items.length
       ? items[currentIndex]
       : undefined
-  const currentDurationSeconds = current?.duration
-    ? Math.round(current.duration * 60)
+  const playing = Boolean(current) && isPlaying
+  const currentDurationSeconds = mqsDurationSeconds(current) ?? 0
+  const clampedElapsed = current
+    ? clampMqsElapsed(elapsed, currentDurationSeconds || null)
     : 0
-  const clampedElapsed = currentDurationSeconds
-    ? Math.min(elapsed, currentDurationSeconds)
-    : elapsed
   const progress = currentDurationSeconds
     ? (clampedElapsed / currentDurationSeconds) * 100
     : 0
 
   const knownMinutes = items.reduce(
-    (total, item) =>
-      total + (Number.isFinite(item.duration) ? (item.duration ?? 0) : 0),
+    (total, item) => total + (mqsDurationSeconds(item) ?? 0) / 60,
     0
   )
-  const hasOpenEnded = items.some((item) => !Number.isFinite(item.duration))
+  const hasOpenEnded = items.some((item) => mqsDurationSeconds(item) === null)
   const totalLabel = `${Math.round(knownMinutes)}m${hasOpenEnded ? "+" : ""} total`
 
   const onFile = React.useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.currentTarget.files?.[0]
       event.currentTarget.value = ""
+      const request = ++importRequestRef.current
       if (!file || !onImportSetlist) return
+      setDrag(null)
+      toast.dismiss(importToastId)
+      if (file.size > SETLIST_FILE_LIMIT) {
+        toast.error("Could not load setlist", {
+          id: importToastId,
+          description: "Choose a JSON file no larger than 2 MiB.",
+        })
+        return
+      }
 
       try {
-        onImportSetlist(JSON.parse(await file.text()) as unknown)
+        const text = await file.text()
+        if (request !== importRequestRef.current) return
+        const value: unknown = JSON.parse(text)
+        onImportSetlist(value)
       } catch {
-        // The production server validates setlists. Malformed local JSON is ignored.
+        if (request !== importRequestRef.current) return
+        toast.error("Could not load setlist", {
+          id: importToastId,
+          description:
+            "The file could not be loaded. Check the JSON file and try again.",
+        })
       }
     },
-    [onImportSetlist]
+    [onImportSetlist, importToastId]
   )
 
   return (
@@ -308,18 +330,18 @@ export function MqsQueueWindow({
             size="icon-sm"
             aria-label="Previous"
             onClick={() => onCommand("--prev")}
-            disabled={items.length === 0}
+            disabled={!current || currentIndex === 0}
           >
             <SkipBack aria-hidden="true" />
           </Button>
           <Button
             type="button"
             size="icon-sm"
-            aria-label={isPlaying ? "Pause" : "Play"}
-            onClick={() => onCommand(isPlaying ? "--pause" : "--resume")}
-            disabled={items.length === 0}
+            aria-label={playing ? "Pause" : "Play"}
+            onClick={() => onCommand(playing ? "--pause" : "--resume")}
+            disabled={!current}
           >
-            {isPlaying ? (
+            {playing ? (
               <Pause aria-hidden="true" />
             ) : (
               <Play aria-hidden="true" />
@@ -331,7 +353,7 @@ export function MqsQueueWindow({
             size="icon-sm"
             aria-label="Skip"
             onClick={() => onCommand("--skip")}
-            disabled={items.length === 0}
+            disabled={!current || currentIndex === items.length - 1}
           >
             <SkipForward aria-hidden="true" />
           </Button>
@@ -361,13 +383,17 @@ export function MqsQueueWindow({
                 currentDurationSeconds > 0 ? currentDurationSeconds : undefined
               }
               aria-valuenow={
+                currentDurationSeconds > 0 ? clampedElapsed : undefined
+              }
+              aria-valuetext={
                 currentDurationSeconds > 0
-                  ? Math.round(clampedElapsed)
+                  ? formatElapsed(clampedElapsed)
                   : undefined
               }
               onClick={(event) => {
                 if (!currentDurationSeconds) return
                 const bounds = event.currentTarget.getBoundingClientRect()
+                if (bounds.width <= 0 || !Number.isFinite(event.clientX)) return
                 const ratio = Math.min(
                   1,
                   Math.max(0, (event.clientX - bounds.left) / bounds.width)
@@ -378,14 +404,15 @@ export function MqsQueueWindow({
               }}
               onKeyDown={(event) => {
                 if (!currentDurationSeconds) return
-                if (event.key !== "ArrowLeft" && event.key !== "ArrowRight")
-                  return
+                let next: number
+                if (event.key === "Home") next = 0
+                else if (event.key === "End") next = currentDurationSeconds
+                else if (event.key === "ArrowLeft")
+                  next = Math.max(0, clampedElapsed - 5)
+                else if (event.key === "ArrowRight")
+                  next = Math.min(currentDurationSeconds, clampedElapsed + 5)
+                else return
                 event.preventDefault()
-                const delta = event.key === "ArrowLeft" ? -5 : 5
-                const next = Math.min(
-                  currentDurationSeconds,
-                  Math.max(0, Math.round(clampedElapsed) + delta)
-                )
                 onCommand(`--seek ${next}`)
               }}
               className={cn(
@@ -403,7 +430,7 @@ export function MqsQueueWindow({
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground tabular-nums">
               <span>{current ? formatElapsed(clampedElapsed) : "0:00"}</span>
-              <span>{current ? formatMinutes(current.duration) : "—"}</span>
+              <span>{current ? formatMinutes(current) : "—"}</span>
             </div>
           </div>
         </div>

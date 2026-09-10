@@ -1,10 +1,17 @@
 import * as React from "react"
+import { toast } from "sonner"
 
 import {
   MqsQueueWindow,
   type MqsQueueItem,
 } from "@/components/hubzz/mqs-queue-window"
 import { Button } from "@/components/ui/button"
+import {
+  applyMqsDemoCommand,
+  parseMqsDemoSetlist,
+  replaceMqsDemoSetlist,
+  type MqsDemoSnapshot,
+} from "./mqs-demo-state"
 
 const INITIAL_ITEMS: MqsQueueItem[] = [
   {
@@ -58,86 +65,6 @@ const INITIAL_ITEMS: MqsQueueItem[] = [
   },
 ]
 
-type Snapshot = {
-  items: MqsQueueItem[]
-  currentIndex: number
-  isPlaying: boolean
-  elapsed: number
-  isMuted: boolean
-}
-
-function moveItem<T>(values: T[], from: number, to: number) {
-  if (
-    from === to ||
-    from < 0 ||
-    to < 0 ||
-    from >= values.length ||
-    to >= values.length
-  ) {
-    return values
-  }
-
-  const next = [...values]
-  const [moved] = next.splice(from, 1)
-  if (moved === undefined) return values
-  next.splice(to, 0, moved)
-  return next
-}
-
-function setlistItems(value: unknown): MqsQueueItem[] | null {
-  if (!value || typeof value !== "object") return null
-  const segments = (value as { segments?: unknown }).segments
-  if (!Array.isArray(segments) || segments.length === 0) return null
-
-  const items = segments.flatMap((segment, index) => {
-    if (!segment || typeof segment !== "object") return []
-    const candidate = segment as {
-      type?: unknown
-      url?: unknown
-      title?: unknown
-      platform?: unknown
-      duration?: unknown
-    }
-    if (typeof candidate.url !== "string") return []
-
-    const type =
-      candidate.type === "youtube" ||
-      candidate.type === "twitch" ||
-      candidate.type === "kick" ||
-      candidate.type === "website" ||
-      candidate.type === "native" ||
-      candidate.type === "webcam" ||
-      candidate.type === "screenshare"
-        ? candidate.type
-        : "website"
-
-    return [
-      {
-        id: `setlist-${index}`,
-        type,
-        url: candidate.url,
-        title:
-          typeof candidate.title === "string" && candidate.title.trim()
-            ? candidate.title.trim()
-            : candidate.url,
-        platform:
-          typeof candidate.platform === "string"
-            ? candidate.platform
-            : type.toUpperCase(),
-        duration:
-          typeof candidate.duration === "number" &&
-          Number.isFinite(candidate.duration)
-            ? candidate.duration
-            : undefined,
-        addedBy: "setlist",
-        addedByName: "Setlist",
-      } satisfies MqsQueueItem,
-    ]
-  })
-
-  return items.length > 0 ? items : null
-}
-
 /**
  * Demo host for the pre-alpha-compatible MQS view.
  *
@@ -149,103 +76,44 @@ function setlistItems(value: unknown): MqsQueueItem[] | null {
 export function MqsPrototype() {
   const [open, setOpen] = React.useState(true)
   const [lastCommand, setLastCommand] = React.useState("")
-  const [snapshot, setSnapshot] = React.useState<Snapshot>({
+  const [snapshot, setSnapshot] = React.useState<MqsDemoSnapshot>({
     items: INITIAL_ITEMS,
     currentIndex: 1,
     isPlaying: true,
     elapsed: 32 * 60 + 18,
     isMuted: false,
   })
+  const importToastId = React.useId()
+
+  React.useEffect(
+    () => () => {
+      toast.dismiss(importToastId)
+    },
+    [importToastId]
+  )
 
   const handleCommand = React.useCallback((command: string) => {
     setLastCommand(command)
-
-    setSnapshot((current) => {
-      if (command === "--prev") {
-        return {
-          ...current,
-          currentIndex: Math.max(0, current.currentIndex - 1),
-          elapsed: 0,
-        }
-      }
-
-      if (command === "--skip") {
-        return {
-          ...current,
-          currentIndex: Math.min(
-            current.items.length - 1,
-            current.currentIndex + 1
-          ),
-          elapsed: 0,
-        }
-      }
-
-      if (command === "--pause") return { ...current, isPlaying: false }
-      if (command === "--resume") return { ...current, isPlaying: true }
-      if (command === "--mute") return { ...current, isMuted: true }
-      if (command === "--unmute") return { ...current, isMuted: false }
-
-      if (command === "--clearqueue") {
-        const active = current.items[current.currentIndex]
-        return {
-          ...current,
-          items: active ? [active] : [],
-          currentIndex: active ? 0 : -1,
-        }
-      }
-
-      const seek = /^--seek\s+(\d+)$/.exec(command)
-      if (seek) {
-        return { ...current, elapsed: Number(seek[1]) }
-      }
-
-      const remove = /^--remove\s+(\d+)$/.exec(command)
-      if (remove) {
-        const index = Number(remove[1]) - 1
-        if (index < 0 || index >= current.items.length) return current
-
-        const nextItems = current.items.filter(
-          (_, itemIndex) => itemIndex !== index
-        )
-        let nextIndex = current.currentIndex
-        if (index < nextIndex) nextIndex -= 1
-        if (index === nextIndex) {
-          nextIndex = Math.min(nextIndex, nextItems.length - 1)
-        }
-
-        return {
-          ...current,
-          items: nextItems,
-          currentIndex: nextItems.length === 0 ? -1 : Math.max(0, nextIndex),
-        }
-      }
-
-      const move = /^--move\s+(\d+)\s+(\d+)$/.exec(command)
-      if (move) {
-        const from = Number(move[1]) - 1
-        const to = Number(move[2]) - 1
-        return {
-          ...current,
-          items: moveItem(current.items, from, to),
-        }
-      }
-
-      return current
-    })
+    setSnapshot((current) => applyMqsDemoCommand(current, command))
   }, [])
 
-  const handleImport = React.useCallback((value: unknown) => {
-    const items = setlistItems(value)
-    if (!items) return
-
-    setSnapshot({
-      items,
-      currentIndex: 0,
-      isPlaying: true,
-      elapsed: 0,
-      isMuted: false,
-    })
-  }, [])
+  const handleImport = React.useCallback(
+    (value: unknown) => {
+      // Generate identities once per accepted request, never inside a state updater.
+      const result = parseMqsDemoSetlist(value, crypto.randomUUID())
+      if (!result.ok) throw new Error(result.error)
+      toast.dismiss(importToastId)
+      if (result.skipped > 0) {
+        toast.warning("Some setlist segments were skipped", {
+          id: importToastId,
+          description: `${result.skipped} invalid segments were not loaded.`,
+        })
+      }
+      setSnapshot((current) => replaceMqsDemoSetlist(current, result.items))
+      setLastCommand("")
+    },
+    [importToastId]
+  )
 
   return (
     <main className="dark grid min-h-svh place-items-center bg-background p-3 text-foreground">
