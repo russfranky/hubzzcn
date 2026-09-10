@@ -1,6 +1,8 @@
 import AxeBuilder from "@axe-core/playwright"
 import { expect, test, type Page } from "@playwright/test"
 
+import { holdToastForAccessibility } from "./helpers/toast"
+
 const active = (page: Page) => page.getByTestId("current-row")
 const rows = (page: Page) =>
   page.getByRole("list", { name: "Media queue items" }).getByRole("listitem")
@@ -330,11 +332,17 @@ test.describe("MQS state and import edge cases", () => {
     await upload(page, {})
     await expect(error(page)).toBeVisible()
     await expect(active(page)).toContainText(title)
+    const notification = await holdToastForAccessibility(
+      page,
+      "Could not load setlist"
+    )
     await page.waitForLoadState("networkidle")
     const result = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
       .analyze()
     expect(result.violations).toEqual([])
+    await expect(notification).toHaveCSS("opacity", "1")
+    await expect(error(page)).toBeVisible()
     expect(errors).toEqual([])
   })
 
