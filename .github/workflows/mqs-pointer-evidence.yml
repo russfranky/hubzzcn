@@ -1,4 +1,4 @@
-name: MQS pointer evidence
+name: MQS baseline interaction evidence
 
 on:
   push:
@@ -9,23 +9,60 @@ permissions:
   contents: read
 
 jobs:
-  prepare:
+  inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - name: Checkout baseline
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           ref: 9001726ec355a4287c9188f1e7e28fcb2f90e305
           persist-credentials: false
-      - name: Export exact source files
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Install dependencies and Chromium
         run: |
-          mkdir -p source-evidence
-          git archive --format=tar HEAD src tests scripts docs AGENTS.md package.json playwright.config.ts .prettierrc > source-evidence/source.tar
-          git rev-parse HEAD > source-evidence/commit.txt
-      - name: Save source evidence
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install chromium --with-deps
+      - name: Inspect current pointer and keyboard behavior
+        run: |
+          mkdir -p baseline-evidence
+          node --input-type=module <<'JS'
+          import { chromium, expect } from '@playwright/test';
+          import { writeFile } from 'node:fs/promises';
+          const browser = await chromium.launch();
+          try {
+            const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+            const errors = [];
+            page.on('pageerror', error => errors.push(error.message));
+            const response = await page.goto('https://hubzz-ui-phi.vercel.app/?prototype=mqs', { waitUntil: 'networkidle' });
+            expect(response?.status()).toBe(200);
+            const rows = page.getByRole('list', { name: 'Media queue items' }).getByRole('listitem');
+            await expect(rows).toHaveCount(5);
+            await page.getByRole('button', { name: 'Reorder item 3', exact: true }).click();
+            const dialogCount = await page.getByRole('dialog').count();
+            await expect(page.getByTestId('last-mqs-command')).toHaveText('');
+            await page.screenshot({ path: 'baseline-evidence/grip-click.png', fullPage: true });
+            await writeFile('baseline-evidence/grip-click.txt', await page.locator('body').ariaSnapshot());
+            const remove = page.getByRole('button', { name: 'Remove item 3', exact: true });
+            await remove.focus();
+            await remove.press('Enter');
+            await expect(rows).toHaveCount(4);
+            const focusAfterRemove = await page.evaluate(() => ({ tag: document.activeElement?.tagName, label: document.activeElement?.getAttribute('aria-label') }));
+            const report = { baselineCommit: '9001726ec355a4287c9188f1e7e28fcb2f90e305', status: response.status(), dialogCountAfterGripClick: dialogCount, focusAfterRemove, errors };
+            console.log(JSON.stringify(report, null, 2));
+            await writeFile('baseline-evidence/result.json', JSON.stringify(report, null, 2));
+          } finally { await browser.close(); }
+          JS
+      - name: Save baseline evidence
+        if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: mqs-pointer-source
-          path: source-evidence/
-          retention-days: 1
+          name: mqs-pointer-baseline
+          path: baseline-evidence/
+          retention-days: 7
