@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test"
 
 const catalogSmoke =
-  /(?:accessibility|catalog|catalog-copy|portal-prototype|mqs-prototype|mqs-reorder|mqs-state|mqs-pointer)\.spec\.ts/
+  /(?:accessibility|catalog|catalog-copy|portal-prototype|mqs-prototype|mqs-reorder|mqs-state|mqs-pointer|mqs-focus|mqs-focus-host)\.spec\.ts/
 const previewPort = 4173
 const previewUrl = `http://127.0.0.1:${previewPort}`
 
@@ -36,10 +36,19 @@ export default defineConfig({
       use: { ...devices["Desktop Safari"] },
     },
   ],
-  webServer: {
-    command: `pnpm build:vercel && pnpm exec vite preview --host 127.0.0.1 --port ${previewPort} --strictPort`,
-    url: previewUrl,
-    reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
-  },
+  webServer: [
+    {
+      command: `pnpm build:vercel && pnpm exec vite preview --host 127.0.0.1 --port ${previewPort} --strictPort`,
+      url: previewUrl,
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
+    {
+      // Dev-only controlled-host fixture. Vite production inputs exclude tests/.
+      command: "pnpm exec vite --host 127.0.0.1 --port 4174 --strictPort",
+      url: "http://127.0.0.1:4174/tests/fixtures/mqs-focus.html",
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
+  ],
 })
