@@ -18,30 +18,35 @@ contract is in [`MQS_EDGE_CASES.md`](./MQS_EDGE_CASES.md).
 - PR #87: clipboard error feedback, retry, and stale-result protection.
 - PR #89: use the existing Vercel site; no domain migration.
 - PR #90: reject external drops and out-of-range keyboard reorder commands.
-- [PR #91](https://github.com/russfranky/hubzzcn/pull/91) merged as
-  `9001726ec355a4287c9188f1e7e28fcb2f90e305`. Its main CI, CodeQL, and Vercel
-  release passed. The PR records 319 repository browser tests, eight state-test
-  groups, and 144 passing live MQS cases. Do not repeat this completed fix.
+- PR #91: preserve active media and guard state/import edge cases.
+- [PR #92](https://github.com/russfranky/hubzzcn/pull/92) merged as
+  `f05b5f01c06a47794be27dc584a13d5d66fed61e`. Click and tap now open bounded
+  move actions. Its pre-merge suite passed 379 tests; the deployed MQS suites
+  passed 204 cases without retries. The Vercel release is complete.
 
-## Latest improvement
+## Latest verification improvement
 
-Branch: `fix/mqs-pointer-actions`.
+Branch: `test/settled-toast-accessibility`.
 
-The previously inert grip click now opens a Radix Popover with four move actions.
-Native dragging and Alt+Arrow shortcuts remain. The actions use current snapshot
-positions, preserve active media and focus, cancel old drags, and handle first,
-last, single-item, removed, and replaced rows. The panel fits narrow and short
-viewports. Tests include mouse, keyboard, touch emulation, and accessibility.
+PR #92's post-merge browser run reported 378 passes and one flaky WebKit import
+error contrast scan. It passed on retry, but that is not a clean first-pass run.
+The existing scan could sample a partly transparent notification entrance.
 
-The focused PR records exact check, merge, deployment, and live-browser results.
-Check that PR before repeating the work or treating it as pending. Documentation
-of implemented behavior does not substitute for a passing final-head check.
+The test helper in `tests/helpers/toast.ts` waits for the named notification to
+be fully in view, opaque, and settled. Normal pointer hover pauses its expiry
+while axe runs. Both MQS import-error and catalog clipboard-error scans use it
+and verify the message remains visible after the scan. No application styles,
+notification durations, accessibility rules, retries, or exclusions changed.
 
-## Next review
+The focused PR records final-head checks, repeated live test results, merge,
+and deployment evidence. Check its current state before repeating the change.
 
-Review focus recovery when a keyboard user removes the focused queue row. Add a
-failing regression before selecting a successor focus target. Keep it separate
-from changes to authoritative playback or remote-server acknowledgement logic.
+## Next product review
+
+The live baseline inspection in PR #92 confirmed that keyboard removal of the
+focused queue row leaves focus on BODY. Add a regression before selecting a
+successor focus target. Preserve outside focus and wait for authoritative row
+removal rather than moving focus when a host command is merely emitted.
 
 ## Boundaries and other work
 

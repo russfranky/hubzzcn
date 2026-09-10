@@ -1,6 +1,8 @@
 import AxeBuilder from "@axe-core/playwright"
 import { expect, test } from "@playwright/test"
 
+import { holdToastForAccessibility } from "./helpers/toast"
+
 const COPY_LABEL = "Copy base install command"
 const ERROR_TITLE = "Could not copy command"
 const ERROR_HELP = "Select the command text to copy it manually, or try again."
@@ -39,10 +41,13 @@ test.describe("Catalog clipboard recovery", () => {
     await expect(page.getByRole("button", { name: "Copied" })).toHaveCount(0)
     expect(errors).toEqual([])
 
+    const notification = await holdToastForAccessibility(page, ERROR_TITLE)
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
       .analyze()
     expect(results.violations).toEqual([])
+    await expect(notification).toHaveCSS("opacity", "1")
+    await expect(page.getByText(ERROR_TITLE, { exact: true })).toBeVisible()
   })
 
   test("handles a missing clipboard API", async ({ page }) => {
