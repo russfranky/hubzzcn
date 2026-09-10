@@ -1,0 +1,31 @@
+name: MQS pointer evidence
+
+on:
+  push:
+    branches:
+      - ops/mqs-pointer-verification
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout baseline
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 9001726ec355a4287c9188f1e7e28fcb2f90e305
+          persist-credentials: false
+      - name: Export exact source files
+        run: |
+          mkdir -p source-evidence
+          git archive --format=tar HEAD src tests scripts docs AGENTS.md package.json playwright.config.ts .prettierrc > source-evidence/source.tar
+          git rev-parse HEAD > source-evidence/commit.txt
+      - name: Save source evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: mqs-pointer-source
+          path: source-evidence/
+          retention-days: 1
