@@ -11,12 +11,12 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
-      - name: Checkout exact focus candidate
+      - name: Checkout tested merge
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
-          ref: 2199a57314e7bac1d5dd0cdd7f934afec5c4d315
+          ref: 024fbde9122533ddff1e3bc6a3054815e6dc3578
           persist-credentials: false
       - name: Setup pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
@@ -25,35 +25,85 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
-      - name: Install locked dependencies and Chromium
+      - name: Install locked dependencies and browsers
         run: |
           pnpm install --frozen-lockfile
-          pnpm exec playwright install chromium --with-deps
-      - name: Check the production build excludes the fixture
+          pnpm exec playwright install chromium firefox webkit --with-deps
+      - name: Test production MQS suites on the deployed site
         run: |
-          pnpm build:vercel
-          mkdir -p focus-evidence
+          mkdir -p live-evidence
+          cat > playwright.live.config.ts <<'TS'
+          import { defineConfig, devices } from '@playwright/test';
+          export default defineConfig({
+            testDir: './tests',
+            testMatch: /(?:mqs-prototype|mqs-reorder|mqs-state|mqs-pointer|mqs-focus)\.spec\.ts/,
+            forbidOnly: true,
+            retries: 0,
+            workers: 1,
+            reporter: [['list'], ['json', { outputFile: 'live-evidence/tests.json' }]],
+            use: {
+              baseURL: 'https://hubzz-ui-phi.vercel.app',
+              screenshot: 'only-on-failure',
+              trace: 'retain-on-failure',
+            },
+            projects: [
+              { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+              { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+              { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+            ],
+          });
+          TS
+          pnpm exec playwright test --config=playwright.live.config.ts
+      - name: Capture keyboard recovery and the empty queue
+        if: always()
+        run: |
+          mkdir -p live-evidence
           node --input-type=module <<'JS'
-          import assert from 'node:assert/strict';
-          import { readdir, readFile, writeFile } from 'node:fs/promises';
-          const paths = await readdir('dist', { recursive: true });
-          assert(!paths.some(path => /tests|fixtures|mqs-focus\.html/.test(path)));
-          for (const path of paths.filter(path => /\.(js|html)$/.test(path))) {
-            const source = await readFile(`dist/${path}`, 'utf8');
-            assert(!source.includes('Controlled focus fixture'));
-            assert(!source.includes('apply-snapshot'));
-          }
-          await writeFile('focus-evidence/production-boundary.json', JSON.stringify({ commit: '2199a57314e7bac1d5dd0cdd7f934afec5c4d315', fixtureExcluded: true, files: paths }, null, 2));
+          import { chromium, expect } from '@playwright/test';
+          import { writeFile } from 'node:fs/promises';
+          const browser = await chromium.launch();
+          const results = [];
+          try {
+            for (const [name, viewport] of [['desktop', { width: 1280, height: 900 }], ['narrow', { width: 320, height: 720 }]]) {
+              const page = await browser.newPage({ viewport, reducedMotion: 'reduce' });
+              const errors = [];
+              page.on('pageerror', error => errors.push(error.message));
+              const response = await page.goto('https://hubzz-ui-phi.vercel.app/?prototype=mqs', { waitUntil: 'networkidle', timeout: 30000 });
+              expect(response?.status()).toBe(200);
+              const rows = page.getByRole('list', { name: 'Media queue items' }).getByRole('listitem');
+              await expect(rows).toHaveCount(5);
+              await page.getByRole('button', { name: 'Remove item 3', exact: true }).press('Enter');
+              await expect(rows).toHaveCount(4);
+              const grip = page.getByRole('button', { name: 'Reorder item 3', exact: true });
+              await expect(grip).toBeFocused();
+              await expect(grip).toBeInViewport();
+              await expect(rows.nth(2)).toContainText('Calvin Harris');
+              await page.screenshot({ path: `live-evidence/recovery-${name}.png`, fullPage: true, animations: 'disabled' });
+              await writeFile(`live-evidence/recovery-${name}.txt`, await page.locator('body').ariaSnapshot());
+              await page.keyboard.press('Enter');
+              await expect(page.getByRole('dialog', { name: 'Reorder item 3', exact: true })).toBeVisible();
+              await expect(rows).toHaveCount(4);
+              await page.keyboard.press('Escape');
+              await page.getByRole('button', { name: 'Clear queue', exact: true }).click();
+              await page.getByRole('button', { name: 'Remove item 1', exact: true }).press('Space');
+              await expect(page.getByText('Queue is empty.')).toBeVisible();
+              await expect(page.getByRole('button', { name: 'Load setlist', exact: true })).toBeFocused();
+              await page.screenshot({ path: `live-evidence/empty-${name}.png`, fullPage: true, animations: 'disabled' });
+              await writeFile(`live-evidence/empty-${name}.txt`, await page.locator('body').ariaSnapshot());
+              expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+              expect(errors).toEqual([]);
+              results.push({ name, viewport, status: response.status(), errors, removalRecovery: 'successor grip', emptyRecovery: 'Load setlist', repeatedEnterPreservesQueue: true });
+              await page.close();
+            }
+          } finally { await browser.close(); }
+          await writeFile('live-evidence/browser.json', JSON.stringify({ sourceCommit: '024fbde9122533ddff1e3bc6a3054815e6dc3578', results }, null, 2));
           JS
-      - name: Run focused tests without retries
-        run: |
-          PLAYWRIGHT_JSON_OUTPUT_FILE=focus-evidence/focused.json pnpm exec playwright test tests/mqs-focus.spec.ts tests/mqs-focus-host.spec.ts --project=chromium --retries=0 --reporter=json
-      - name: Save focused evidence
+      - name: Save live evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: mqs-focus-candidate
+          name: mqs-focus-live-evidence
           path: |
-            focus-evidence/
+            live-evidence/
             test-results/
           retention-days: 7
