@@ -1,8 +1,10 @@
 /* Portal-only parity scope.
- * Source of truth: HubzzInc/pre-alpha profile-panel/index.css + App.css.
+ * Base palette: HubzzInc/pre-alpha profile-panel/index.css + App.css.
+ * Solid buttons and muted text use higher-contrast tones for WCAG AA.
  * Keep the shared hubzzcn catalog theme unchanged.
  */
 .hubzz-profile-panel-theme,
+.hubzz-profile-panel-theme.dark,
 .hubzz-profile-panel-theme .dark {
   --background: oklch(0.221 0.009 255.608);
   --foreground: oklch(0.994 0.002 247.839);
@@ -10,7 +12,7 @@
   --card-foreground: oklch(0.994 0.002 247.839);
   --popover: oklch(0.269 0.01 268.313);
   --popover-foreground: oklch(0.994 0.002 247.839);
-  --primary: oklch(0.612 0.208 295.841);
+  --primary: oklch(0.55 0.208 295.841);
   --primary-foreground: oklch(0.994 0.002 247.839);
   --primary-gradient: linear-gradient(
     135deg,
@@ -20,7 +22,7 @@
   --secondary: oklch(0.302 0.011 271.028);
   --secondary-foreground: oklch(0.779 0.021 243.496);
   --muted: oklch(0.302 0.011 271.028);
-  --muted-foreground: oklch(0.617 0.017 235.553);
+  --muted-foreground: oklch(0.69 0.017 235.553);
   --accent: oklch(0.302 0.011 271.028);
   --accent-foreground: oklch(0.722 0.148 288.272);
   --destructive: oklch(0.674 0.197 27.83);
@@ -38,7 +40,7 @@
   --radius-button: 9999px;
   --sidebar: oklch(0.189 0.014 278.565);
   --sidebar-foreground: oklch(0.994 0.002 247.839);
-  --sidebar-primary: oklch(0.612 0.208 295.841);
+  --sidebar-primary: oklch(0.55 0.208 295.841);
   --sidebar-primary-foreground: oklch(0.994 0.002 247.839);
   --sidebar-accent: oklch(0.269 0.01 268.313);
   --sidebar-accent-foreground: oklch(0.779 0.021 243.496);
