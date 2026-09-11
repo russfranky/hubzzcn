@@ -3,6 +3,7 @@
  * Keep the shared hubzzcn catalog theme unchanged.
  */
 .hubzz-profile-panel-theme,
+.hubzz-profile-panel-theme.dark,
 .hubzz-profile-panel-theme .dark {
   --background: oklch(0.221 0.009 255.608);
   --foreground: oklch(0.994 0.002 247.839);
