@@ -1,6 +1,6 @@
 # Working State
 
-Read [`../AGENTS.md`](../AGENTS.md) first. Last reviewed: 2026-09-10.
+Read [`../AGENTS.md`](../AGENTS.md) first. Last reviewed: 2026-09-11.
 
 ## Active direction
 
@@ -18,23 +18,24 @@ without another routine approval. Preserve checks and repository protections.
   jobs in [post-merge CI](https://github.com/russfranky/hubzzcn/actions/runs/34436327773)
   are now complete and successful. Do not repeat this completed work.
 
-## Current improvement
+- PR #94 merged as `024fbde9122533ddff1e3bc6a3054815e6dc3578`.
+  Main quality, browser, CodeQL, and production-deploy checks passed.
+  [MQS focus behavior](./MQS_FOCUS.md) remains the completed baseline.
 
-Branch: `fix/mqs-focus-recovery`.
+## Portal consolidation
 
-The new regression first reproduced focused-row removal on the unchanged runtime.
-The DOM focus boundary captures actual focus before a committed host update and
-recovers to a surviving non-destructive control only after focus becomes invalid.
-It covers row removal, disabled transport/seek controls, and portaled actions.
+The owner selected `hubzzcn` as the destination for the Portal UI from
+`acre-cinder-cloud-branch`. [PORTAL.md](./PORTAL.md) records the source snapshot,
+file organization, retained contracts, and reconciliation decisions.
 
-[`MQS_FOCUS.md`](./MQS_FOCUS.md) defines the expected behavior and the test matrix.
-The production-demo tests and a Strict Mode controlled-host fixture cover delayed
-or rejected commands, batch changes, outside focus, empty queues, two instances,
-special-character IDs, and remount. The fixture is development-only, not a new
-production route or server integration.
+Portal now composes the shared shadcn primitives with its rooftop scene and
+current-space HUD. Its existing URLs, IDs, callback shape, discovery scopes, and
+room availability remain canonical. Join closes the Sheet and focus returns to
+the elevator. The composition remains catalog-only.
 
-The focused PR records exact baseline failure, final-head checks, review, merge,
-and deployment evidence. Read its current state before repeating implementation.
+The focused migration PR records validation, exact-head review, merge, and
+production deployment evidence. Archiving the source repository depends on that
+delivery; the GitHub connector does not expose repository administration.
 
 ## Next review
 

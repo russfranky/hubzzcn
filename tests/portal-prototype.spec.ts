@@ -194,3 +194,96 @@ test("Portal has no WCAG A or AA violations", async ({ page }) => {
       .join("\n")
   ).toEqual([])
 })
+
+test("dismisses the sheet and restores elevator focus across joins", async ({
+  page,
+}) => {
+  await page.goto("/cn/portal?scope=all")
+
+  const dialog = page.getByRole("dialog", { name: "Portal destinations" })
+  const elevator = page.getByRole("button", { name: "Open elevator" })
+  await expect(dialog).toBeVisible()
+  await page.keyboard.press("Escape")
+  await expect(dialog).toHaveCount(0)
+  await expect(elevator).toBeFocused()
+
+  await page.keyboard.press("Enter")
+  await expect(dialog).toBeVisible()
+  await page
+    .locator('[data-space-id="the-lounge"]')
+    .getByRole("button", { name: "Join", exact: true })
+    .click()
+  await expect(dialog).toHaveCount(0)
+  await expect(elevator).toBeFocused()
+  await expect(page.getByRole("status", { name: "Current space" })).toHaveText(
+    "The Lounge"
+  )
+
+  await elevator.click()
+  const lounge = page.locator('[data-space-id="the-lounge"]')
+  await expect(lounge.getByText("Here", { exact: true })).toBeVisible()
+  await expect(lounge.getByRole("button", { name: "Join" })).toHaveCount(0)
+})
+
+test("the root Back action closes the panel and the hallway door is keyboard operable", async ({
+  page,
+}) => {
+  await page.goto("/cn/portal")
+  await page.getByRole("button", { name: "Back", exact: true }).click()
+  await expect(page.getByRole("dialog")).toHaveCount(0)
+
+  const hallway = page.getByRole("button", { name: "Enter Hallway 12" })
+  await hallway.focus()
+  await page.keyboard.press("Enter")
+  await expect(page.getByTestId("last-portal-join")).toHaveText(
+    JSON.stringify({ spaceId: "hallway-12", title: "Hallway 12", path: null })
+  )
+  await expect(hallway).toBeFocused()
+  await expect(page.getByRole("status", { name: "Current space" })).toHaveText(
+    "Hallway 12"
+  )
+})
+
+test("a floor-number search stays within the selected discovery scope", async ({
+  page,
+}) => {
+  await page.goto("/cn/portal")
+  await page.getByLabel("Search spaces").fill("2")
+  await expect(
+    page.getByRole("heading", { name: "Hallway 2", exact: true })
+  ).toBeVisible()
+  await expect(
+    page.getByRole("heading", { name: "Hallway 12", exact: true })
+  ).toHaveCount(0)
+
+  await page
+    .getByRole("button", { name: "View Hallway 2 and 15 attached spaces" })
+    .click()
+  await page.getByLabel("Search spaces").fill("2")
+  await expect(page.getByText("2-01", { exact: true })).toBeVisible()
+  await expect(page.getByText("16", { exact: true })).toBeVisible()
+  await expect(
+    page.locator('[data-space-id="2-01"]').getByRole("button", { name: "Join" })
+  ).toHaveCount(0)
+})
+
+test("the closed rooftop remains accessible on a narrow viewport", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 720 })
+  await page.emulateMedia({ reducedMotion: "reduce" })
+  await page.goto("/cn/portal")
+  await page.keyboard.press("Escape")
+  await expect(page.getByRole("dialog")).toHaveCount(0)
+  await expect(
+    page.getByRole("button", { name: "Open elevator" })
+  ).toBeInViewport()
+  await expect(
+    page.getByRole("button", { name: "Enter Hallway 12" })
+  ).toBeInViewport()
+
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+    .analyze()
+  expect(results.violations).toEqual([])
+})

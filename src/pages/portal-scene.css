@@ -1,0 +1,58 @@
+/* Rooftop composition adapted from acre-cinder-cloud-branch.
+ * The existing Portal semantic tokens own its colors.
+ */
+.portal-rooftop-sky {
+  background:
+    radial-gradient(ellipse at 50% 0%, var(--muted), transparent 60%),
+    var(--background);
+}
+
+.portal-starfield {
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, var(--foreground), transparent),
+    radial-gradient(1px 1px at 28% 8%, var(--foreground), transparent),
+    radial-gradient(1px 1px at 46% 22%, var(--foreground), transparent),
+    radial-gradient(1px 1px at 68% 12%, var(--foreground), transparent),
+    radial-gradient(1px 1px at 82% 28%, var(--foreground), transparent);
+  opacity: 0.3;
+}
+
+.portal-terrace-grid {
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(transparent, black 18%, black 78%, transparent);
+}
+
+.portal-elevator-frame {
+  box-shadow:
+    inset 0 0 0 1px var(--border),
+    0 20px 40px -16px rgb(0 0 0 / 0.55);
+}
+
+.portal-elevator-door {
+  background: linear-gradient(
+    90deg,
+    var(--background),
+    var(--muted) 20%,
+    var(--card) 52%,
+    var(--muted) 82%,
+    var(--background)
+  );
+  transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.portal-door-left {
+  transform: translateX(-18%);
+}
+
+.portal-door-right {
+  transform: translateX(18%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portal-elevator-door {
+    transition: none;
+  }
+}
