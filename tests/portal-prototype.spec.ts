@@ -179,6 +179,9 @@ test("keeps the Portal panel usable on a 320px viewport", async ({ page }) => {
 test("Portal has no WCAG A or AA violations", async ({ page }) => {
   await page.goto("/cn/portal")
   await page.waitForLoadState("networkidle")
+  await expect(
+    page.getByRole("dialog", { name: "Portal destinations" })
+  ).toHaveCSS("opacity", "1")
 
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
