@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { Landing } from "@/pages/Landing"
 import { MqsPrototype } from "@/pages/MqsPrototype"
 import { PortalPrototypeDemo } from "@/pages/PortalPrototype"
+import { PointsPrototype } from "@/pages/PointsPrototype"
 import { StagePrototype } from "@/pages/StagePrototype"
 
 export function App() {
@@ -24,6 +25,8 @@ export function App() {
         <StagePrototype />
       ) : prototype === "mqs" ? (
         <MqsPrototype />
+      ) : prototype === "points" ? (
+        <PointsPrototype />
       ) : (
         <Landing />
       )}
