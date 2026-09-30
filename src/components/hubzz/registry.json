@@ -239,6 +239,35 @@
         "stability": "alpha",
         "strategy": "composition"
       }
+    },
+    {
+      "name": "engagement-points",
+      "type": "registry:component",
+      "title": "Engagement Points",
+      "description": "Interactive Hubzz engagement points dashboard built from shadcn kit primitives.",
+      "author": "Hubzz",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "utils",
+        "button",
+        "input",
+        "separator",
+        "tabs",
+        "toggle",
+        "tooltip"
+      ],
+      "files": [
+        {
+          "path": "engagement-points.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/engagement-points.tsx"
+        }
+      ],
+      "categories": ["data-display", "dashboard", "engagement"],
+      "meta": {
+        "stability": "alpha",
+        "strategy": "composition"
+      }
     }
   ]
 }
