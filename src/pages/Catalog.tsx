@@ -2,7 +2,6 @@ import * as React from "react"
 import { ExternalLink } from "lucide-react"
 
 import { CopyCommand } from "@/catalog/copy-command"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { allExamples } from "@/examples"
 import type { ComponentLayer, Example, Meta } from "@/examples/types"
@@ -148,14 +147,9 @@ function ComponentSection({
       <div className="border-b border-border p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div className="max-w-2xl">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-lg font-semibold tracking-[-0.015em] text-foreground">
-                {meta.title}
-              </h3>
-              <Badge variant="outline" className="text-[9px]">
-                {meta.category === "shadcn" ? "shadcn override" : "Hubzz-owned"}
-              </Badge>
-            </div>
+            <h3 className="text-lg font-semibold tracking-[-0.015em] text-foreground">
+              {meta.title}
+            </h3>
           </div>
 
           <Button variant="ghost" size="sm" asChild>
