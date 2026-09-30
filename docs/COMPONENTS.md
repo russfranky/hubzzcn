@@ -289,14 +289,13 @@ Responsive Hubzz spectator-mode notice matched to the pre-alpha world SpectatorP
 
 ### Examples
 
-| Name    | Description | Key Props             |
-| ------- | ----------- | --------------------- |
-| Default |             | —                     |
-| Overlay |             | `placement="overlay"` |
+| Name    | Description | Key Props |
+| ------- | ----------- | --------- |
+| Default |             | —         |
 
 ### Notes
 
 - Visual surface matches pre-alpha SpectatorPanel.module.css (charcoal pill, white mark, gradient CTA).
-- The inline placement is catalog-friendly; use placement=overlay for world positioning (bottom 10vh).
+- Catalog demos stay inline so the panel stays in document flow. Product code can pass placement="overlay" for world positioning (bottom 10vh).
 - Authentication and world-readiness timing stay in product code; the banner owns only the visual/action surface.
 - Default mark is HubzzLogo without a light tile wrapper; the action is the product gradient pill.

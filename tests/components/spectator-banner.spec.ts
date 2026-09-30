@@ -87,15 +87,4 @@ test.describe("SpectatorBanner", () => {
     expect(mobile.borderRadius).toBe(12)
   })
 
-  test("exposes an overlay placement demo", async ({ page }) => {
-    const section = page.locator("#spectator-banner")
-    const overlay = section.locator(
-      '[data-slot="spectator-banner"][data-placement="overlay"]'
-    )
-
-    await expect(overlay).toHaveCount(1)
-    await expect(
-      overlay.getByRole("button", { name: "Log in or Sign up" })
-    ).toBeVisible()
-  })
 })
