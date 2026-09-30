@@ -17,31 +17,51 @@ import { HubzzLogo } from "@/components/hubzz/hubzz-logo"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { allExamples } from "@/examples"
+import { cn } from "@/lib/utils"
 import { Catalog } from "@/pages/Catalog"
 import { Foundations } from "@/pages/Foundations"
 
-const NAV = [
-  { href: "#overview", label: "Overview" },
-  { href: "#foundations", label: "Foundations" },
-  { href: "#upstream", label: "Primitives" },
-  { href: "#overrides", label: "Overrides" },
-  { href: "#components", label: "Components" },
-  { href: "#patterns", label: "Patterns" },
-]
+type ExampleMeta = {
+  title: string
+  slug?: string
+  navLabel?: string
+  layer?: string
+  category?: string
+  description?: string
+}
 
-const BASE_COMMAND = "pnpm dlx shadcn@latest add russfranky/hubzzcn/hubzz"
+function getMeta(module: unknown): ExampleMeta {
+  return (module as { meta: ExampleMeta }).meta
+}
+
+function exampleSlug(meta: ExampleMeta) {
+  return meta.slug ?? meta.title.toLowerCase()
+}
+
+function exampleNavLabel(meta: ExampleMeta) {
+  return meta.navLabel ?? meta.title
+}
+
+const SECTION_NAV = [
+  { href: "#overview", label: "Overview", id: "overview" },
+  { href: "#foundations", label: "Foundations", id: "foundations" },
+  { href: "#upstream", label: "Primitives", id: "upstream" },
+  { href: "#overrides", label: "Overrides", id: "overrides" },
+  { href: "#components", label: "Components", id: "components" },
+  { href: "#patterns", label: "Patterns", id: "patterns" },
+] as const
+
+const COMPONENT_NAV = allExamples
+  .map(getMeta)
+  .filter((meta) => (meta.layer ?? "component") === "component")
+  .map((meta) => ({
+    href: `#${exampleSlug(meta)}`,
+    label: exampleNavLabel(meta),
+    id: exampleSlug(meta),
+  }))
 
 const COMPONENT_ENTRIES: SearchEntry[] = allExamples.map((module) => {
-  const meta = (
-    module as {
-      meta: {
-        title: string
-        slug?: string
-        layer?: string
-        category?: string
-      }
-    }
-  ).meta
+  const meta = getMeta(module)
 
   const description =
     meta.layer === "override"
@@ -53,7 +73,7 @@ const COMPONENT_ENTRIES: SearchEntry[] = allExamples.map((module) => {
           : "Hubzz component"
 
   return {
-    href: `#${meta.slug ?? meta.title.toLowerCase()}`,
+    href: `#${exampleSlug(meta)}`,
     label: meta.title,
     group: meta.layer ?? "component",
     description,
@@ -108,9 +128,103 @@ const PRINCIPLES = [
   },
 ]
 
+const BASE_COMMAND = "pnpm dlx shadcn@latest add russfranky/hubzzcn/hubzz"
+
+const SCROLLSPY_IDS = [
+  "overview",
+  "foundations",
+  "upstream",
+  "overrides",
+  "components",
+  "patterns",
+  ...COMPONENT_NAV.map((item) => item.id),
+]
+
+function useSectionScrollspy(sectionIds: string[], defaultId: string) {
+  const [activeId, setActiveId] = React.useState(defaultId)
+
+  React.useEffect(() => {
+    const elements = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null)
+
+    if (elements.length === 0) return
+
+    const visibility = new Map<string, number>()
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          visibility.set(
+            entry.target.id,
+            entry.isIntersecting ? entry.intersectionRatio : 0
+          )
+        }
+
+        // Near top of page → Overview
+        if (window.scrollY < 80) {
+          setActiveId(defaultId)
+          return
+        }
+
+        let bestId = defaultId
+        let bestRatio = 0
+
+        for (const id of sectionIds) {
+          const ratio = visibility.get(id) ?? 0
+          if (ratio > bestRatio) {
+            bestRatio = ratio
+            bestId = id
+          }
+        }
+
+        setActiveId(bestId)
+      },
+      {
+        rootMargin: "-20% 0px -55% 0px",
+        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
+      }
+    )
+
+    for (const el of elements) observer.observe(el)
+    return () => observer.disconnect()
+  }, [sectionIds, defaultId])
+
+  return activeId
+}
+
+function NavLink({
+  href,
+  label,
+  active,
+  nested = false,
+}: {
+  href: string
+  label: string
+  active: boolean
+  nested?: boolean
+}) {
+  return (
+    <a
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "flex h-8 items-center rounded-md text-[13px] transition-colors focus-visible:outline-none",
+        nested ? "px-2" : "px-2",
+        active
+          ? "bg-sidebar-accent font-medium text-sidebar-foreground"
+          : "text-secondary-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:bg-sidebar-accent"
+      )}
+    >
+      {label}
+    </a>
+  )
+}
+
 export function Landing() {
   const { theme, setTheme } = useTheme()
   const [searchOpen, setSearchOpen] = React.useState(false)
+  const activeId = useSectionScrollspy(SCROLLSPY_IDS, "overview")
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -131,8 +245,8 @@ export function Landing() {
 
   return (
     <div className="min-h-svh bg-background text-foreground">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-border bg-sidebar/90 backdrop-blur-xl md:flex">
-        <div className="flex h-14 items-center border-b border-border px-4">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-sidebar/90 backdrop-blur-xl md:flex">
+        <div className="flex h-14 shrink-0 items-center border-b border-border px-4">
           <a href="#overview" className="flex items-center gap-2.5">
             <HubzzLogo size={24} />
             <span className="text-sm font-semibold tracking-tight">
@@ -144,7 +258,7 @@ export function Landing() {
           </a>
         </div>
 
-        <div className="p-3">
+        <div className="shrink-0 p-3">
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
@@ -158,26 +272,53 @@ export function Landing() {
           </button>
         </div>
 
-        <nav className="flex-1 px-3 py-2" aria-label="Catalog navigation">
+        <nav
+          className="flex-1 overflow-y-auto px-3 pb-6"
+          aria-label="Catalog navigation"
+        >
           <p className="mb-2 px-2 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
             Catalog
           </p>
           <div className="space-y-0.5">
-            {NAV.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="flex h-8 items-center rounded-md px-2 text-[13px] text-secondary-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:bg-sidebar-accent focus-visible:outline-none"
-              >
-                {item.label}
-              </a>
-            ))}
+            {SECTION_NAV.map((item) => {
+              if (item.id === "components") {
+                return (
+                  <div key={item.href} className="pt-0.5">
+                    <NavLink
+                      href={item.href}
+                      label={item.label}
+                      active={activeId === item.id}
+                    />
+                    <div className="mt-0.5 ml-3 space-y-0.5 border-l border-border pl-2">
+                      {COMPONENT_NAV.map((child) => (
+                        <NavLink
+                          key={child.href}
+                          href={child.href}
+                          label={child.label}
+                          active={activeId === child.id}
+                          nested
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
+
+              return (
+                <NavLink
+                  key={item.href}
+                  href={item.href}
+                  label={item.label}
+                  active={activeId === item.id}
+                />
+              )
+            })}
           </div>
         </nav>
       </aside>
 
-      <div className="md:pl-60">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/88 px-4 backdrop-blur-xl sm:px-6">
+      <div className="md:pl-64">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/88 px-4 backdrop-blur-xl sm:px-6 lg:px-8">
           <a href="#overview" className="flex items-center gap-2 md:hidden">
             <HubzzLogo size={22} />
             <span className="text-sm font-semibold">Hubzz UI</span>
@@ -231,7 +372,7 @@ export function Landing() {
             id="overview"
             className="scroll-mt-16 border-b border-border"
           >
-            <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-18">
+            <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-18 lg:px-10">
               <div className="max-w-3xl">
                 <div className="mb-5 flex flex-wrap items-center gap-2">
                   <Badge variant="outline">Public registry</Badge>
@@ -255,11 +396,14 @@ export function Landing() {
                 />
               </div>
 
-              <div className="mt-10 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+              <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {PRINCIPLES.map((principle) => {
                   const Icon = principle.icon
                   return (
-                    <div key={principle.title} className="bg-background p-4">
+                    <div
+                      key={principle.title}
+                      className="rounded-xl border border-border bg-card p-5"
+                    >
                       <Icon
                         className="size-4 text-primary"
                         aria-hidden="true"
@@ -277,7 +421,7 @@ export function Landing() {
             </div>
           </section>
 
-          <div className="mx-auto max-w-6xl space-y-24 px-5 py-16 sm:px-8 sm:py-20">
+          <div className="mx-auto max-w-6xl space-y-24 px-5 py-16 sm:px-8 sm:py-20 lg:px-10">
             <Foundations />
             <Catalog />
           </div>

@@ -68,9 +68,12 @@ export function Foundations() {
           </div>
         </div>
 
-        <div className="grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {TOKENS.map((token) => (
-            <div key={token.token} className="bg-background p-4">
+            <div
+              key={token.token}
+              className="rounded-xl border border-border bg-card p-4"
+            >
               <div
                 className="h-14 rounded-lg border border-border/70"
                 style={token.style}
@@ -88,7 +91,7 @@ export function Foundations() {
           ))}
         </div>
 
-        <div className="mt-4 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-3">
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <FoundationDatum
             label="Type"
             value="Inter Variable"
@@ -124,7 +127,7 @@ export function Foundations() {
           </div>
         </div>
 
-        <div className="grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3">
           <FoundationDatum
             label="Source of truth"
             value="src/components/ui/"
@@ -176,7 +179,7 @@ function FoundationDatum({
   detail: string
 }) {
   return (
-    <div className="bg-background p-4">
+    <div className="rounded-xl border border-border bg-card p-4">
       <p className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
         {label}
       </p>

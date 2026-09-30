@@ -85,7 +85,7 @@ export function Catalog() {
         return (
           <section key={group.id} id={group.id} className="scroll-mt-20">
             <SectionIntro {...group} />
-            <div className="space-y-8">
+            <div className="space-y-10">
               {modules.map(({ meta, examples }) => (
                 <ComponentSection
                   key={meta.title}
@@ -140,30 +140,30 @@ function ComponentSection({
   const sourceUrl = `https://github.com/russfranky/hubzzcn/blob/${SOURCE_REF}/src/components/${sourceDirectory}/${slug}.tsx`
 
   return (
-    <article
-      id={slug}
-      className="scroll-mt-20 overflow-hidden rounded-xl border border-border bg-card/20"
-    >
-      <div className="border-b border-border p-5 sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-5">
-          <div className="max-w-2xl">
-            <h3 className="text-lg font-semibold tracking-[-0.015em] text-foreground">
-              {meta.title}
-            </h3>
-          </div>
-
-          <Button variant="ghost" size="sm" asChild>
-            <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
-              Source
-              <ExternalLink className="size-3.5" aria-hidden="true" />
-            </a>
-          </Button>
+    <article id={slug} className="scroll-mt-20">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+        <div className="max-w-2xl">
+          <h3 className="text-lg font-semibold tracking-[-0.015em] text-foreground">
+            {meta.title}
+          </h3>
+          {meta.description ? (
+            <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
+              {meta.description}
+            </p>
+          ) : null}
         </div>
 
-        <CopyCommand command={command} className="mt-5 max-w-2xl" />
+        <Button variant="ghost" size="sm" asChild>
+          <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
+            Source
+            <ExternalLink className="size-3.5" aria-hidden="true" />
+          </a>
+        </Button>
       </div>
 
-      <div className="grid gap-px bg-border sm:grid-cols-2">
+      <CopyCommand command={command} className="mb-5 max-w-2xl" />
+
+      <div className="grid gap-4 sm:grid-cols-2">
         {examples.map((example) => (
           <ExamplePreview key={example.name} meta={meta} example={example} />
         ))}
@@ -186,17 +186,17 @@ function ExamplePreview({
   return (
     <div
       data-catalog-example={example.name}
-      className="flex min-h-40 min-w-0 flex-col bg-background p-4 sm:p-5"
+      className="flex min-h-44 min-w-0 flex-col rounded-xl border border-border bg-card p-5 sm:p-6"
     >
+      <p className="mb-3 text-[11px] font-medium tracking-wide text-muted-foreground">
+        {example.name}
+      </p>
       <div
         data-catalog-preview={example.name}
-        className="flex min-h-28 flex-1 items-center justify-center overflow-x-auto rounded-lg border border-dashed border-border bg-card/20 p-4"
+        className="flex min-h-32 flex-1 items-center justify-center overflow-x-auto rounded-lg border border-border bg-muted/30 p-6"
       >
         {rendered}
       </div>
-      <p className="mt-3 text-[11px] font-medium text-muted-foreground">
-        {example.name}
-      </p>
     </div>
   )
 }
