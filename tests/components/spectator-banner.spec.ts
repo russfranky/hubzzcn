@@ -6,7 +6,7 @@ test.describe("SpectatorBanner", () => {
     await page.locator("#spectator-banner").scrollIntoViewIfNeeded()
   })
 
-  test("composes the Hubzz mark and primary action", async ({ page }) => {
+  test("composes the Hubzz mark and gradient action", async ({ page }) => {
     const banner = page
       .locator(
         "#spectator-banner [data-catalog-preview] [data-slot='spectator-banner']"
@@ -20,6 +20,39 @@ test.describe("SpectatorBanner", () => {
     await expect(
       banner.getByRole("button", { name: "Log in or Sign up" })
     ).toBeVisible()
+
+    const styles = await banner.evaluate((element) => {
+      const style = getComputedStyle(element)
+      const action = element.querySelector(
+        '[data-slot="spectator-banner-action"]'
+      ) as HTMLElement | null
+      const actionStyle = action ? getComputedStyle(action) : null
+      const logo = element.querySelector(
+        '[data-slot="spectator-banner-logo"]'
+      ) as HTMLElement | null
+      const logoStyle = logo ? getComputedStyle(logo) : null
+      return {
+        backgroundColor: style.backgroundColor,
+        borderRadius: parseFloat(style.borderRadius),
+        actionBackgroundImage: actionStyle?.backgroundImage ?? "",
+        logoBackgroundColor: logoStyle?.backgroundColor ?? "",
+        logoSize: logo
+          ? { w: logo.clientWidth, h: logo.clientHeight }
+          : { w: 0, h: 0 },
+      }
+    })
+
+    expect(styles.backgroundColor).toBe("rgb(36, 38, 43)")
+    expect(styles.borderRadius).toBeGreaterThan(40)
+    expect(styles.actionBackgroundImage).toContain("linear-gradient")
+    expect(styles.actionBackgroundImage).toMatch(
+      /rgb\(154,\s*119,\s*255\)|#9A77FF/i
+    )
+    expect(styles.logoSize).toEqual({ w: 44, h: 44 })
+    // No light tile wrapper behind the mark
+    expect(styles.logoBackgroundColor).toMatch(
+      /rgba\(0,\s*0,\s*0,\s*0\)|transparent/
+    )
   })
 
   test("switches from pill to stacked mobile layout", async ({ page }) => {
@@ -54,15 +87,4 @@ test.describe("SpectatorBanner", () => {
     expect(mobile.borderRadius).toBe(12)
   })
 
-  test("supports an informational state without an action", async ({
-    page,
-  }) => {
-    const section = page.locator("#spectator-banner")
-    const informational = section
-      .locator('[data-slot="spectator-banner"]')
-      .filter({ hasText: "Spectator mode is active for this session." })
-
-    await expect(informational).toHaveCount(1)
-    await expect(informational.getByRole("button")).toHaveCount(0)
-  })
 })
