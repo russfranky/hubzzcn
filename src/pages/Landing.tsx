@@ -174,25 +174,6 @@ export function Landing() {
             ))}
           </div>
         </nav>
-
-        <div className="border-t border-border p-3">
-          <div className="mb-3 flex items-center gap-2 px-2 text-[11px] text-muted-foreground">
-            <span
-              className="size-1.5 rounded-full bg-emerald-400"
-              aria-hidden="true"
-            />
-            Public source registry
-          </div>
-          <a
-            href="https://github.com/russfranky/hubzzcn"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-8 items-center gap-2 rounded-md px-2 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <Code2 className="size-3.5" aria-hidden="true" />
-            Source on GitHub
-          </a>
-        </div>
       </aside>
 
       <div className="md:pl-60">
@@ -301,13 +282,6 @@ export function Landing() {
             <Catalog />
           </div>
         </main>
-
-        <footer className="border-t border-border">
-          <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-8 text-[11px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-8">
-            <p>Hubzz UI · MIT · public shadcn source registry</p>
-            <p>Upstream base · semantic theme · composable source</p>
-          </div>
-        </footer>
       </div>
 
       <SearchDialog
