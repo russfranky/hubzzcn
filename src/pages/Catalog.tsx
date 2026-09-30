@@ -152,9 +152,6 @@ function ComponentSection({
               <h3 className="text-lg font-semibold tracking-[-0.015em] text-foreground">
                 {meta.title}
               </h3>
-              <Badge variant="secondary" className="text-[9px]">
-                beta
-              </Badge>
               <Badge variant="outline" className="text-[9px]">
                 {meta.category === "shadcn" ? "shadcn override" : "Hubzz-owned"}
               </Badge>
