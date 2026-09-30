@@ -281,7 +281,7 @@ Stateless Hubzz presence dot that centralizes online, away, and offline semantic
 
 ## SpectatorBanner
 
-Responsive Hubzz spectator-mode notice for the pre-alpha world spectator surface.
+Responsive Hubzz spectator-mode notice matched to the pre-alpha world SpectatorPanel.
 
 **Layer:** pattern
 
@@ -295,6 +295,7 @@ Responsive Hubzz spectator-mode notice for the pre-alpha world spectator surface
 
 ### Notes
 
-- Uses Hubzz theme tokens (bg-card, Button primary) — not hardcoded product hex colors.
+- Visual surface matches pre-alpha SpectatorPanel.module.css (charcoal pill, white mark, gradient CTA).
 - Catalog demos stay inline so the panel stays in document flow. Product code can pass placement="overlay" for world positioning (bottom 10vh).
 - Authentication and world-readiness timing stay in product code; the banner owns only the visual/action surface.
+- Default mark is HubzzLogo without a light tile wrapper; the action is the product gradient pill.
