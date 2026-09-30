@@ -299,3 +299,25 @@ Responsive Hubzz spectator-mode notice matched to the pre-alpha world SpectatorP
 - Catalog demos stay inline so the panel stays in document flow. Product code can pass placement="overlay" for world positioning (bottom 10vh).
 - Authentication and world-readiness timing stay in product code; the banner owns only the visual/action surface.
 - Default mark is HubzzLogo without a light tile wrapper; the action is the product gradient pill.
+
+---
+
+## EngagementPoints
+
+Interactive Hubzz engagement points dashboard built from shadcn kit primitives — balance, season chart, earn ways, and activity history.
+
+**Layer:** component
+
+**Import:** `import { EngagementPoints } from "@hubzz/ui"`
+
+### Examples
+
+| Name      | Description | Key Props |
+| --------- | ----------- | --------- |
+| Dashboard |             | —         |
+
+### Notes
+
+- Catalog demo uses the kit primitives version (same UI as ?prototype=points-kit).
+- The Figma-port prototype remains at ?prototype=points and is unchanged.
+- Host surfaces own dark shell chrome; the component renders the dashboard body.

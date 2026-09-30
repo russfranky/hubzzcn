@@ -163,7 +163,13 @@ function ComponentSection({
 
       <CopyCommand command={command} className="mb-5 max-w-2xl" />
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div
+        className={
+          examples.length === 1
+            ? "grid gap-4"
+            : "grid gap-4 sm:grid-cols-2"
+        }
+      >
         {examples.map((example) => (
           <ExamplePreview key={example.name} meta={meta} example={example} />
         ))}
