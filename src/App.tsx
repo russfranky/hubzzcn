@@ -4,6 +4,7 @@ import { Landing } from "@/pages/Landing"
 import { MqsPrototype } from "@/pages/MqsPrototype"
 import { PortalPrototypeDemo } from "@/pages/PortalPrototype"
 import { PointsPrototype } from "@/pages/PointsPrototype"
+import { PointsKitPrototype } from "@/pages/PointsKitPrototype"
 import { StagePrototype } from "@/pages/StagePrototype"
 
 export function App() {
@@ -27,6 +28,8 @@ export function App() {
         <MqsPrototype />
       ) : prototype === "points" ? (
         <PointsPrototype />
+      ) : prototype === "points-kit" ? (
+        <PointsKitPrototype />
       ) : (
         <Landing />
       )}
