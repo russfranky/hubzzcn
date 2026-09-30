@@ -28,4 +28,21 @@ export const Default: Example<SpectatorBannerProps> = {
   },
 }
 
-export const examples = [Default]
+export const LongMessage: Example<SpectatorBannerProps> = {
+  name: "Long message",
+  args: {
+    message:
+      "You are exploring this space as a spectator. Log in or sign up to customize your avatar, interact with people, and save your progress.",
+    actionLabel: "Join Hubzz",
+    onAction: () => {},
+  },
+}
+
+export const Informational: Example<SpectatorBannerProps> = {
+  name: "Informational",
+  args: {
+    message: "Spectator mode is active for this session.",
+  },
+}
+
+export const examples = [Default, LongMessage, Informational]
