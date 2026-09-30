@@ -42,18 +42,33 @@ function exampleNavLabel(meta: ExampleMeta) {
   return meta.navLabel ?? meta.title
 }
 
-const SECTION_NAV = [
+const GETTING_STARTED_NAV = [
   { href: "#overview", label: "Overview", id: "overview" },
   { href: "#foundations", label: "Foundations", id: "foundations" },
   { href: "#upstream", label: "Primitives", id: "upstream" },
-  { href: "#overrides", label: "Overrides", id: "overrides" },
-  { href: "#components", label: "Components", id: "components" },
-  { href: "#patterns", label: "Patterns", id: "patterns" },
 ] as const
+
+const OVERRIDE_NAV = allExamples
+  .map(getMeta)
+  .filter((meta) => meta.layer === "override")
+  .map((meta) => ({
+    href: `#${exampleSlug(meta)}`,
+    label: exampleNavLabel(meta),
+    id: exampleSlug(meta),
+  }))
 
 const COMPONENT_NAV = allExamples
   .map(getMeta)
   .filter((meta) => (meta.layer ?? "component") === "component")
+  .map((meta) => ({
+    href: `#${exampleSlug(meta)}`,
+    label: exampleNavLabel(meta),
+    id: exampleSlug(meta),
+  }))
+
+const PATTERN_NAV = allExamples
+  .map(getMeta)
+  .filter((meta) => meta.layer === "pattern")
   .map((meta) => ({
     href: `#${exampleSlug(meta)}`,
     label: exampleNavLabel(meta),
@@ -137,7 +152,9 @@ const SCROLLSPY_IDS = [
   "overrides",
   "components",
   "patterns",
+  ...OVERRIDE_NAV.map((item) => item.id),
   ...COMPONENT_NAV.map((item) => item.id),
+  ...PATTERN_NAV.map((item) => item.id),
 ]
 
 function useSectionScrollspy(sectionIds: string[], defaultId: string) {
@@ -276,43 +293,83 @@ export function Landing() {
           className="flex-1 overflow-y-auto px-3 pb-6"
           aria-label="Catalog navigation"
         >
-          <p className="mb-2 px-2 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
-            Catalog
-          </p>
-          <div className="space-y-0.5">
-            {SECTION_NAV.map((item) => {
-              if (item.id === "components") {
-                return (
-                  <div key={item.href} className="pt-0.5">
-                    <NavLink
-                      href={item.href}
-                      label={item.label}
-                      active={activeId === item.id}
-                    />
-                    <div className="mt-0.5 ml-3 space-y-0.5 border-l border-border pl-2">
-                      {COMPONENT_NAV.map((child) => (
-                        <NavLink
-                          key={child.href}
-                          href={child.href}
-                          label={child.label}
-                          active={activeId === child.id}
-                          nested
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )
-              }
+          <div className="space-y-5">
+            <div>
+              <p className="mb-2 px-2 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+                Getting started
+              </p>
+              <div className="space-y-0.5">
+                {GETTING_STARTED_NAV.map((item) => (
+                  <NavLink
+                    key={item.href}
+                    href={item.href}
+                    label={item.label}
+                    active={activeId === item.id}
+                  />
+                ))}
+              </div>
+            </div>
 
-              return (
+            <div>
+              <p className="mb-2 px-2 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+                Components
+              </p>
+              <div className="space-y-0.5">
                 <NavLink
-                  key={item.href}
-                  href={item.href}
-                  label={item.label}
-                  active={activeId === item.id}
+                  href="#overrides"
+                  label="Overrides"
+                  active={activeId === "overrides"}
                 />
-              )
-            })}
+                {OVERRIDE_NAV.map((item) => (
+                  <NavLink
+                    key={item.href}
+                    href={item.href}
+                    label={item.label}
+                    active={activeId === item.id}
+                    nested
+                  />
+                ))}
+                <NavLink
+                  href="#components"
+                  label="Product components"
+                  active={activeId === "components"}
+                />
+                {COMPONENT_NAV.map((item) => (
+                  <NavLink
+                    key={item.href}
+                    href={item.href}
+                    label={item.label}
+                    active={activeId === item.id}
+                    nested
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 px-2 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+                Patterns
+              </p>
+              <div className="space-y-0.5">
+                <NavLink
+                  href="#patterns"
+                  label="Patterns"
+                  active={
+                    activeId === "patterns" ||
+                    PATTERN_NAV.some((item) => item.id === activeId)
+                  }
+                />
+                {PATTERN_NAV.map((item) => (
+                  <NavLink
+                    key={item.href}
+                    href={item.href}
+                    label={item.label}
+                    active={activeId === item.id}
+                    nested
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </nav>
       </aside>
