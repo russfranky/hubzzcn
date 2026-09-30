@@ -86,7 +86,7 @@ HubzzCN follows an upstream-first, Unix-style component model:
 | onboarding `SelectAvatar.tsx`              | `AvatarPicker`      | **DONE**    | Native radio selection, adaptive density, loading/empty states. Product owns wallet discovery and avatar mutation. |
 | onboarding `OnboardingAvatarCarousel`      | `AvatarCarousel`    | **DONE**    | Controlled three-up cyclic avatar chooser. Product owns loading/prefetch and onboarding flow.                      |
 | profile/chat presence dots                 | `PresenceIndicator` | **DONE**    | Stateless semantic dot only. Product owns size, halo, border, placement, and presence state.                       |
-| world `SpectatorPanel.tsx`                 | `SpectatorBanner`   | **DONE**    | Responsive spectator notice/action surface. Product owns auth/world readiness and reveal timing.                   |
+| world `SpectatorPanel.tsx`                 | `SpectatorBanner`   | **DONE**    | Matched to SpectatorPanel.module.css (charcoal pill, white mark, gradient CTA). Product owns auth/world timing.    |
 
 ## Upstream and product mappings
 

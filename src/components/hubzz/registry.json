@@ -15,7 +15,10 @@
         }
       ],
       "categories": ["brand"],
-      "meta": { "stability": "beta", "strategy": "custom" }
+      "meta": {
+        "stability": "beta",
+        "strategy": "custom"
+      }
     },
     {
       "name": "badge-category",
@@ -33,7 +36,10 @@
         }
       ],
       "categories": ["data-display", "filters"],
-      "meta": { "stability": "beta", "strategy": "composition" }
+      "meta": {
+        "stability": "beta",
+        "strategy": "composition"
+      }
     },
     {
       "name": "capsule",
@@ -54,7 +60,10 @@
         }
       ],
       "categories": ["controls", "filters"],
-      "meta": { "stability": "beta", "strategy": "composition" }
+      "meta": {
+        "stability": "beta",
+        "strategy": "composition"
+      }
     },
     {
       "name": "toast-banner",
@@ -72,7 +81,10 @@
         }
       ],
       "categories": ["feedback"],
-      "meta": { "stability": "beta", "strategy": "composition" }
+      "meta": {
+        "stability": "beta",
+        "strategy": "composition"
+      }
     },
     {
       "name": "event-ticket",
@@ -93,7 +105,10 @@
         }
       ],
       "categories": ["events", "data-display"],
-      "meta": { "stability": "beta", "strategy": "custom" }
+      "meta": {
+        "stability": "beta",
+        "strategy": "custom"
+      }
     },
     {
       "name": "profile-header",
@@ -111,7 +126,10 @@
         }
       ],
       "categories": ["profile", "patterns"],
-      "meta": { "stability": "beta", "strategy": "composition" }
+      "meta": {
+        "stability": "beta",
+        "strategy": "composition"
+      }
     },
     {
       "name": "drone-photo",
@@ -128,7 +146,10 @@
         }
       ],
       "categories": ["media"],
-      "meta": { "stability": "beta", "strategy": "custom" }
+      "meta": {
+        "stability": "beta",
+        "strategy": "custom"
+      }
     },
     {
       "name": "avatar-picker",
@@ -149,7 +170,10 @@
         }
       ],
       "categories": ["avatars", "onboarding", "selection"],
-      "meta": { "stability": "alpha", "strategy": "composition" }
+      "meta": {
+        "stability": "alpha",
+        "strategy": "composition"
+      }
     },
     {
       "name": "avatar-carousel",
@@ -171,7 +195,10 @@
         }
       ],
       "categories": ["avatars", "onboarding", "selection"],
-      "meta": { "stability": "alpha", "strategy": "composition" }
+      "meta": {
+        "stability": "alpha",
+        "strategy": "composition"
+      }
     },
     {
       "name": "presence-indicator",
@@ -188,19 +215,18 @@
         }
       ],
       "categories": ["presence", "status", "data-display"],
-      "meta": { "stability": "alpha", "strategy": "custom" }
+      "meta": {
+        "stability": "alpha",
+        "strategy": "custom"
+      }
     },
     {
       "name": "spectator-banner",
       "type": "registry:component",
       "title": "Spectator Banner",
-      "description": "Responsive spectator-mode notice and action surface derived from the pre-alpha world UI.",
+      "description": "Spectator-mode notice matched to pre-alpha SpectatorPanel (charcoal pill, gradient CTA).",
       "author": "Hubzz",
-      "registryDependencies": [
-        "utils",
-        "russfranky/hubzzcn/button",
-        "russfranky/hubzzcn/hubzz-logo"
-      ],
+      "registryDependencies": ["utils", "russfranky/hubzzcn/hubzz-logo"],
       "files": [
         {
           "path": "spectator-banner.tsx",
@@ -209,7 +235,10 @@
         }
       ],
       "categories": ["world", "feedback", "patterns"],
-      "meta": { "stability": "alpha", "strategy": "composition" }
+      "meta": {
+        "stability": "alpha",
+        "strategy": "composition"
+      }
     }
   ]
 }
