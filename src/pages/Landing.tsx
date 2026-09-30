@@ -351,21 +351,12 @@ export function Landing() {
                 Patterns
               </p>
               <div className="space-y-0.5">
-                <NavLink
-                  href="#patterns"
-                  label="Patterns"
-                  active={
-                    activeId === "patterns" ||
-                    PATTERN_NAV.some((item) => item.id === activeId)
-                  }
-                />
                 {PATTERN_NAV.map((item) => (
                   <NavLink
                     key={item.href}
                     href={item.href}
                     label={item.label}
                     active={activeId === item.id}
-                    nested
                   />
                 ))}
               </div>
