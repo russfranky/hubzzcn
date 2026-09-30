@@ -149,9 +149,6 @@ const SCROLLSPY_IDS = [
   "overview",
   "foundations",
   "upstream",
-  "overrides",
-  "components",
-  "patterns",
   ...OVERRIDE_NAV.map((item) => item.id),
   ...COMPONENT_NAV.map((item) => item.id),
   ...PATTERN_NAV.map((item) => item.id),
@@ -210,6 +207,14 @@ function useSectionScrollspy(sectionIds: string[], defaultId: string) {
   return activeId
 }
 
+function NavSublabel({ label }: { label: string }) {
+  return (
+    <p className="mb-1 mt-3 px-2 text-[10px] font-medium tracking-[0.08em] text-muted-foreground/70 uppercase first:mt-0">
+      {label}
+    </p>
+  )
+}
+
 function NavLink({
   href,
   label,
@@ -227,7 +232,7 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       className={cn(
         "flex h-8 items-center rounded-md text-[13px] transition-colors focus-visible:outline-none",
-        nested ? "px-2" : "px-2",
+        nested ? "px-2 pl-4" : "px-2",
         active
           ? "bg-sidebar-accent font-medium text-sidebar-foreground"
           : "text-secondary-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:bg-sidebar-accent"
@@ -314,35 +319,31 @@ export function Landing() {
               <p className="mb-2 px-2 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
                 Components
               </p>
-              <div className="space-y-0.5">
-                <NavLink
-                  href="#overrides"
-                  label="Overrides"
-                  active={activeId === "overrides"}
-                />
-                {OVERRIDE_NAV.map((item) => (
-                  <NavLink
-                    key={item.href}
-                    href={item.href}
-                    label={item.label}
-                    active={activeId === item.id}
-                    nested
-                  />
-                ))}
-                <NavLink
-                  href="#components"
-                  label="Product components"
-                  active={activeId === "components"}
-                />
-                {COMPONENT_NAV.map((item) => (
-                  <NavLink
-                    key={item.href}
-                    href={item.href}
-                    label={item.label}
-                    active={activeId === item.id}
-                    nested
-                  />
-                ))}
+              <div>
+                <NavSublabel label="Overrides" />
+                <div className="space-y-0.5">
+                  {OVERRIDE_NAV.map((item) => (
+                    <NavLink
+                      key={item.href}
+                      href={item.href}
+                      label={item.label}
+                      active={activeId === item.id}
+                      nested
+                    />
+                  ))}
+                </div>
+                <NavSublabel label="Product" />
+                <div className="space-y-0.5">
+                  {COMPONENT_NAV.map((item) => (
+                    <NavLink
+                      key={item.href}
+                      href={item.href}
+                      label={item.label}
+                      active={activeId === item.id}
+                      nested
+                    />
+                  ))}
+                </div>
               </div>
             </div>
 
