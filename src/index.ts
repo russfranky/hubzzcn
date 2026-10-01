@@ -44,6 +44,12 @@ export {
   type ProfileHeaderProps,
 } from "./components/hubzz/profile-header"
 export {
+  SpaceCard,
+  type SpaceCardAction,
+  type SpaceCardAttendance,
+  type SpaceCardProps,
+} from "./components/hubzz/space-card"
+export {
   SpectatorBanner,
   type SpectatorBannerPlacement,
   type SpectatorBannerProps,

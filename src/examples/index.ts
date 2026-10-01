@@ -11,6 +11,7 @@ import * as AvatarCarousel from "./avatar-carousel.examples"
 import * as PresenceIndicator from "./presence-indicator.examples"
 import * as SpectatorBanner from "./spectator-banner.examples"
 import * as EngagementPoints from "./engagement-points.examples"
+import * as SpaceCard from "./space-card.examples"
 
 export const allExamples = [
   Button,
@@ -26,4 +27,5 @@ export const allExamples = [
   PresenceIndicator,
   SpectatorBanner,
   EngagementPoints,
+  SpaceCard,
 ]
