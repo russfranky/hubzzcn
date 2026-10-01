@@ -43,7 +43,7 @@ test.describe("Button", () => {
     ).toHaveAttribute("data-size", "icon")
   })
 
-  test("matches canonical shadcn geometry and neutral theme roles", async ({
+  test("matches intentional Hubzz kit geometry and brand treatment", async ({
     page,
   }) => {
     const button = page
@@ -52,7 +52,7 @@ test.describe("Button", () => {
 
     const readVisualContract = async () => {
       await button.scrollIntoViewIfNeeded()
-      const [geometry, backgroundColor, color] = await Promise.all([
+      const [geometry, color] = await Promise.all([
         button.evaluate((element) => {
           const style = getComputedStyle(element)
           return {
@@ -62,31 +62,31 @@ test.describe("Button", () => {
             backgroundImage: style.backgroundImage,
           }
         }),
-        normalizeCssColor(button, "backgroundColor"),
         normalizeCssColor(button, "color"),
       ])
-      return { ...geometry, backgroundColor, color }
+      return { ...geometry, color }
+    }
+
+    const assertHubzzKit = async () => {
+      const contract = await readVisualContract()
+      expect(contract.height).toBe("36px")
+      // rounded-full resolves to a pill radius (>= half height, often infinity px)
+      expect(Number.parseFloat(contract.borderRadius)).toBeGreaterThanOrEqual(
+        18
+      )
+      expect(contract.fontWeight).toBe("600")
+      expect(contract.backgroundImage).toContain("linear-gradient")
+      expect(contract.backgroundImage).toContain("oklch(0.667 0.194 292.169)")
+      expect(contract.backgroundImage).toContain("oklch(0.592 0.221 283.18)")
+      // primary-foreground stays near-white in both themes
+      expect(contract.color).toBe("rgb(252, 253, 254)")
     }
 
     await setTheme(page, "light")
-    await expect(readVisualContract()).resolves.toEqual({
-      height: "36px",
-      borderRadius: "8px",
-      fontWeight: "500",
-      backgroundImage: "none",
-      backgroundColor: "rgb(3, 2, 19)",
-      color: "rgb(255, 255, 255)",
-    })
+    await assertHubzzKit()
 
     await setTheme(page, "dark")
-    await expect(readVisualContract()).resolves.toEqual({
-      height: "36px",
-      borderRadius: "8px",
-      fontWeight: "500",
-      backgroundImage: "none",
-      backgroundColor: "rgb(250, 250, 250)",
-      color: "rgb(23, 23, 23)",
-    })
+    await assertHubzzKit()
   })
 
   test("enabled controls expose the canonical focus ring", async ({ page }) => {
