@@ -220,7 +220,7 @@ function UserStack({ users }: { users: SpaceCardUser[] }) {
           ))}
         </div>
         {overflow > 0 ? (
-          <span className="ml-2 text-[13px] leading-[20px] font-medium text-foreground opacity-85">
+          <span className="ml-2 text-[13px] leading-[20px] font-medium text-[#fcfdfe] opacity-85">
             +{overflow}
           </span>
         ) : null}
@@ -231,9 +231,9 @@ function UserStack({ users }: { users: SpaceCardUser[] }) {
 
 function EmptyAttendance() {
   return (
-    <div className="flex shrink-0 items-center gap-2 opacity-60">
+    <div className="flex shrink-0 items-center gap-2 text-[#fcfdfe] opacity-60">
       <div className="relative flex size-[20px] items-center justify-center">
-        <div className="absolute inset-0 rounded-full border-2 border-dashed border-foreground opacity-50 [animation-duration:12s] motion-safe:animate-spin" />
+        <div className="absolute inset-0 rounded-full border-2 border-dashed border-[#fcfdfe] opacity-50 [animation-duration:12s] motion-safe:animate-spin" />
         <svg
           width="14"
           height="14"
@@ -253,7 +253,7 @@ function EmptyAttendance() {
           />
         </svg>
       </div>
-      <p className="text-[13px] leading-[20px] font-medium text-foreground opacity-70">
+      <p className="text-[13px] leading-[20px] font-medium text-[#fcfdfe] opacity-70">
         Nobody&apos;s here
       </p>
     </div>
@@ -272,7 +272,7 @@ function SpaceAttendance({
   if (attendance === "construction") {
     return (
       <div className="flex shrink-0 items-center gap-2">
-        <p className="text-[13px] leading-[20px] font-medium text-foreground opacity-70">
+        <p className="text-[13px] leading-[20px] font-medium text-[#fcfdfe] opacity-70">
           Under construction
         </p>
       </div>
@@ -377,8 +377,12 @@ export function SpaceCard({
         ) : (
           <div className="absolute inset-0" style={{ background: gradient }} />
         )}
-        {/* OverlayFull — uniform 36% black for readability */}
-        <div className="absolute inset-0 bg-[rgba(0,0,0,0.36)] shadow-[0px_0px_0px_1px_rgba(0,0,0,0.2),0px_0px_2px_0px_rgba(0,0,0,0.08),0px_2px_6px_0px_rgba(0,0,0,0.1)]" />
+        {/* OverlayFull — uniform 36% black for readability (imports/OverlayFull). */}
+        <div
+          data-name="venue-overlay"
+          className="absolute inset-0 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.2),0px_0px_2px_0px_rgba(0,0,0,0.08),0px_2px_6px_0px_rgba(0,0,0,0.1)]"
+          style={{ background: "rgba(0,0,0,0.36)" }}
+        />
       </div>
       <span
         aria-hidden="true"
@@ -391,11 +395,11 @@ export function SpaceCard({
           <div className="flex min-w-0 flex-1 items-center justify-start gap-2">
             {showTicket ? (
               <Ticket
-                className="size-5 shrink-0 text-foreground"
+                className="size-5 shrink-0 text-[#fcfdfe]"
                 aria-hidden="true"
               />
             ) : null}
-            <h2 className="min-w-0 overflow-hidden text-sm leading-5 font-bold text-ellipsis whitespace-nowrap text-foreground">
+            <h2 className="min-w-0 overflow-hidden text-sm leading-5 font-bold text-ellipsis whitespace-nowrap text-[#fcfdfe]">
               {title}
             </h2>
           </div>
@@ -408,7 +412,7 @@ export function SpaceCard({
                 size="xs"
                 onClick={onBrowse}
                 aria-label={browseAriaLabel ?? `Browse ${title}`}
-                className="h-auto p-0 text-[13px] leading-5 text-foreground hover:bg-transparent hover:text-foreground"
+                className="h-auto p-0 text-[13px] leading-5 text-[#fcfdfe] hover:bg-transparent hover:text-[#fcfdfe]"
               >
                 {browseLabel}
               </Button>
@@ -420,7 +424,7 @@ export function SpaceCard({
                 size="icon-xs"
                 onClick={onInfo}
                 aria-label={infoAriaLabel ?? `Space info for ${title}`}
-                className="size-5 opacity-50 hover:bg-transparent hover:opacity-80 hover:text-foreground"
+                className="size-5 text-[#fcfdfe] opacity-50 hover:bg-transparent hover:opacity-80 hover:text-[#fcfdfe]"
               >
                 <Info className="size-5" />
               </Button>
@@ -439,7 +443,7 @@ export function SpaceCard({
             elapsedLabel ? (
               <TimeInSpaceChip label={elapsedLabel} verbose={elapsedVerbose} />
             ) : (
-              <span className="px-3.5 text-xs font-medium text-foreground">
+              <span className="px-3.5 text-xs font-medium text-[#fcfdfe]">
                 Here
               </span>
             )
@@ -449,7 +453,7 @@ export function SpaceCard({
               type="button"
               variant="outline"
               onClick={onLeave}
-              className="shrink-0 rounded-full px-3.5 text-xs font-semibold"
+              className="shrink-0 rounded-full border-[#464f55] bg-transparent px-3.5 text-xs font-semibold text-[#fcfdfe] hover:bg-[#393e44] hover:text-[#fcfdfe]"
             >
               Leave
             </Button>

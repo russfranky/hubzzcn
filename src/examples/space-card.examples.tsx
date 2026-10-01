@@ -76,7 +76,7 @@ export const HereWithAvatars: Example<SpaceCardProps> = {
 export const Empty: Example<SpaceCardProps> = {
   name: "Nobody's here + Join",
   args: {
-    title: "Lounge",
+    title: "Retrodoges",
     gradient: LOUNGE_GRADIENT,
     image: SPACE_THUMB.retrodoges,
     imageAlt: "Retrodoges lounge live preview",
@@ -91,8 +91,6 @@ export const UnderConstruction: Example<SpaceCardProps> = {
   args: {
     title: "Workshop",
     gradient: WORKSHOP_GRADIENT,
-    image: SPACE_THUMB.catsGallery,
-    imageAlt: "Cats' Gallery live preview",
     attendance: "construction",
     action: "none",
   },
@@ -101,7 +99,7 @@ export const UnderConstruction: Example<SpaceCardProps> = {
 export const OccupiedJoinable: Example<SpaceCardProps> = {
   name: "Occupied + overflow + Join",
   args: {
-    title: "Stage",
+    title: "Cats' Gallery",
     gradient: STAGE_GRADIENT,
     image: SPACE_THUMB.catsGallery,
     imageAlt: "Cats' Gallery live preview",
@@ -145,14 +143,14 @@ export const JoinDisabled: Example<SpaceCardProps> = {
 export const BrowseJoinable: Example<SpaceCardProps> = {
   name: "Browse + join (portal adapter)",
   args: {
-    title: "Hallway 3",
-    gradient: HALLWAY_GRADIENT,
-    image: SPACE_THUMB.retrodoges,
-    imageAlt: "Retrodoges lounge live preview",
+    title: "Annex",
+    gradient: ROOFTOP_GRADIENT,
+    image: SPACE_THUMB.rooftop,
+    imageAlt: "Hubzz Rooftop live preview",
     attendance: "empty",
     action: "join",
     browseLabel: "+4 Spaces",
-    browseAriaLabel: "View Hallway 3 and 4 attached spaces",
+    browseAriaLabel: "View Annex and attached spaces",
     onBrowse: () => {},
     onJoin: () => {},
   },
