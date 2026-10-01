@@ -47,7 +47,9 @@ export {
   SpaceCard,
   type SpaceCardAction,
   type SpaceCardAttendance,
+  type SpaceCardPreviewConfig,
   type SpaceCardProps,
+  type SpaceCardUser,
 } from "./components/hubzz/space-card"
 export {
   SpectatorBanner,
