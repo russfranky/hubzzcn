@@ -24,10 +24,13 @@ export const meta: Meta<typeof SpaceCard> = {
  * so the catalog card (aspect-[7/2] + object-cover) shows space content rather
  * than a center floor strip from the tall live captures.
  */
+const asset = (path: string) =>
+  `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`
+
 const SPACE_THUMB = {
-  rooftop: "/space-thumbs/rooftop.jpg",
-  retrodoges: "/space-thumbs/retrodoges.jpg",
-  catsGallery: "/space-thumbs/cats-gallery.jpg",
+  rooftop: asset("space-thumbs/rooftop.jpg"),
+  retrodoges: asset("space-thumbs/retrodoges.jpg"),
+  catsGallery: asset("space-thumbs/cats-gallery.jpg"),
 } as const
 
 /** Gradient fallbacks when the thumb fails to load. */
@@ -44,15 +47,15 @@ const STAGE_GRADIENT =
 
 /** Catalog demo attendee stack — local face circles under /avatars/. */
 const DEMO_USERS = [
-  { id: 1, name: "rileyp", avatar: "/avatars/a1.png", color: "#6366f1" },
-  { id: 2, name: "jamielee", avatar: "/avatars/a2.png", color: "#ec4899" },
-  { id: 3, name: "qtaylor", avatar: "/avatars/a3.png", color: "#f59e0b" },
+  { id: 1, name: "rileyp", avatar: asset("avatars/a1.png"), color: "#6366f1" },
+  { id: 2, name: "jamielee", avatar: asset("avatars/a2.png"), color: "#ec4899" },
+  { id: 3, name: "qtaylor", avatar: asset("avatars/a3.png"), color: "#f59e0b" },
 ]
 
 const DEMO_USERS_OVERFLOW = [
   ...DEMO_USERS,
-  { id: 4, name: "avery_k", avatar: "/avatars/a4.png", color: "#10b981" },
-  { id: 5, name: "dakotac", avatar: "/avatars/a5.png", color: "#3b82f6" },
+  { id: 4, name: "avery_k", avatar: asset("avatars/a4.png"), color: "#10b981" },
+  { id: 5, name: "dakotac", avatar: asset("avatars/a5.png"), color: "#3b82f6" },
 ]
 
 export const HereWithAvatars: Example<SpaceCardProps> = {
