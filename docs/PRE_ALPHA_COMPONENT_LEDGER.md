@@ -87,6 +87,7 @@ HubzzCN follows an upstream-first, Unix-style component model:
 | onboarding `OnboardingAvatarCarousel`      | `AvatarCarousel`    | **DONE**    | Controlled three-up cyclic avatar chooser. Product owns loading/prefetch and onboarding flow.                      |
 | profile/chat presence dots                 | `PresenceIndicator` | **DONE**    | Stateless semantic dot only. Product owns size, halo, border, placement, and presence state.                       |
 | world `SpectatorPanel.tsx`                 | `SpectatorBanner`   | **DONE**    | Matched to SpectatorPanel.module.css (charcoal pill, white mark, gradient CTA). Product owns auth/world timing.    |
+| profile-panel `spaces/SpaceCard.tsx` compact leaf + space-cards `SpaceCardHelpers` Attendance/SpaceButton/Info | `SpaceCard`         | **DONE**    | Presentational 7:2 tile only. Product owns join/path gating, elapsed ticking, preview capture, and host navigation. |
 
 ## Upstream and product mappings
 
@@ -113,8 +114,8 @@ HubzzCN follows an upstream-first, Unix-style component model:
 | profile-panel standard `ui/*` primitives                                                  | **UPSTREAM** | Use shadcn registry primitives directly. Only the Hubzz custom entries listed above are covered by Hubzz analogs.                                                                                                                                                                |
 | profile-panel `ScreenHeader`                                                              | **PRODUCT**  | Reused inside one panel system but carries panel/mobile-close layout assumptions. Compose `Button` + heading in product.                                                                                                                                                         |
 | profile-panel `EmptyState`                                                                | **UPSTREAM** | Simple empty-state composition; no durable Hubzz-specific contract.                                                                                                                                                                                                              |
-| profile-panel small `space-card.tsx`                                                      | **UPSTREAM** | `Item` + `AvatarGroup` + `Button` composition.                                                                                                                                                                                                                                   |
-| profile-panel `spaces/SpaceCard.tsx`                                                      | **PRODUCT**  | Space preview framing, attendance, elapsed time, construction/join state and navigation are feature behavior. Join leaves through `ProfileHostCallbacks.onJoinSpace(spaceId, title, path?)`.                                                                                     |
+| profile-panel small `space-card.tsx`                                                      | **UPSTREAM** | `Item` + `AvatarGroup` + `Button` composition (simple list row — not the 7:2 preview tile).                                                                                                                                                                                      |
+| profile-panel `spaces/SpaceCard.tsx`                                                      | **COVERED**  | Visual leaf → Hubzz `SpaceCard`. Product still owns preview framing config, elapsed ticking, path gating, and `ProfileHostCallbacks.onJoinSpace`.                                                                                                                               |
 | profile-panel `ProfileCard.tsx` / `GuestDetailScreen.tsx`                                 | **PRODUCT**  | Feature assemblies. Reuse their leaf contracts instead of porting the cards wholesale.                                                                                                                                                                                           |
 | profile-panel `full-body-img.tsx`                                                         | **PRODUCT**  | The alpha-shadow figure treatment has one implementation used only inside the profile-card family. Public avatar cards/viewers intentionally use ordinary image treatment, so a registry extraction would add a cross-repo abstraction without deleting independent duplication. |
 | profile-panel screens: avatar, badges, friends, news, selfies, settings, spaces, wallets  | **PRODUCT**  | Screen/workflow assemblies. Extract a leaf only after independent reuse is proven.                                                                                                                                                                                               |
@@ -231,6 +232,7 @@ behavior with the XP/product subsystem.
 - `AvatarCarousel`
 - `PresenceIndicator`
 - `SpectatorBanner`
+- `SpaceCard`
 
 A new name is added only after this ledger first records why upstream
 composition is insufficient.

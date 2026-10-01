@@ -273,9 +273,10 @@
       "name": "space-card",
       "type": "registry:component",
       "title": "Space Card",
-      "description": "Presentational Hubzz space card with attendance states, browse affordance, and Join action.",
+      "description": "Presentational Hubzz space card — pre-alpha LabSpaceCard / SpaceCardHelpers leaf with attendance, Join/Leave/Here, and optional browse/info.",
       "author": "Hubzz",
-      "registryDependencies": ["utils", "russfranky/hubzzcn/button"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "avatar", "russfranky/hubzzcn/button"],
       "files": [
         {
           "path": "space-card.tsx",
