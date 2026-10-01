@@ -14,9 +14,25 @@ export const meta: Meta<typeof SpaceCard> = {
     "Sources: packages/client/src/profile-panel/components/spaces/SpaceCard.tsx and space-cards/components/spaces/SpaceCardHelpers.tsx.",
     "Portal keeps a thin adapter at src/components/portal/space-card.tsx; do not change portal files from this kit leaf.",
     "Product owns join/browse/info handlers, elapsed ticking, preview assets, and path gating (joinDisabled).",
+    "Demo `image` URLs are live space-preview thumbs from production /api/spaces (R2 via hubzz-assets-worker).",
   ],
 }
 
+/**
+ * Live space-preview JPEGs from production `GET /api/spaces`
+ * (`previewImageUrl` / `worlds["0,0"].previewImageUrl`). Cache-buster `?v=`
+ * omitted so catalog demos stay stable; paths match SpacePreview.previewKeyFor.
+ */
+const SPACE_THUMB = {
+  rooftop:
+    "https://hubzz-assets-worker.hubzzhq.workers.dev/files/space-thumbs/0_0.jpg",
+  retrodoges:
+    "https://hubzz-assets-worker.hubzzhq.workers.dev/files/space-thumbs/1_0.jpg",
+  catsGallery:
+    "https://hubzz-assets-worker.hubzzhq.workers.dev/files/space-thumbs/cats-gallery.jpg",
+} as const
+
+/** Gradient fallbacks when the remote thumb fails to load. */
 const ROOFTOP_GRADIENT =
   "linear-gradient(120deg, #5b6d82 0%, #2c3542 45%, #1a222c 100%)"
 const HALLWAY_GRADIENT =
@@ -45,6 +61,8 @@ export const HereWithAvatars: Example<SpaceCardProps> = {
   args: {
     title: "Rooftop",
     gradient: ROOFTOP_GRADIENT,
+    image: SPACE_THUMB.rooftop,
+    imageAlt: "Hubzz Rooftop live preview",
     attendance: "here",
     action: "here",
     users: DEMO_USERS,
@@ -58,6 +76,10 @@ export const Empty: Example<SpaceCardProps> = {
   args: {
     title: "Lounge",
     gradient: LOUNGE_GRADIENT,
+    image: SPACE_THUMB.retrodoges,
+    imageAlt: "Retrodoges lounge live preview",
+    // Matches PublicSpaces framing for path 1,0 (Retrodoges).
+    previewConfig: { scale: 1.15 },
     attendance: "empty",
     action: "join",
     onJoin: () => {},
@@ -69,6 +91,8 @@ export const UnderConstruction: Example<SpaceCardProps> = {
   args: {
     title: "Workshop",
     gradient: WORKSHOP_GRADIENT,
+    image: SPACE_THUMB.catsGallery,
+    imageAlt: "Cats' Gallery live preview",
     attendance: "construction",
     action: "none",
   },
@@ -79,6 +103,8 @@ export const OccupiedJoinable: Example<SpaceCardProps> = {
   args: {
     title: "Stage",
     gradient: STAGE_GRADIENT,
+    image: SPACE_THUMB.catsGallery,
+    imageAlt: "Cats' Gallery live preview",
     attendance: "here",
     action: "join",
     users: DEMO_USERS_OVERFLOW,
@@ -91,6 +117,9 @@ export const Leave: Example<SpaceCardProps> = {
   args: {
     title: "Hallway 3",
     gradient: HALLWAY_GRADIENT,
+    image: SPACE_THUMB.retrodoges,
+    imageAlt: "Retrodoges lounge live preview",
+    previewConfig: { scale: 1.15 },
     attendance: "here",
     action: "leave",
     users: DEMO_USERS.slice(0, 2),
@@ -105,6 +134,8 @@ export const JoinDisabled: Example<SpaceCardProps> = {
   args: {
     title: "Closed wing",
     gradient: LOUNGE_GRADIENT,
+    image: SPACE_THUMB.rooftop,
+    imageAlt: "Hubzz Rooftop live preview",
     attendance: "empty",
     action: "join",
     joinDisabled: true,
@@ -117,6 +148,9 @@ export const BrowseJoinable: Example<SpaceCardProps> = {
   args: {
     title: "Hallway 3",
     gradient: HALLWAY_GRADIENT,
+    image: SPACE_THUMB.retrodoges,
+    imageAlt: "Retrodoges lounge live preview",
+    previewConfig: { scale: 1.15 },
     attendance: "empty",
     action: "join",
     browseLabel: "+4 Spaces",
