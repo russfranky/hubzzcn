@@ -181,9 +181,11 @@ function SpaceUserAvatar({
       style={{ height: 26, width: 26, marginRight: -6 }}
       title={user.name}
     >
+      {/* Force 26px: Avatar size="sm" ships data-[size=sm]:size-6 (24px), which
+          beats plain size-full on specificity and mis-calibrates the SoT gap mask. */}
       <Avatar
         size="sm"
-        className="size-full after:hidden"
+        className="size-full after:hidden data-[size=sm]:size-full"
         style={{ WebkitMaskImage: gapMask, maskImage: gapMask }}
       >
         <AvatarImage
