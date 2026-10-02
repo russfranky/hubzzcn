@@ -273,7 +273,7 @@
       "name": "space-card",
       "type": "registry:component",
       "title": "Space Card",
-      "description": "Presentational Hubzz space card — pre-alpha LabSpaceCard / SpaceCardHelpers leaf with attendance, Join/Leave/Here, and optional browse/info.",
+      "description": "Presentational Hubzz space card \u2014 pre-alpha LabSpaceCard / SpaceCardHelpers leaf with attendance, Join/Leave/Here, and optional browse/info.",
       "author": "Hubzz",
       "dependencies": ["lucide-react"],
       "registryDependencies": ["utils", "avatar", "russfranky/hubzzcn/button"],
@@ -288,6 +288,26 @@
       "meta": {
         "stability": "alpha",
         "strategy": "composition"
+      }
+    },
+    {
+      "name": "toggle",
+      "type": "registry:component",
+      "title": "Toggle",
+      "description": "Hubzz on/off switch from pre-alpha space-cards settings ToggleSwitch.",
+      "author": "Hubzz",
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "path": "toggle.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/toggle.tsx"
+        }
+      ],
+      "categories": ["controls", "forms"],
+      "meta": {
+        "stability": "alpha",
+        "strategy": "custom"
       }
     }
   ]

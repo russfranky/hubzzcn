@@ -10,6 +10,8 @@ migration notes.
 
 ### Added
 
+- Hubzz `Toggle` on/off switch leaf (pre-alpha space-cards `ToggleSwitch`) with catalog examples.
+
 - Stage HUD prototype at `/cn/stage` and `?prototype=stage` (Spaces-style
   event floor, exclusive people/chat rail, production dock). Not part of the
   published `@hubzz/ui` package surface.

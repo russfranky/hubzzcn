@@ -88,6 +88,7 @@ HubzzCN follows an upstream-first, Unix-style component model:
 | profile/chat presence dots                 | `PresenceIndicator` | **DONE**    | Stateless semantic dot only. Product owns size, halo, border, placement, and presence state.                       |
 | world `SpectatorPanel.tsx`                 | `SpectatorBanner`   | **DONE**    | Matched to SpectatorPanel.module.css (charcoal pill, white mark, gradient CTA). Product owns auth/world timing.    |
 | profile-panel `spaces/SpaceCard.tsx` compact leaf + space-cards `SpaceCardHelpers` Attendance/SpaceButton/Info | `SpaceCard`         | **DONE**    | Presentational 7:2 tile only. Product owns join/path gating, elapsed ticking, preview capture, and host navigation. |
+| space-cards `settings-shared.tsx` `ToggleSwitch`                                                               | `Toggle`            | **DONE**    | Product on/off switch (20×34, purple/charcoal track). Host owns setting rows and labels.                            |
 
 ## Upstream and product mappings
 

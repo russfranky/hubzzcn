@@ -321,3 +321,30 @@ Interactive Hubzz engagement points dashboard built from shadcn kit primitives �
 - Catalog demo uses the kit primitives version (same UI as ?prototype=points-kit).
 - The Figma-port prototype remains at ?prototype=points and is unchanged.
 - Host surfaces own dark shell chrome; the component renders the dashboard body.
+
+---
+
+## Toggle
+
+Hubzz on/off switch from pre-alpha space-cards settings ToggleSwitch — purple track when on, charcoal when off.
+
+**Layer:** component
+
+**Import:** `import { Toggle } from "@hubzz/ui"`
+
+### Examples
+
+| Name           | Description | Key Props                                                              |
+| -------------- | ----------- | ---------------------------------------------------------------------- |
+| On             |             | `checked=true` `aria-label="Notifications on"`                         |
+| Off            |             | `checked=false` `aria-label="Notifications off"`                       |
+| In setting row |             | `checked=true` `aria-label="Noise suppression"`                        |
+| Disabled       |             | `checked=false` `disabled=true` `aria-label="Unavailable setting"`     |
+
+### Notes
+
+- Source of truth: packages/client/src/space-cards/components/spaces/settings-shared.tsx (ToggleSwitch).
+- Figma UI Elements file hlotzpup9k4CnwhskBVroL had no Toggle component page at port time; product ToggleSwitch was used.
+- Not the upstream shadcn Switch/Toggle primitives — this is the Hubzz settings/audio/drone control leaf.
+- Host code owns labels and setting rows; this leaf owns track/knob geometry and role=switch semantics.
+

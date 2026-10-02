@@ -12,6 +12,7 @@ import * as PresenceIndicator from "./presence-indicator.examples"
 import * as SpectatorBanner from "./spectator-banner.examples"
 import * as EngagementPoints from "./engagement-points.examples"
 import * as SpaceCard from "./space-card.examples"
+import * as Toggle from "./toggle.examples"
 
 export const allExamples = [
   Button,
@@ -28,4 +29,5 @@ export const allExamples = [
   SpectatorBanner,
   EngagementPoints,
   SpaceCard,
+  Toggle,
 ]
