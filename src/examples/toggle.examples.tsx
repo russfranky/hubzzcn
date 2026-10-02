@@ -7,14 +7,16 @@ function ToggleDemo(args: ToggleProps) {
   const [checked, setChecked] = React.useState(Boolean(args.checked))
 
   return (
-    <Toggle
-      {...args}
-      checked={checked}
-      onCheckedChange={(next) => {
-        setChecked(next)
-        args.onCheckedChange?.(next)
-      }}
-    />
+    <div className="inline-flex items-center">
+      <Toggle
+        {...args}
+        checked={checked}
+        onCheckedChange={(next) => {
+          setChecked(next)
+          args.onCheckedChange?.(next)
+        }}
+      />
+    </div>
   )
 }
 
@@ -54,7 +56,7 @@ export const InSettingRow: Example<ToggleProps> = {
     function Row() {
       const [checked, setChecked] = React.useState(Boolean(args.checked))
       return (
-        <div className="flex w-full max-w-sm items-center gap-3.5">
+        <div className="flex w-full max-w-xs items-center gap-3.5">
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <p className="text-xs leading-4 font-medium text-[#c7d2da]">
               Noise suppression
@@ -83,6 +85,7 @@ export const Disabled: Example<ToggleProps> = {
     disabled: true,
     "aria-label": "Unavailable setting",
   },
+  render: (args) => <ToggleDemo {...args} />,
 }
 
 export const examples = [On, Off, InSettingRow, Disabled]
