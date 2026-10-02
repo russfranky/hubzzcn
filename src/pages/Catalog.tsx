@@ -165,9 +165,7 @@ function ComponentSection({
 
       <div
         className={
-          examples.length === 1
-            ? "grid gap-4"
-            : "grid gap-4 sm:grid-cols-2"
+          examples.length === 1 ? "grid gap-4" : "grid gap-4 sm:grid-cols-2"
         }
       >
         {examples.map((example) => (
@@ -192,14 +190,14 @@ function ExamplePreview({
   return (
     <div
       data-catalog-example={example.name}
-      className="flex min-h-44 min-w-0 flex-col rounded-xl border border-border bg-card p-5 sm:p-6"
+      className="flex min-h-0 min-w-0 flex-col rounded-xl border border-border bg-card p-4"
     >
-      <p className="mb-3 text-[11px] font-medium tracking-wide text-muted-foreground">
+      <p className="mb-2 text-[11px] font-medium tracking-wide text-muted-foreground">
         {example.name}
       </p>
       <div
         data-catalog-preview={example.name}
-        className="flex min-h-32 flex-1 items-center justify-center overflow-x-auto rounded-lg border border-border bg-muted/30 p-6"
+        className="flex min-h-0 flex-1 items-center justify-center overflow-x-auto rounded-lg border border-border bg-muted/30 p-4"
       >
         {rendered}
       </div>
