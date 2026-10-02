@@ -15,6 +15,7 @@ export const meta: Meta<typeof SpaceCard> = {
     "Portal keeps a thin adapter at src/components/portal/space-card.tsx; do not change portal files from this kit leaf.",
     "Product owns join/browse/info handlers, elapsed ticking, preview assets, and path gating (joinDisabled).",
     "Demo images are 7:2 card-framed crops from live production space thumbs (R2), saved under /space-thumbs/ so object-cover shows ticker/signage/room — not empty floor.",
+    "Each live thumb (Rooftop, Retrodoges, Cats' Gallery) appears once; other states use gradient fallbacks.",
   ],
 }
 
@@ -33,7 +34,7 @@ const SPACE_THUMB = {
   catsGallery: asset("space-thumbs/cats-gallery.jpg"),
 } as const
 
-/** Gradient fallbacks when the thumb fails to load. */
+/** Gradient fallbacks when the thumb fails to load / non-live demos. */
 const ROOFTOP_GRADIENT =
   "linear-gradient(120deg, #5b6d82 0%, #2c3542 45%, #1a222c 100%)"
 const HALLWAY_GRADIENT =
@@ -44,6 +45,10 @@ const LOUNGE_GRADIENT =
   "linear-gradient(125deg, #4c5663 0%, #2f3640 50%, #171b21 100%)"
 const STAGE_GRADIENT =
   "linear-gradient(135deg, #2d1b4e 0%, #4a1942 50%, #6b2737 100%)"
+const ANNEX_GRADIENT =
+  "linear-gradient(130deg, #3a4a5c 0%, #243040 55%, #121820 100%)"
+const CLOSED_GRADIENT =
+  "linear-gradient(135deg, #3d3a44 0%, #2a2830 50%, #16151a 100%)"
 
 /** Catalog demo attendee stack — local face circles under /avatars/. */
 const DEMO_USERS = [
@@ -115,8 +120,6 @@ export const Leave: Example<SpaceCardProps> = {
   args: {
     title: "Hallway 3",
     gradient: HALLWAY_GRADIENT,
-    image: SPACE_THUMB.retrodoges,
-    imageAlt: "Retrodoges lounge live preview",
     attendance: "here",
     action: "leave",
     users: DEMO_USERS.slice(0, 2),
@@ -130,9 +133,7 @@ export const JoinDisabled: Example<SpaceCardProps> = {
   name: "Join disabled (DEF-017)",
   args: {
     title: "Closed wing",
-    gradient: LOUNGE_GRADIENT,
-    image: SPACE_THUMB.rooftop,
-    imageAlt: "Hubzz Rooftop live preview",
+    gradient: CLOSED_GRADIENT,
     attendance: "empty",
     action: "join",
     joinDisabled: true,
@@ -144,9 +145,7 @@ export const BrowseJoinable: Example<SpaceCardProps> = {
   name: "Browse + join (portal adapter)",
   args: {
     title: "Annex",
-    gradient: ROOFTOP_GRADIENT,
-    image: SPACE_THUMB.rooftop,
-    imageAlt: "Hubzz Rooftop live preview",
+    gradient: ANNEX_GRADIENT,
     attendance: "empty",
     action: "join",
     browseLabel: "+4 Spaces",

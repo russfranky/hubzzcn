@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Clock, Info, Ticket } from "lucide-react"
+import { Ticket } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -14,6 +14,7 @@ const CARD_PHOTO_LINE = "inset 0 0 0 0.5px rgba(252,253,254,0.14)"
 const DEFAULT_GRADIENT =
   "linear-gradient(135deg, #3d4a5c 0%, #1a1f28 50%, #2a3540 100%)"
 const AVATAR_STACK_LIMIT = 3
+/** Neighbor circle r=13 sits 6px overlapped → center at x=33; +3px gap (LabSpaceCard). */
 const GAP_MASK =
   "radial-gradient(circle 16px at 33px 13px, transparent 15.6px, black 16.4px)"
 
@@ -114,6 +115,36 @@ function previewFramingStyle(
   return style
 }
 
+/** SpaceCardHelpers.InfoIcon — circle-ⓘ in #FCFDFE, not Lucide. */
+function InfoIconButton({
+  onClick,
+  "aria-label": ariaLabel,
+}: {
+  onClick: () => void
+  "aria-label": string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className="size-5 shrink-0 cursor-pointer border-none bg-transparent p-0 opacity-50 transition-opacity hover:opacity-80"
+      data-name="Icon_line / info"
+    >
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="10" cy="10" r="7.5" stroke="#FCFDFE" strokeWidth="1.5" />
+        <path
+          d="M10 13.5V9.5"
+          stroke="#FCFDFE"
+          strokeLinecap="round"
+          strokeWidth="1.5"
+        />
+        <circle cx="10" cy="7" r="0.75" fill="#FCFDFE" />
+      </svg>
+    </button>
+  )
+}
+
 function ColorDotStack({ colors }: { colors: string[] }) {
   return (
     <div className="flex shrink-0 items-center gap-2">
@@ -162,6 +193,7 @@ function SpaceUserAvatar({
   masked?: boolean
 }) {
   const [thumbFailed, setThumbFailed] = React.useState(false)
+  const [showTooltip, setShowTooltip] = React.useState(false)
   const color = user.color ?? "#555"
   const src =
     !thumbFailed && user.avatar ? user.avatar : placeholderAvatar(color)
@@ -179,8 +211,38 @@ function SpaceUserAvatar({
     <span
       className="relative shrink-0 rounded-[32px]"
       style={{ height: 26, width: 26, marginRight: -6 }}
-      title={user.name}
+      onPointerEnter={() => setShowTooltip(true)}
+      onPointerLeave={() => setShowTooltip(false)}
     >
+      {/* Hotbar-style tooltip (SpaceCardHelpers.UserAvatar) — lives on the
+          wrapper, not the masked Avatar, so gap mask never clips the name. */}
+      {showTooltip ? (
+        <div
+          className="pointer-events-none absolute bottom-full left-0 z-50 mb-2 whitespace-nowrap rounded-md px-2 py-1"
+          style={{
+            background: "#1a1a1e",
+            boxShadow:
+              "0 0 0 1px rgba(255,255,255,0.08), 0 4px 12px rgba(0,0,0,0.6)",
+          }}
+        >
+          <p
+            className="text-[11px] text-[#c0c0c0]"
+            style={{ textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}
+          >
+            {user.name}
+          </p>
+          <div
+            className="absolute top-full left-3 -mt-px"
+            style={{
+              width: 0,
+              height: 0,
+              borderLeft: "4px solid transparent",
+              borderRight: "4px solid transparent",
+              borderTop: "4px solid #1a1a1e",
+            }}
+          />
+        </div>
+      ) : null}
       {/* Force 26px: Avatar size="sm" ships data-[size=sm]:size-6 (24px), which
           beats plain size-full on specificity and mis-calibrates the SoT gap mask. */}
       <Avatar
@@ -233,7 +295,7 @@ function UserStack({ users }: { users: SpaceCardUser[] }) {
 
 function EmptyAttendance() {
   return (
-    <div className="flex shrink-0 items-center gap-2 text-[#fcfdfe] opacity-60">
+    <div className="flex shrink-0 items-center gap-2 opacity-60">
       <div className="relative flex size-[20px] items-center justify-center">
         <div className="absolute inset-0 rounded-full border-2 border-dashed border-[#fcfdfe] opacity-50 [animation-duration:12s] motion-safe:animate-spin" />
         <svg
@@ -244,11 +306,11 @@ function EmptyAttendance() {
           className="relative opacity-50"
           aria-hidden="true"
         >
-          <circle cx="6" cy="6.5" r="1.3" fill="currentColor" />
-          <circle cx="12" cy="6.5" r="1.3" fill="currentColor" />
+          <circle cx="6" cy="6.5" r="1.3" fill="#fcfdfe" />
+          <circle cx="12" cy="6.5" r="1.3" fill="#fcfdfe" />
           <path
             d="M5.5 13.5C6.8 11.5 11.2 11.5 12.5 13.5"
-            stroke="currentColor"
+            stroke="#fcfdfe"
             strokeWidth="1.5"
             strokeLinecap="round"
             fill="none"
@@ -292,6 +354,7 @@ function SpaceAttendance({
   return <EmptyAttendance />
 }
 
+/** LabSpaceCard TimeInSpace — filled clock SVG + hardcoded #7c878e (not Lucide / muted). */
 function TimeInSpaceChip({
   label,
   verbose,
@@ -302,9 +365,21 @@ function TimeInSpaceChip({
   return (
     <span
       title={verbose}
-      className="flex shrink-0 items-center gap-1.5 self-end px-3.5 text-[13px] leading-4 font-medium tabular-nums text-muted-foreground"
+      className="flex shrink-0 items-center gap-1.5 self-end px-3.5 text-[13px] leading-[16px] font-medium tabular-nums text-[#7c878e]"
     >
-      <Clock className="size-3.5 shrink-0 opacity-60" aria-hidden="true" />
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 12 12"
+        fill="none"
+        className="shrink-0 opacity-60"
+        aria-hidden="true"
+      >
+        <circle cx="6" cy="6" r="5" fill="#7c878e" />
+        <circle cx="6" cy="6" r="4" fill="#24262b" />
+        <rect x="5.5" y="3" width="1" height="3.5" rx="0.5" fill="#7c878e" />
+        <rect x="5.5" y="5.5" width="2.5" height="1" rx="0.5" fill="#7c878e" />
+      </svg>
       {label}
     </span>
   )
@@ -420,16 +495,10 @@ export function SpaceCard({
               </Button>
             ) : null}
             {onInfo ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
+              <InfoIconButton
                 onClick={onInfo}
                 aria-label={infoAriaLabel ?? `Space info for ${title}`}
-                className="size-5 text-[#fcfdfe] opacity-50 hover:bg-transparent hover:opacity-80 hover:text-[#fcfdfe]"
-              >
-                <Info className="size-5" />
-              </Button>
+              />
             ) : null}
           </div>
         </div>
@@ -445,7 +514,7 @@ export function SpaceCard({
             elapsedLabel ? (
               <TimeInSpaceChip label={elapsedLabel} verbose={elapsedVerbose} />
             ) : (
-              <span className="px-3.5 text-xs font-medium text-[#fcfdfe]">
+              <span className="px-3.5 text-[12px] font-medium text-[#fcfdfe]">
                 Here
               </span>
             )
@@ -453,9 +522,9 @@ export function SpaceCard({
             <Button
               size="xs"
               type="button"
-              variant="outline"
+              variant="ghost"
               onClick={onLeave}
-              className="shrink-0 rounded-full border-[#464f55] bg-transparent px-3.5 text-xs font-semibold text-[#fcfdfe] hover:bg-[#393e44] hover:text-[#fcfdfe]"
+              className="h-auto shrink-0 rounded-full border border-[#464f55] bg-transparent px-3.5 py-[6px] text-[12px] leading-[18px] font-semibold text-[#fcfdfe] hover:bg-[#393e44] hover:text-[#fcfdfe]"
             >
               Leave
             </Button>
@@ -464,10 +533,10 @@ export function SpaceCard({
               <Button
                 size="xs"
                 type="button"
-                variant="secondary"
+                variant="ghost"
                 disabled
                 title={joinDisabledTitle}
-                className="shrink-0 rounded-full px-3.5 text-xs font-semibold disabled:opacity-100"
+                className="shrink-0 rounded-full bg-[#3a3d44] px-3.5 text-[12px] font-semibold text-[#9aa2a9] disabled:opacity-100"
               >
                 Join
               </Button>
@@ -475,8 +544,9 @@ export function SpaceCard({
               <Button
                 size="xs"
                 type="button"
+                variant="ghost"
                 onClick={onJoin}
-                className="shrink-0 rounded-full px-3.5 text-xs font-semibold"
+                className="shrink-0 rounded-full bg-gradient-to-b from-[#9a77ff] to-[#735ffa] px-3.5 text-[12px] font-semibold text-[#fcfdfe] hover:opacity-90 hover:text-[#fcfdfe]"
               >
                 Join
               </Button>
