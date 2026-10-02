@@ -61,3 +61,4 @@ export {
   type ToastBannerProps,
   type ToastBannerType,
 } from "./components/hubzz/toast-banner"
+export { Toggle, type ToggleProps } from "./components/hubzz/toggle"
