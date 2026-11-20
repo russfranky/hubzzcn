@@ -309,6 +309,151 @@
         "stability": "alpha",
         "strategy": "custom"
       }
+    },
+    {
+      "name": "merch-modal",
+      "type": "registry:component",
+      "title": "Merch Modal",
+      "description": "Digital Merch store modal with XP item carousel and balance bar, ported from the Figma Make Digital Merch Modal project.",
+      "author": "Hubzz",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "dialog", "button", "separator"],
+      "files": [
+        {
+          "path": "merch-modal.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/merch-modal.tsx"
+        }
+      ],
+      "categories": ["overlay", "commerce"],
+      "meta": {
+        "stability": "alpha",
+        "strategy": "composition"
+      }
+    },
+    {
+      "name": "buy-item-modal",
+      "type": "registry:component",
+      "title": "Buy Item Modal",
+      "description": "Buy Item purchase confirmation modal with balance math, ported from the Figma Make Digital Merch Modal project.",
+      "author": "Hubzz",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "dialog", "button", "separator"],
+      "files": [
+        {
+          "path": "buy-item-modal.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/buy-item-modal.tsx"
+        }
+      ],
+      "categories": ["overlay", "commerce"],
+      "meta": {
+        "stability": "alpha",
+        "strategy": "composition"
+      }
+    },
+    {
+      "name": "hbx-modal",
+      "type": "registry:component",
+      "title": "HBX Modal",
+      "description": "'What is HBX?' explainer modal, ported from the Figma Make Digital Merch Modal project.",
+      "author": "Hubzz",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "dialog", "button", "separator"],
+      "files": [
+        {
+          "path": "hbx-modal.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/hbx-modal.tsx"
+        }
+      ],
+      "categories": ["overlay", "onboarding"],
+      "meta": {
+        "stability": "alpha",
+        "strategy": "composition"
+      }
+    },
+    {
+      "name": "manage-channel-modal",
+      "type": "registry:component",
+      "title": "Manage Channel Modal",
+      "description": "Manage group menu modal, ported from the Figma Make Digital Merch Modal project.",
+      "author": "Hubzz",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "dialog", "button"],
+      "files": [
+        {
+          "path": "manage-channel-modal.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/manage-channel-modal.tsx"
+        }
+      ],
+      "categories": ["overlay", "settings"],
+      "meta": {
+        "stability": "alpha",
+        "strategy": "composition"
+      }
+    },
+    {
+      "name": "notice-modal",
+      "type": "registry:component",
+      "title": "Notice Modal",
+      "description": "Terms notice modal with a single Agree action, ported from the Figma Make Digital Merch Modal project.",
+      "author": "Hubzz",
+      "registryDependencies": ["utils", "dialog", "button"],
+      "files": [
+        {
+          "path": "notice-modal.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/notice-modal.tsx"
+        }
+      ],
+      "categories": ["overlay", "legal"],
+      "meta": {
+        "stability": "alpha",
+        "strategy": "composition"
+      }
+    },
+    {
+      "name": "room-settings-modal",
+      "type": "registry:component",
+      "title": "Room Settings Modal",
+      "description": "Room Settings modal with setting rows and a Moderation & Design section, ported from the Figma Make Digital Merch Modal project.",
+      "author": "Hubzz",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "dialog", "button", "avatar"],
+      "files": [
+        {
+          "path": "room-settings-modal.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/room-settings-modal.tsx"
+        }
+      ],
+      "categories": ["overlay", "settings"],
+      "meta": {
+        "stability": "alpha",
+        "strategy": "composition"
+      }
+    },
+    {
+      "name": "terms-modal",
+      "type": "registry:component",
+      "title": "Terms Modal",
+      "description": "Terms of Use modal with scrollable legal copy, ported from the Figma Make Digital Merch Modal project.",
+      "author": "Hubzz",
+      "registryDependencies": ["utils", "dialog", "button"],
+      "files": [
+        {
+          "path": "terms-modal.tsx",
+          "type": "registry:component",
+          "target": "@components/hubzz/terms-modal.tsx"
+        }
+      ],
+      "categories": ["overlay", "legal"],
+      "meta": {
+        "stability": "alpha",
+        "strategy": "composition"
+      }
     }
   ]
 }
