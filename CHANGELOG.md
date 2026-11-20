@@ -10,6 +10,12 @@ migration notes.
 
 ### Added
 
+- Seven Hubzz modals ported from the Figma Make "Digital Merch Modal"
+  project (7w2KEWk6WBaOOaDQSjRd1S) onto the hubzzcn Dialog and theme:
+  `MerchModal`, `BuyItemModal`, `HBXModal`, `ManageChannelModal`,
+  `NoticeModal`, `RoomSettingsModal`, and `TermsModal`, with catalog
+  examples and registry entries.
+
 - Hubzz `Toggle` on/off switch leaf (pre-alpha space-cards `ToggleSwitch`) with catalog examples.
 
 - Stage HUD prototype at `/cn/stage` and `?prototype=stage` (Spaces-style

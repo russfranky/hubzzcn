@@ -37,6 +37,28 @@ The focused migration PR records validation, exact-head review, merge, and
 production deployment evidence. Archiving the source repository depends on that
 delivery; the GitHub connector does not expose repository administration.
 
+## Digital Merch modals port
+
+The seven modals from the Figma Make "Digital Merch Modal" project
+(7w2KEWk6WBaOOaDQSjRd1S) now live in `src/components/hubzz/` as
+`MerchModal`, `BuyItemModal`, `HBXModal`, `ManageChannelModal`,
+`NoticeModal`, `RoomSettingsModal`, and `TermsModal`. Structure and copy
+come from the Figma source; shells are the shared Dialog primitive and
+all colors are hubzzcn semantic tokens, so the modals follow the
+catalog light and dark themes. Source stubs (console.log rows, inert
+buttons) became callbacks. Catalog examples, registry entries, and
+package exports are included.
+
+Known pre-existing breakage at this base: `pnpm generate:manifest`
+crashes on `src/examples/space-card.examples.tsx` reading
+`import.meta.env.BASE_URL` under tsx (since PR #122), so
+`docs/COMPONENTS.md` sections for the modals were written by hand in
+the generated format. Regenerate once that crash is fixed. The same
+crash makes `pnpm test:ui` fail before any test runs; it reproduces on
+clean main at 2629ee8. The two new examples that build asset URLs
+(merch, room settings) use a guarded `import.meta.env?.BASE_URL`
+helper so they do not add another crash site.
+
 ## Next review
 
 Check focus transfer when the demo host closes the entire queue and shows its

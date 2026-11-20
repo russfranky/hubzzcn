@@ -334,12 +334,12 @@ Hubzz on/off switch from pre-alpha space-cards settings ToggleSwitch — purple 
 
 ### Examples
 
-| Name           | Description | Key Props                                                              |
-| -------------- | ----------- | ---------------------------------------------------------------------- |
-| On             |             | `checked=true` `aria-label="Notifications on"`                         |
-| Off            |             | `checked=false` `aria-label="Notifications off"`                       |
-| In setting row |             | `checked=true` `aria-label="Noise suppression"`                        |
-| Disabled       |             | `checked=false` `disabled=true` `aria-label="Unavailable setting"`     |
+| Name           | Description | Key Props                                                          |
+| -------------- | ----------- | ------------------------------------------------------------------ |
+| On             |             | `checked=true` `aria-label="Notifications on"`                     |
+| Off            |             | `checked=false` `aria-label="Notifications off"`                   |
+| In setting row |             | `checked=true` `aria-label="Noise suppression"`                    |
+| Disabled       |             | `checked=false` `disabled=true` `aria-label="Unavailable setting"` |
 
 ### Notes
 
@@ -348,3 +348,156 @@ Hubzz on/off switch from pre-alpha space-cards settings ToggleSwitch — purple 
 - Not the upstream shadcn Switch/Toggle primitives — this is the Hubzz settings/audio/drone control leaf.
 - Host code owns labels and setting rows; this leaf owns track/knob geometry and role=switch semantics.
 
+## MerchModal
+
+Digital Merch store modal: banner, store identity, XP item carousel, and balance bar, ported from the Figma Make Digital Merch Modal project.
+
+**Layer:** component
+
+**Import:** `import { MerchModal } from "@hubzz/ui"`
+
+### Examples
+
+| Name    | Description | Key Props                         |
+| ------- | ----------- | --------------------------------- |
+| Default |             | `triggerLabel="Open Merch Store"` |
+
+### Notes
+
+- Source: Figma Make 'Digital Merch Modal' (7w2KEWk6WBaOOaDQSjRd1S), src/app/components/MerchModal.tsx.
+- Shell and colors are hubzzcn Dialog and semantic tokens; only the item card artwork gradients keep the source pastel values.
+- Balance and purchase state are internal, seeded by initialBalance; purchases report through onPurchase; a bought item reads Owned and unaffordable items disable.
+- Cover and avatar are host-supplied image props; without them the modal renders the primary gradient.
+
+---
+
+## BuyItemModal
+
+Buy Item purchase confirmation: item, cost, current and new balance, ported from the Figma Make Digital Merch Modal project.
+
+**Layer:** component
+
+**Import:** `import { BuyItemModal } from "@hubzz/ui"`
+
+### Examples
+
+| Name    | Description | Key Props                 |
+| ------- | ----------- | ------------------------- |
+| Default |             | `triggerLabel="Buy Item"` |
+
+### Notes
+
+- Source: Figma Make 'Digital Merch Modal' (7w2KEWk6WBaOOaDQSjRd1S), src/app/components/BuyItemModal.tsx.
+- The source card is fixed white; here the card is the Dialog popover surface, so it follows the hubzzcn light and dark themes.
+- New balance is computed from balance and cost. The coin mark uses the warning token.
+- Item image is a host-supplied prop; without one the tile shows a coin icon.
+
+---
+
+## HBXModal
+
+'What is HBX?' explainer modal with Unlock perks and Collect moments cards, ported from the Figma Make Digital Merch Modal project.
+
+**Layer:** component
+
+**Import:** `import { HBXModal } from "@hubzz/ui"`
+
+### Examples
+
+| Name    | Description | Key Props                     |
+| ------- | ----------- | ----------------------------- |
+| Default |             | `triggerLabel="What is HBX?"` |
+
+### Notes
+
+- Source: Figma Make 'Digital Merch Modal' (7w2KEWk6WBaOOaDQSjRd1S), src/app/components/HBXModal.tsx.
+- Copy is the Figma source copy. Shell and colors are hubzzcn Dialog and semantic tokens.
+- Card actions report through onGoToQuests and onViewStubs; the source buttons were inert.
+
+---
+
+## ManageChannelModal
+
+Manage group menu modal with six channel administration rows, ported from the Figma Make Digital Merch Modal project.
+
+**Layer:** component
+
+**Import:** `import { ManageChannelModal } from "@hubzz/ui"`
+
+### Examples
+
+| Name    | Description | Key Props                       |
+| ------- | ----------- | ------------------------------- |
+| Default |             | `triggerLabel="Manage Channel"` |
+
+### Notes
+
+- Source: Figma Make 'Digital Merch Modal' (7w2KEWk6WBaOOaDQSjRd1S), src/app/components/ManageChannelModal.tsx.
+- Rows report through onSelect with a stable item id; the source rows only logged to the console.
+- Shell and colors are hubzzcn Dialog and semantic tokens.
+
+---
+
+## NoticeModal
+
+Terms notice modal with a single Agree action and a Terms of Service link, ported from the Figma Make Digital Merch Modal project.
+
+**Layer:** component
+
+**Import:** `import { NoticeModal } from "@hubzz/ui"`
+
+### Examples
+
+| Name    | Description | Key Props                     |
+| ------- | ----------- | ----------------------------- |
+| Default |             | `triggerLabel="Terms Notice"` |
+
+### Notes
+
+- Source: Figma Make 'Digital Merch Modal' (7w2KEWk6WBaOOaDQSjRd1S), src/app/components/NoticeModal.tsx.
+- The demo chains the Terms of Service link into TermsModal, matching the Figma App wiring.
+- Agree reports through onAgree and closes; shell and colors are hubzzcn Dialog and semantic tokens.
+
+---
+
+## RoomSettingsModal
+
+Room Settings modal with Cancel/Save header, setting rows, and a Moderation & Design section, ported from the Figma Make Digital Merch Modal project.
+
+**Layer:** component
+
+**Import:** `import { RoomSettingsModal } from "@hubzz/ui"`
+
+### Examples
+
+| Name    | Description | Key Props                      |
+| ------- | ----------- | ------------------------------ |
+| Default |             | `triggerLabel="Room Settings"` |
+
+### Notes
+
+- Source: Figma Make 'Digital Merch Modal' (7w2KEWk6WBaOOaDQSjRd1S), src/app/components/RoomSettingsModal.tsx.
+- Rows are data-driven and report through onRowClick; Save reports through onSave and closes, as in the source.
+- Shell and colors are hubzzcn Dialog and semantic tokens.
+
+---
+
+## TermsModal
+
+Terms of Use modal with scrollable legal copy and a Close action, ported from the Figma Make Digital Merch Modal project.
+
+**Layer:** component
+
+**Import:** `import { TermsModal } from "@hubzz/ui"`
+
+### Examples
+
+| Name    | Description | Key Props                     |
+| ------- | ----------- | ----------------------------- |
+| Default |             | `triggerLabel="Terms of Use"` |
+
+### Notes
+
+- Source: Figma Make 'Digital Merch Modal' (7w2KEWk6WBaOOaDQSjRd1S), src/app/components/TermsModal.tsx.
+- Legal copy is carried over from the source as-is, including the sections the source itself abbreviates.
+- Shell and colors are hubzzcn Dialog and semantic tokens.

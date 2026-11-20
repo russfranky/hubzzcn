@@ -13,6 +13,13 @@ import * as SpectatorBanner from "./spectator-banner.examples"
 import * as EngagementPoints from "./engagement-points.examples"
 import * as SpaceCard from "./space-card.examples"
 import * as Toggle from "./toggle.examples"
+import * as MerchModal from "./merch-modal.examples"
+import * as BuyItemModal from "./buy-item-modal.examples"
+import * as HBXModal from "./hbx-modal.examples"
+import * as ManageChannelModal from "./manage-channel-modal.examples"
+import * as NoticeModal from "./notice-modal.examples"
+import * as RoomSettingsModal from "./room-settings-modal.examples"
+import * as TermsModal from "./terms-modal.examples"
 
 export const allExamples = [
   Button,
@@ -30,4 +37,11 @@ export const allExamples = [
   EngagementPoints,
   SpaceCard,
   Toggle,
+  MerchModal,
+  BuyItemModal,
+  HBXModal,
+  ManageChannelModal,
+  NoticeModal,
+  RoomSettingsModal,
+  TermsModal,
 ]
